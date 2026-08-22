@@ -185,7 +185,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                       abaAtiva === 'exportar' ? estilos.textoAbaAtiva : null,
                     ]}
                   >
-                    📦 Exportar Dados
+                    Exportar Dados
                   </Text>
                 </TouchableOpacity>
 
@@ -202,7 +202,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                       abaAtiva === 'restaurar' ? estilos.textoAbaAtiva : null,
                     ]}
                   >
-                    📥 Restaurar Backup
+                    Restaurar Backup
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -214,14 +214,14 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                 {/* Banner de Erro Geral */}
                 {erro && (
                   <View style={estilos.bannerErro}>
-                    <Text style={estilos.textoBannerErro}>⚠️ {erro}</Text>
+                    <Text style={estilos.textoBannerErro}>{erro}</Text>
                   </View>
                 )}
 
                 {/* Banner de Sucesso */}
                 {sucesso && (
                   <View style={estilos.bannerSucesso}>
-                    <Text style={estilos.textoBannerSucesso}>✓ {sucesso}</Text>
+                    <Text style={estilos.textoBannerSucesso}>{sucesso}</Text>
                   </View>
                 )}
 
@@ -276,7 +276,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                           <ActivityIndicator color="#ffffff" />
                         ) : (
                           <Text style={estilos.textoBotaoPrincipal}>
-                            ⚡ Gerar Arquivo de Backup (.json)
+                            Gerar Arquivo de Backup (.json)
                           </Text>
                         )}
                       </TouchableOpacity>
@@ -290,7 +290,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                             activeOpacity={0.7}
                           >
                             <Text style={estilos.textoBotaoCompartilhar}>
-                              {copiado ? '✓ Copiado!' : '📤 Compartilhar / Salvar'}
+                              {copiado ? 'Copiado' : 'Compartilhar / Salvar'}
                             </Text>
                           </TouchableOpacity>
                         </View>
@@ -306,10 +306,13 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
 
                         <TouchableOpacity
                           style={estilos.botaoSecundario}
-                          onPress={handleGerarBackup}
+                          onPress={() => {
+                            setJsonExportado('');
+                            setCopiado(false);
+                          }}
                           activeOpacity={0.7}
                         >
-                          <Text style={estilos.textoBotaoSecundario}>🔄 Gerar Novamente</Text>
+                          <Text style={estilos.textoBotaoSecundario}>Gerar Novamente</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -345,7 +348,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                       onPress={handleValidarTexto}
                       activeOpacity={0.7}
                     >
-                      <Text style={estilos.textoBotaoValidar}>🔍 Validar Estrutura do Backup</Text>
+                      <Text style={estilos.textoBotaoValidar}>Validar Estrutura do Backup</Text>
                     </TouchableOpacity>
 
                     {/* Painel de Diagnóstico */}
@@ -368,7 +371,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                             },
                           ]}
                         >
-                          {diagnostico.valido ? '✓ Arquivo Válido & Compatível' : '⚠️ Erros no Arquivo'}
+                          {diagnostico.valido ? 'Arquivo Válido & Compatível' : 'Erros no Arquivo'}
                         </Text>
 
                         {diagnostico.valido && diagnostico.metadados && (
@@ -461,7 +464,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                         <ActivityIndicator color="#ffffff" />
                       ) : (
                         <Text style={estilos.textoBotaoRestaurar}>
-                          📥 Confirmar & Restaurar Backup
+                          Confirmar & Restaurar Backup
                         </Text>
                       )}
                     </TouchableOpacity>

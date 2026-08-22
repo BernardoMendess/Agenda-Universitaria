@@ -11,13 +11,8 @@ import {
 } from 'react-native';
 import { useNotificacoes } from '../../hooks/useNotificacoes';
 import { useBackup } from '../../hooks/useBackup';
-import { usePrivacidadeEEficiencia } from '../../hooks/usePrivacidadeEEficiencia';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { ModalBackup } from '../../componentes/ModalBackup';
-import { CardEficienciaEnergetica } from '../../componentes/CardEficienciaEnergetica';
-import { CardPrivacidadeTotal } from '../../componentes/CardPrivacidadeTotal';
-import { ModalCertificadoPrivacidade } from '../../componentes/ModalCertificadoPrivacidade';
-import { BadgeStatusOffline } from '../../componentes/BadgeStatusOffline';
 import { tema } from '../../estilos/tema';
 
 const OPCOES_ANTECEDENCIA_AULA = [
@@ -47,14 +42,6 @@ export const TelaAjustes: React.FC = () => {
   } = useNotificacoes();
 
   const { resumoLocal, carregarResumo: recarregarBackupResumo } = useBackup();
-  const {
-    diagnosticoEficiencia,
-    relatorioPrivacidade,
-    modalCertificadoVisivel,
-    carregarAuditorias,
-    abrirModalCertificado,
-    fecharModalCertificado,
-  } = usePrivacidadeEEficiencia();
 
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [modalBackupVisivel, setModalBackupVisivel] = useState<boolean>(false);
@@ -112,7 +99,7 @@ export const TelaAjustes: React.FC = () => {
     <SafeAreaView style={estilos.container}>
       <Cabecalho
         titulo="Ajustes & Notificações"
-        subtitulo="Gestão de lembretes e alarmes locais (RF10)"
+        subtitulo="Personalize seus lembretes"
       />
 
       <ScrollView
@@ -412,41 +399,41 @@ export const TelaAjustes: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={estilos.textoBotaoTeste}>
-              🔔 Testar Alerta Sonoro & Vibração
+              Testar Alerta Sonoro & Vibração
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Seção 5: Gerenciamento e Portabilidade de Dados (RF11) */}
+        {/* Backup de dados */}
         <View style={estilos.secao}>
           <View style={estilos.secaoTextos}>
             <Text style={estilos.secaoTitulo}>Portabilidade & Backup de Dados</Text>
             <Text style={estilos.secaoDescricao}>
-              Exporte todos os seus dados locais em arquivo JSON estruturado ou restaure um backup salvo no aparelho (RF11).
+              Exporte ou restaure todos os seus dados acadêmicos.
             </Text>
           </View>
 
           <View style={estilos.cardResumoBackup}>
             <View style={estilos.linhaResumoBackup}>
               <Text style={estilos.textoItemResumoBackup}>
-                📚 <Text style={estilos.destaqueNumero}>{resumoLocal.totalDisciplinas}</Text> Disciplinas
+                <Text style={estilos.destaqueNumero}>{resumoLocal.totalDisciplinas}</Text> Disciplinas
               </Text>
               <Text style={estilos.textoItemResumoBackup}>
-                ⏱️ <Text style={estilos.destaqueNumero}>{resumoLocal.totalHorarios}</Text> Aulas
+                <Text style={estilos.destaqueNumero}>{resumoLocal.totalHorarios}</Text> Aulas
               </Text>
               <Text style={estilos.textoItemResumoBackup}>
-                ❌ <Text style={estilos.destaqueNumero}>{resumoLocal.totalFaltas}</Text> Faltas
+                <Text style={estilos.destaqueNumero}>{resumoLocal.totalFaltas}</Text> Faltas
               </Text>
             </View>
             <View style={estilos.linhaResumoBackup}>
               <Text style={estilos.textoItemResumoBackup}>
-                📝 <Text style={estilos.destaqueNumero}>{resumoLocal.totalAvaliacoes}</Text> Avaliações
+                <Text style={estilos.destaqueNumero}>{resumoLocal.totalAvaliacoes}</Text> Avaliações
               </Text>
               <Text style={estilos.textoItemResumoBackup}>
-                ✅ <Text style={estilos.destaqueNumero}>{resumoLocal.totalTarefas}</Text> Tarefas
+                <Text style={estilos.destaqueNumero}>{resumoLocal.totalTarefas}</Text> Tarefas
               </Text>
               <Text style={estilos.textoItemResumoBackup}>
-                📅 <Text style={estilos.destaqueNumero}>{resumoLocal.totalEventos}</Text> Eventos
+                <Text style={estilos.destaqueNumero}>{resumoLocal.totalEventos}</Text> Eventos
               </Text>
             </View>
           </View>
@@ -457,19 +444,10 @@ export const TelaAjustes: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={estilos.textoBotaoGerenciarBackup}>
-              📦 Exportar / Restaurar Backup Manual (.json)
+              Gerenciar Backup
             </Text>
           </TouchableOpacity>
         </View>
-
-        {/* Seção 6: Eficiência Energética (RNF04) */}
-        <CardEficienciaEnergetica diagnostico={diagnosticoEficiencia} />
-
-        {/* Seção 7: Privacidade Total & Isolamento (RNF05) */}
-        <CardPrivacidadeTotal
-          relatorio={relatorioPrivacidade}
-          aoPressionarVerCertificado={abrirModalCertificado}
-        />
 
         {/* Botão Restaurar Padrão */}
         <TouchableOpacity
@@ -483,23 +461,15 @@ export const TelaAjustes: React.FC = () => {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Modal de Backup & Portabilidade */}
+      {/* Modal de Backup */}
       <ModalBackup
         visivel={modalBackupVisivel}
         aoFechar={() => setModalBackupVisivel(false)}
         aoRestaurarSucesso={async () => {
           await carregarConfiguracoes();
           await recarregarBackupResumo();
-          await carregarAuditorias();
-          exibirFeedback('Backup restaurado e dados sincronizados com sucesso!');
+          exibirFeedback('Backup restaurado com sucesso!');
         }}
-      />
-
-      {/* Modal de Certificado de Privacidade Total (RNF05) */}
-      <ModalCertificadoPrivacidade
-        visivel={modalCertificadoVisivel}
-        certificado={relatorioPrivacidade?.certificado}
-        aoFechar={fecharModalCertificado}
       />
     </SafeAreaView>
   );

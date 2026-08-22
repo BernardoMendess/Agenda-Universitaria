@@ -255,7 +255,7 @@ export class NotificacaoService {
 
     // Limite atingido (faltasRestantes === 0) ou ultrapassado (reprovadoPorFalta === true)
     if (resumo.reprovadoPorFalta || resumo.faltasRestantes === 0) {
-      const titulo = `⚠️ LIMITE DE FALTAS ATINGIDO: ${disciplina.nome}`;
+      const titulo = `LIMITE DE FALTAS ATINGIDO: ${disciplina.nome}`;
       const mensagem = resumo.reprovadoPorFalta
         ? `Atenção! Você ultrapassou o limite de faltas em ${disciplina.nome} (${resumo.totalFaltas}/${resumo.limiteMaximoFaltas} faltas registradas).`
         : `Atenção! Você atingiu o limite máximo de ${resumo.limiteMaximoFaltas} faltas em ${disciplina.nome}. Próxima falta causará reprovação!`;

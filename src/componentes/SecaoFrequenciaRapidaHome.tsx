@@ -112,7 +112,7 @@ export const SecaoFrequenciaRapidaHome: React.FC<SecaoFrequenciaRapidaHomeProps>
                   </View>
                 </View>
 
-                {/* Botões de Ação em 1 Toque (RNF03) */}
+                {/* Botões de ação */}
                 <View style={estilos.linhaBotoes}>
                   {aoDecrementarFalta && totalFaltas > 0 && (
                     <TouchableOpacity

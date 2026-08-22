@@ -41,7 +41,7 @@ export const ModalAlertaFaltasCritico: React.FC<ModalAlertaFaltasCriticoProps> =
             <View style={estilos.containerModal}>
               {/* Ícone de Alerta Crítico no Topo */}
               <View style={estilos.iconeContainer}>
-                <Text style={estilos.iconeTexto}>⚠️</Text>
+                <Text style={estilos.iconeTexto}>!</Text>
               </View>
 
               {/* Título de Emergência */}

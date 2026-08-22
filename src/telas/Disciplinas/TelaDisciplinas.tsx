@@ -184,7 +184,7 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
         aoRemoverFalta={removerFalta}
       />
 
-      {/* Modal de Alerta Crítico de Faltas (RF10) */}
+      {/* Alerta de faltas */}
       <ModalAlertaFaltasCritico
         visivel={!!alertaCritico}
         disciplinaNome={alertaCritico?.disciplinaNome || ''}

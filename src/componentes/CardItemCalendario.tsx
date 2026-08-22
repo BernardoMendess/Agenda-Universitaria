@@ -192,7 +192,7 @@ export const CardItemCalendario: React.FC<CardItemCalendarioProps> = ({
             )}
 
             {item.localSala && (
-              <Text style={estilos.textoRodape}>📍 {item.localSala}</Text>
+              <Text style={estilos.textoRodape}>{item.localSala}</Text>
             )}
 
             {item.categoria === 'EVENTOS' && aoExcluirEvento && (

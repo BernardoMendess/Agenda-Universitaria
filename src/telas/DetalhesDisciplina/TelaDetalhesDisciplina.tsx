@@ -373,7 +373,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
         carregando={excluindo}
       />
 
-      {/* Modal de Alerta Crítico de Faltas (RF10) */}
+      {/* Alerta de faltas */}
       <ModalAlertaFaltasCritico
         visivel={!!alertaCritico}
         disciplinaNome={alertaCritico?.disciplinaNome || ''}

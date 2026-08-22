@@ -18,7 +18,7 @@ import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
 import { Disciplina } from '../../modelos/Disciplina';
 import { TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../../modelos/Avaliacao';
-import { BadgeStatusOffline } from '../../componentes/BadgeStatusOffline';
+
 import { tema } from '../../estilos/tema';
 
 interface TelaHomeProps {
@@ -82,14 +82,11 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
       >
         {/* Cabeçalho do Dashboard */}
         <View style={estilos.cabecalho}>
-          <View style={estilos.linhaCabecalho}>
-            <Text style={estilos.saudacao}>CampusFlow</Text>
-            <BadgeStatusOffline tamanho="pequeno" />
-          </View>
+          <Text style={estilos.saudacao}>CampusFlow</Text>
           <Text style={estilos.dataSubtitulo}>{dataExtenso}</Text>
         </View>
 
-        {/* Métricas Consolidadas do Topo (RF08) */}
+        {/* Métricas do dia */}
         <View style={estilos.cardResumo}>
           <View style={estilos.linhaResumo}>
             {/* Aulas Hoje */}
@@ -156,7 +153,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           </View>
         </View>
 
-        {/* Barra de Ações Rápidas em 1 Toque (RNF03) */}
+        {/* Ações rápidas */}
         <View style={estilos.barraAtalhos}>
           <TouchableOpacity
             style={estilos.botaoAtalhoRapido}
@@ -193,7 +190,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Seção 1: Resumo das Matérias em Estado de Alerta (Faltas e Notas Baixas - RF08 & RNF03) */}
+        {/* Matérias em alerta */}
         <View style={estilos.secaoCabecalho}>
           <View>
             <Text style={estilos.secaoTitulo}>Diagnóstico Acadêmico</Text>
@@ -229,13 +226,13 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           ))
         )}
 
-        {/* Seção 2: Aulas de Hoje (RF08 & RNF03) */}
+        {/* Aulas de hoje */}
         <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
           <View>
             <Text style={estilos.secaoTitulo}>Aulas de Hoje</Text>
             <Text style={estilos.secaoSubtitulo}>
               {aulasProcessadas.length > 0
-                ? `${aulasProcessadas.length} aula(s) programada(s) • Faltas em 1 toque`
+                ? `${aulasProcessadas.length} aula(s) programada(s)`
                 : 'Dia livre de aulas'}
             </Text>
           </View>
@@ -276,7 +273,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           })
         )}
 
-        {/* Seção: Lançamento Rápido de Faltas para qualquer disciplina (RNF03) */}
+        {/* Frequência rápida */}
         {disciplinas.length > 0 && (
           <SecaoFrequenciaRapidaHome
             disciplinas={disciplinas}
@@ -287,12 +284,12 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           />
         )}
 
-        {/* Seção 3: Tarefas Pendentes com Vencimento Próximo (RF08 & RNF03) */}
+        {/* Tarefas pendentes */}
         <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
           <View>
             <Text style={estilos.secaoTitulo}>Tarefas Prioritárias</Text>
             <Text style={estilos.secaoSubtitulo}>
-              {estatisticas.pendentes} pendente(s) • Conclusão em 1 toque
+              {estatisticas.pendentes} pendente(s)
             </Text>
           </View>
           <TouchableOpacity onPress={aoIrParaTarefas}>
@@ -401,7 +398,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         )}
       </ScrollView>
 
-      {/* Barra de Feedback de Ações Rápidas com Desfazer em 1 Toque (RNF03) */}
+      {/* Feedback de ação */}
       <BarraAcaoRapidaFeedback
         feedback={feedbackAcaoRapida}
         aoDesfazer={desfazerUltimaAcao}
@@ -429,7 +426,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         aoRemoverFalta={removerFalta}
       />
 
-      {/* Modal de Alerta Crítico de Faltas (RF10) */}
+      {/* Alerta de faltas */}
       <ModalAlertaFaltasCritico
         visivel={!!alertaCritico}
         disciplinaNome={alertaCritico?.disciplinaNome || ''}
@@ -463,11 +460,7 @@ const estilos = StyleSheet.create({
     marginTop: tema.espacamento.lg,
     marginBottom: tema.espacamento.md,
   },
-  linhaCabecalho: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+
   saudacao: {
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.destaque,
