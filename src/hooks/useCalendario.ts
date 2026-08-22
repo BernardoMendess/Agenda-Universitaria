@@ -26,7 +26,7 @@ export const useCalendario = () => {
     [hoje]
   );
 
-  const { disciplinas } = useDisciplinas();
+  const { disciplinas, recarregarDisciplinas } = useDisciplinas();
   const { gradeSemanal, carregarGrade } = useGradeHoraria();
   const { avaliacoes, carregarAvaliacoes } = useAvaliacoes();
   const { tarefas, carregarTarefas, alternarConclusao: alternarConclusaoTarefa } =
@@ -66,6 +66,7 @@ export const useCalendario = () => {
     setCarregando(true);
     try {
       await Promise.all([
+        recarregarDisciplinas(),
         carregarGrade(),
         carregarAvaliacoes(),
         carregarTarefas(),
@@ -75,6 +76,7 @@ export const useCalendario = () => {
       setCarregando(false);
     }
   }, [
+    recarregarDisciplinas,
     carregarGrade,
     carregarAvaliacoes,
     carregarTarefas,

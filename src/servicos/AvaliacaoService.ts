@@ -118,9 +118,19 @@ export class AvaliacaoService {
   }
 
   /**
-   * Lista todas as avaliações de uma disciplina ordenadas cronologicamente.
+   * Lista todas as avaliações de todas as disciplinas cadastradas.
    */
-  async listarPorDisciplina(disciplinaId: string): Promise<Avaliacao[]> {
+  async listarTodas(): Promise<Avaliacao[]> {
+    return await this.avaliacaoRepo.listarTodas();
+  }
+
+  /**
+   * Lista todas as avaliações de uma disciplina ordenadas cronologicamente, ou todas se o ID for omitido.
+   */
+  async listarPorDisciplina(disciplinaId?: string): Promise<Avaliacao[]> {
+    if (!disciplinaId || disciplinaId.trim() === '') {
+      return await this.avaliacaoRepo.listarTodas();
+    }
     await this.validarExistenciaDisciplina(disciplinaId);
     return await this.avaliacaoRepo.listarPorDisciplina(disciplinaId);
   }

@@ -11,13 +11,15 @@ export const useAvaliacoes = () => {
   const [erro, setErro] = useState<string | null>(null);
 
   /**
-   * Carrega as avaliações de uma disciplina específica.
+   * Carrega as avaliações de uma disciplina específica ou todas as avaliações cadastradas.
    */
-  const carregarAvaliacoes = useCallback(async (disciplinaId: string) => {
+  const carregarAvaliacoes = useCallback(async (disciplinaId?: string) => {
     try {
       setCarregando(true);
       setErro(null);
-      const lista = await avaliacaoService.listarPorDisciplina(disciplinaId);
+      const lista = disciplinaId
+        ? await avaliacaoService.listarPorDisciplina(disciplinaId)
+        : await avaliacaoService.listarTodas();
       setAvaliacoes(lista);
     } catch (e: any) {
       setErro(e.message || 'Erro ao carregar avaliações.');

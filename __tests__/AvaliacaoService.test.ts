@@ -344,6 +344,25 @@ describe('AvaliacaoService — Exclusão em Cascata via DisciplinaService', () =
     const depois = await avaliacaoRepo.listarPorDisciplina(disciplina.id);
     expect(depois).toHaveLength(0);
   });
+
+  it('deve listar todas as avaliações de todas as disciplinas via listarTodas() e listarPorDisciplina() sem id', async () => {
+    const { servico, disciplinaRepo } = criarServico();
+    const d1 = await criarDisciplinaBase(disciplinaRepo, { nome: 'D1' });
+    const d2 = await criarDisciplinaBase(disciplinaRepo, { nome: 'D2' });
+
+    await servico.criarAvaliacao(criarAvaliacaoBase(d1.id, { titulo: 'P1 - D1' }));
+    await servico.criarAvaliacao(criarAvaliacaoBase(d2.id, { titulo: 'P1 - D2' }));
+
+    const todas = await servico.listarTodas();
+    expect(todas).toHaveLength(2);
+
+    const todasSemParam = await servico.listarPorDisciplina();
+    expect(todasSemParam).toHaveLength(2);
+
+    const apenasD1 = await servico.listarPorDisciplina(d1.id);
+    expect(apenasD1).toHaveLength(1);
+    expect(apenasD1[0].titulo).toBe('P1 - D1');
+  });
 });
 
 describe('AvaliacaoService — Status de Aprovação Final', () => {
