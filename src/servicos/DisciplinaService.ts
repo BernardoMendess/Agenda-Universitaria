@@ -26,7 +26,6 @@ export class DisciplinaService {
     this.tarefaRepositorio = tarefaRepositorioInstancia;
   }
 
-
   /**
    * Valida e cadastra uma nova disciplina localmente.
    */
@@ -104,24 +103,21 @@ export class DisciplinaService {
       throw new Error('O nome da disciplina é obrigatório e deve ter no mínimo 2 caracteres.');
     }
 
-    if (dados.limiteMaximoFaltas === undefined || dados.limiteMaximoFaltas === null) {
-      throw new Error('O limite máximo de faltas é obrigatório.');
-    }
-
-    // Regra RF01 / RF04: Limite deve ser número inteiro >= 0 (limite 0 é válido)
-    if (typeof dados.limiteMaximoFaltas !== 'number' || isNaN(dados.limiteMaximoFaltas) || dados.limiteMaximoFaltas < 0) {
-      throw new Error('O limite máximo de faltas deve ser um número maior ou igual a zero.');
-    }
-
-    if (!Number.isInteger(dados.limiteMaximoFaltas)) {
-      throw new Error('O limite máximo de faltas deve ser um número inteiro.');
+    // Limite de faltas é opcional. Se informado, deve ser >= 0
+    if (dados.limiteMaximoFaltas !== undefined && dados.limiteMaximoFaltas !== null) {
+      if (typeof dados.limiteMaximoFaltas !== 'number' || isNaN(dados.limiteMaximoFaltas) || dados.limiteMaximoFaltas < 0) {
+        throw new Error('O limite de faltas deve ser um número maior ou igual a zero.');
+      }
+      if (!Number.isInteger(dados.limiteMaximoFaltas)) {
+        throw new Error('O limite de faltas deve ser um número inteiro.');
+      }
     }
 
     if (!dados.criterioAprovacao || !['ARITMETICA', 'PONDERADA', 'CUSTOMIZADA'].includes(dados.criterioAprovacao)) {
       throw new Error('Critério de aprovação inválido.');
     }
 
-    if (dados.notaMinimaAprovacao !== undefined) {
+    if (dados.notaMinimaAprovacao !== undefined && dados.notaMinimaAprovacao !== null) {
       if (typeof dados.notaMinimaAprovacao !== 'number' || isNaN(dados.notaMinimaAprovacao) || dados.notaMinimaAprovacao < 0 || dados.notaMinimaAprovacao > 10) {
         throw new Error('A nota mínima de aprovação deve ser um número entre 0 e 10.');
       }
@@ -133,12 +129,12 @@ export class DisciplinaService {
       throw new Error('O nome da disciplina deve ter no mínimo 2 caracteres.');
     }
 
-    if (dados.limiteMaximoFaltas !== undefined) {
+    if (dados.limiteMaximoFaltas !== undefined && dados.limiteMaximoFaltas !== null) {
       if (typeof dados.limiteMaximoFaltas !== 'number' || isNaN(dados.limiteMaximoFaltas) || dados.limiteMaximoFaltas < 0) {
-        throw new Error('O limite máximo de faltas deve ser um número maior ou igual a zero.');
+        throw new Error('O limite de faltas deve ser um número maior ou igual a zero.');
       }
       if (!Number.isInteger(dados.limiteMaximoFaltas)) {
-        throw new Error('O limite máximo de faltas deve ser um número inteiro.');
+        throw new Error('O limite de faltas deve ser um número inteiro.');
       }
     }
 
@@ -146,7 +142,7 @@ export class DisciplinaService {
       throw new Error('Critério de aprovação inválido.');
     }
 
-    if (dados.notaMinimaAprovacao !== undefined) {
+    if (dados.notaMinimaAprovacao !== undefined && dados.notaMinimaAprovacao !== null) {
       if (typeof dados.notaMinimaAprovacao !== 'number' || isNaN(dados.notaMinimaAprovacao) || dados.notaMinimaAprovacao < 0 || dados.notaMinimaAprovacao > 10) {
         throw new Error('A nota mínima de aprovação deve ser um número entre 0 e 10.');
       }

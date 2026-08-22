@@ -46,9 +46,14 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
     disciplinaParaEditar?.corIdentificacao || tema.cores.paletaDisciplinas[0]
   );
   const [limiteFaltas, setLimiteFaltas] = useState(
-    disciplinaParaEditar?.limiteMaximoFaltas !== undefined
+    disciplinaParaEditar?.limiteMaximoFaltas && disciplinaParaEditar.limiteMaximoFaltas > 0
       ? String(disciplinaParaEditar.limiteMaximoFaltas)
-      : '10'
+      : ''
+  );
+  const [notaMinima, setNotaMinima] = useState(
+    disciplinaParaEditar?.notaMinimaAprovacao !== undefined && disciplinaParaEditar?.notaMinimaAprovacao !== null
+      ? String(disciplinaParaEditar.notaMinimaAprovacao)
+      : '6.0'
   );
   const [criterioAprovacao, setCriterioAprovacao] = useState<CriterioAprovacao>(
     disciplinaParaEditar?.criterioAprovacao || 'ARITMETICA'
@@ -109,11 +114,20 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
       novosErros.nome = 'O nome da disciplina deve ter pelo menos 2 caracteres.';
     }
 
-    const valorFaltasNum = Number(limiteFaltas);
-    if (limiteFaltas.trim() === '' || isNaN(valorFaltasNum) || valorFaltasNum < 0) {
-      novosErros.limiteFaltas = 'O limite deve ser um número maior ou igual a 0.';
-    } else if (!Number.isInteger(valorFaltasNum)) {
-      novosErros.limiteFaltas = 'O limite de faltas deve ser um número inteiro.';
+    if (limiteFaltas.trim() !== '') {
+      const valorFaltasNum = Number(limiteFaltas);
+      if (isNaN(valorFaltasNum) || valorFaltasNum < 0) {
+        novosErros.limiteFaltas = 'O limite deve ser um número maior ou igual a 0.';
+      } else if (!Number.isInteger(valorFaltasNum)) {
+        novosErros.limiteFaltas = 'O limite de faltas deve ser um número inteiro.';
+      }
+    }
+
+    if (notaMinima.trim() !== '') {
+      const valorNotaNum = Number(notaMinima.replace(',', '.'));
+      if (isNaN(valorNotaNum) || valorNotaNum < 0 || valorNotaNum > 10) {
+        novosErros.notaMinima = 'A nota mínima de aprovação deve estar entre 0 e 10.';
+      }
     }
 
     setErros(novosErros);
@@ -126,6 +140,12 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
     try {
       setSalvando(true);
 
+      const limiteNum = limiteFaltas.trim() !== '' ? Math.floor(Number(limiteFaltas)) : null;
+      const limiteNormalizado = limiteNum && limiteNum > 0 ? limiteNum : null;
+
+      const notaMinimaNum =
+        notaMinima.trim() !== '' ? Number(notaMinima.replace(',', '.')) : 6.0;
+
       const dados: CriarDisciplinaDTO = {
         nome: nome.trim(),
         codigo: codigo.trim() || undefined,
@@ -134,8 +154,9 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
         localSala: localSala.trim() || undefined,
         anotacoes: anotacoes.trim() || undefined,
         corIdentificacao,
-        limiteMaximoFaltas: Math.floor(Number(limiteFaltas)),
+        limiteMaximoFaltas: limiteNormalizado,
         criterioAprovacao,
+        notaMinimaAprovacao: notaMinimaNum,
       };
 
       let idDisciplina = disciplinaParaEditar?.id;
@@ -277,14 +298,23 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
         <Text style={estilos.secaoTitulo}>Frequência e Avaliação</Text>
 
         <CampoTexto
-          rotulo="Limite Máximo de Faltas"
-          obrigatorio
-          placeholder="Ex: 10 (use 0 para tolerância zero)"
+          rotulo="Limite Máximo de Faltas (Opcional)"
+          placeholder="Ex: 10 (deixe em branco se for facultativa)"
           value={limiteFaltas}
           onChangeText={setLimiteFaltas}
           keyboardType="numeric"
           erro={erros.limiteFaltas}
-          dica="Permite valor 0 para disciplinas sem tolerância a faltas (ex: Estágio)."
+          dica="Deixe em branco se a presença nesta disciplina não for obrigatória."
+        />
+
+        <CampoTexto
+          rotulo="Nota Mínima para Aprovação"
+          placeholder="Ex: 6.0 ou 7.0"
+          value={notaMinima}
+          onChangeText={setNotaMinima}
+          keyboardType="numeric"
+          erro={erros.notaMinima}
+          dica="Média necessária para aprovação direta (padrão: 6.0)."
         />
 
         {/* Critério de Média */}

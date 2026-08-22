@@ -63,6 +63,10 @@ export const useAvaliacoes = () => {
       setErro(null);
       const novaAvaliacao = await avaliacaoService.criarAvaliacao(dados);
       setAvaliacoes((prev) => [...prev, novaAvaliacao].sort((a, b) => a.data.localeCompare(b.data)));
+      
+      const resumo = await avaliacaoService.calcularDesempenho(dados.disciplinaId);
+      setResumosDesempenho((prev) => ({ ...prev, [dados.disciplinaId]: resumo }));
+
       return novaAvaliacao;
     } catch (e: any) {
       setErro(e.message || 'Erro ao criar avaliação.');
@@ -80,6 +84,10 @@ export const useAvaliacoes = () => {
       setAvaliacoes((prev) =>
         prev.map((a) => (a.id === id ? atualizada : a))
       );
+
+      const resumo = await avaliacaoService.calcularDesempenho(atualizada.disciplinaId);
+      setResumosDesempenho((prev) => ({ ...prev, [atualizada.disciplinaId]: resumo }));
+
       return atualizada;
     } catch (e: any) {
       setErro(e.message || 'Erro ao atualizar avaliação.');

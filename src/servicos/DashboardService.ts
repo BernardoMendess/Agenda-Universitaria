@@ -135,23 +135,16 @@ export class DashboardService {
       let ehCriticoNota = false;
 
       // 1. Análise de Frequência (RF04 / RF05)
-      if (freq) {
-        if (freq.limiteMaximoFaltas === 0 && freq.totalFaltas > 0) {
+      if (freq && freq.presencaObrigatoria && typeof freq.limiteMaximoFaltas === 'number' && freq.limiteMaximoFaltas > 0) {
+        if (freq.reprovadoPorFalta || freq.totalFaltas >= freq.limiteMaximoFaltas) {
           ehCriticoFalta = true;
           motivosFalta.push(
-            `Matéria com Limite Zero de faltas: ${freq.totalFaltas} falta(s) registrada(s). Reprovado por Falta.`
+            `Limite de faltas atingido ou excedido: ${freq.totalFaltas}/${freq.limiteMaximoFaltas} faltas.`
           );
-        } else if (freq.limiteMaximoFaltas > 0) {
-          if (freq.reprovadoPorFalta || freq.totalFaltas >= freq.limiteMaximoFaltas) {
-            ehCriticoFalta = true;
-            motivosFalta.push(
-              `Limite de faltas atingido ou excedido: ${freq.totalFaltas}/${freq.limiteMaximoFaltas} faltas.`
-            );
-          } else if (freq.status === 'ALERTA' || freq.percentualConsumido >= 75) {
-            motivosFalta.push(
-              `Atenção: restam apenas ${freq.faltasRestantes} falta(s) (${freq.percentualConsumido}% do limite de ${freq.limiteMaximoFaltas}).`
-            );
-          }
+        } else if (freq.status === 'ALERTA' || freq.percentualConsumido >= 75) {
+          motivosFalta.push(
+            `Atenção: restam apenas ${freq.faltasRestantes} falta(s) (${freq.percentualConsumido}% do limite de ${freq.limiteMaximoFaltas}).`
+          );
         }
       }
 

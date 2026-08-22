@@ -168,9 +168,15 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
             <View style={estilos.separadorResumo} />
             <View style={estilos.itemResumo}>
               <Text style={estilos.valorResumo}>
-                {disciplina.limiteMaximoFaltas === 0 ? '0' : disciplina.limiteMaximoFaltas}
+                {disciplina.limiteMaximoFaltas && disciplina.limiteMaximoFaltas > 0
+                  ? disciplina.limiteMaximoFaltas
+                  : 'Livre'}
               </Text>
-              <Text style={estilos.rotuloResumo}>Limite Permitido</Text>
+              <Text style={estilos.rotuloResumo}>
+                {disciplina.limiteMaximoFaltas && disciplina.limiteMaximoFaltas > 0
+                  ? 'Limite Permitido'
+                  : 'Presença'}
+              </Text>
             </View>
             <View style={estilos.separadorResumo} />
             <View style={estilos.itemResumo}>
@@ -187,9 +193,13 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
                   },
                 ]}
               >
-                {resumo ? resumo.faltasRestantes : disciplina.limiteMaximoFaltas}
+                {resumo?.presencaObrigatoria && resumo.faltasRestantes !== null
+                  ? resumo.faltasRestantes
+                  : 'Facultativa'}
               </Text>
-              <Text style={estilos.rotuloResumo}>Saldo Restante</Text>
+              <Text style={estilos.rotuloResumo}>
+                {resumo?.presencaObrigatoria ? 'Saldo Restante' : 'Status'}
+              </Text>
             </View>
           </View>
 

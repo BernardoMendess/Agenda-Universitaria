@@ -9,7 +9,7 @@ export interface Disciplina {
   localSala?: string;
   anotacoes?: string;
   corIdentificacao: string;
-  limiteMaximoFaltas: number; // Inteiro obrigatório >= 0
+  limiteMaximoFaltas?: number | null; // Opcional (se não informado/null, presença não é obrigatória)
   criterioAprovacao: CriterioAprovacao;
   notaMinimaAprovacao?: number; // Nota mínima para aprovação (padrão 6.0, entre 0 e 10)
   dataCriacao: string;

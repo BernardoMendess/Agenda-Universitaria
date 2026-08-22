@@ -5,7 +5,7 @@ import { tema } from '../estilos/tema';
 
 interface ControleFrequenciaProps {
   resumo?: ResumoFrequencia;
-  limiteMaximoFaltas: number;
+  limiteMaximoFaltas?: number | null;
   aoIncrementar: () => void;
   aoDecrementar: () => void;
   aoAbrirHistorico: () => void;
@@ -19,7 +19,15 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
   aoAbrirHistorico,
 }) => {
   const totalFaltas = resumo ? resumo.totalFaltas : 0;
-  const faltasRestantes = resumo ? resumo.faltasRestantes : limiteMaximoFaltas;
+  const presencaObrigatoria =
+    resumo?.presencaObrigatoria ??
+    (typeof limiteMaximoFaltas === 'number' && limiteMaximoFaltas > 0);
+  const limiteValido =
+    typeof limiteMaximoFaltas === 'number' && limiteMaximoFaltas > 0
+      ? limiteMaximoFaltas
+      : resumo?.limiteMaximoFaltas ?? null;
+
+  const faltasRestantes = resumo ? resumo.faltasRestantes : limiteValido;
   const status: StatusFrequencia = resumo ? resumo.status : 'SEGURO';
   const reprovado = resumo ? resumo.reprovadoPorFalta : false;
 
@@ -47,24 +55,25 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
         <View style={estilos.infoFaltasContainer}>
           <Text style={estilos.rotuloFaltas}>Frequência & Faltas</Text>
 
-          {limiteMaximoFaltas === 0 ? (
-            <View style={estilos.containerLimiteZero}>
+          {!presencaObrigatoria || !limiteValido ? (
+            <View style={estilos.linhaInfoValores}>
+              <Text style={estilos.contadorPrincipal}>
+                {totalFaltas}
+                <Text style={estilos.contadorLimite}> falta{totalFaltas !== 1 ? 's' : ''} registrada{totalFaltas !== 1 ? 's' : ''}</Text>
+              </Text>
+
               <View
                 style={[
                   estilos.badgeStatus,
                   {
-                    backgroundColor: reprovado
-                      ? 'rgba(248, 81, 73, 0.15)'
-                      : 'rgba(46, 160, 67, 0.15)',
-                    borderColor: corStatus,
+                    backgroundColor: 'rgba(46, 160, 67, 0.15)',
+                    borderColor: tema.cores.corStatusSeguro,
                   },
                 ]}
               >
-                <View style={[estilos.pontoStatus, { backgroundColor: corStatus }]} />
-                <Text style={[estilos.textoStatus, { color: corStatus }]}>
-                  {reprovado
-                    ? `Reprovado por Falta (${totalFaltas})`
-                    : 'Tolerância Zero (0 Faltas)'}
+                <View style={[estilos.pontoStatus, { backgroundColor: tema.cores.corStatusSeguro }]} />
+                <Text style={[estilos.textoStatus, { color: tema.cores.corStatusSeguro }]}>
+                  Presença Facultativa
                 </Text>
               </View>
             </View>
@@ -72,7 +81,7 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
             <View style={estilos.linhaInfoValores}>
               <Text style={estilos.contadorPrincipal}>
                 {totalFaltas}
-                <Text style={estilos.contadorLimite}> / {limiteMaximoFaltas} faltas</Text>
+                <Text style={estilos.contadorLimite}> / {limiteValido} faltas</Text>
               </Text>
 
               <View
@@ -103,15 +112,15 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
         </View>
       </View>
 
-      {/* Barra de Progresso do Consumo de Faltas */}
-      {limiteMaximoFaltas > 0 && (
+      {/* Barra de Progresso do Consumo de Faltas (apenas se presença obrigatória) */}
+      {presencaObrigatoria && limiteValido && limiteValido > 0 && (
         <View style={estilos.containerBarraProgresso}>
           <View style={estilos.trilhaBarra}>
             <View
               style={[
                 estilos.preenchimentoBarra,
                 {
-                  width: `${Math.min(100, Math.max(0, (totalFaltas / limiteMaximoFaltas) * 100))}%`,
+                  width: `${Math.min(100, Math.max(0, (totalFaltas / limiteValido) * 100))}%`,
                   backgroundColor: corStatus,
                 },
               ]}
@@ -196,11 +205,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  containerLimiteZero: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
   },
   contadorPrincipal: {
     color: tema.cores.corTextoPrimario,

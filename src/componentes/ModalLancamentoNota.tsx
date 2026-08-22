@@ -45,9 +45,9 @@ export const ModalLancamentoNota: React.FC<ModalLancamentoNotaProps> = ({
       setErro('Informe uma nota válida.');
       return false;
     }
-    const notaNum = Number(nota);
+    const notaNum = Number(nota.trim().replace(',', '.'));
     if (isNaN(notaNum)) {
-      setErro('A nota deve ser um número.');
+      setErro('A nota deve ser um número válido.');
       return false;
     }
     if (notaNum < 0 || notaNum > (avaliacao?.notaMaxima ?? 10)) {
@@ -64,7 +64,8 @@ export const ModalLancamentoNota: React.FC<ModalLancamentoNotaProps> = ({
 
     try {
       setSalvando(true);
-      await aoSalvar(avaliacao.id, Number(nota));
+      const notaFinal = Number(nota.trim().replace(',', '.'));
+      await aoSalvar(avaliacao.id, notaFinal);
       aoFechar();
     } catch (e: any) {
       Alert.alert('Erro', e.message || 'Erro ao lançar nota.');

@@ -20,16 +20,11 @@ A entidade **Disciplina** representa uma matéria acadêmica matriculada pelo es
 | `localSala` | `string` | Não | Local ou número da sala de aula |
 | `anotacoes` | `string` | Não | Links úteis, avisos e notas |
 | `corIdentificacao`| `string` (Hex) | Sim | Cor usada em tags e grade horária |
-| `limiteMaximoFaltas`| `number` (Int $\ge 0$) | Sim | Limite máximo de faltas permitido |
+| `limiteMaximoFaltas`| `number` (Int $> 0$) | Não | Limite de faltas (se vazio, presença não é obrigatória) |
 | `criterioAprovacao` | `enum` | Sim | `ARITMETICA`, `PONDERADA` ou `CUSTOMIZADA` |
+| `notaMinimaAprovacao` | `number` ($[0,10]$) | Não | Nota mínima para aprovação (padrão `6.0`) |
 | `dataCriacao` | `string` (ISO) | Sim | Data e hora de cadastro |
 | `dataAtualizacao` | `string` (ISO) | Sim | Data e hora da última modificação |
-
-## Campos Adicionais (RF06)
-
-| Campo | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| `notaMinimaAprovacao` | `number` ($[0,10]$) | Sim | Nota mínima para aprovação (padrão `6.0`) |
 
 ## Regras de Negócio e Serviços Associados
 - [[Regra - Limite de Faltas]]

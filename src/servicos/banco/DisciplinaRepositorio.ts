@@ -21,6 +21,13 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
   async criar(dados: CriarDisciplinaDTO): Promise<Disciplina> {
     const agora = new Date().toISOString();
     const id = `disc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+    const limiteNormalizado =
+      dados.limiteMaximoFaltas !== undefined &&
+      dados.limiteMaximoFaltas !== null &&
+      Number(dados.limiteMaximoFaltas) > 0
+        ? Math.floor(Number(dados.limiteMaximoFaltas))
+        : null;
     
     const novaDisciplina: Disciplina = {
       id,
@@ -31,7 +38,7 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
       localSala: dados.localSala?.trim() || undefined,
       anotacoes: dados.anotacoes?.trim() || undefined,
       corIdentificacao: dados.corIdentificacao || '#6366f1',
-      limiteMaximoFaltas: Math.max(0, Math.floor(dados.limiteMaximoFaltas)),
+      limiteMaximoFaltas: limiteNormalizado,
       criterioAprovacao: dados.criterioAprovacao,
       notaMinimaAprovacao: dados.notaMinimaAprovacao ?? 6.0,
       dataCriacao: agora,
@@ -59,6 +66,15 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
       throw new Error(`Disciplina com ID ${id} não encontrada.`);
     }
 
+    let novoLimite = existente.limiteMaximoFaltas;
+    if (dados.limiteMaximoFaltas !== undefined) {
+      if (dados.limiteMaximoFaltas === null || Number(dados.limiteMaximoFaltas) <= 0) {
+        novoLimite = null;
+      } else {
+        novoLimite = Math.floor(Number(dados.limiteMaximoFaltas));
+      }
+    }
+
     const agora = new Date().toISOString();
     const atualizada: Disciplina = {
       ...existente,
@@ -69,7 +85,7 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
       localSala: dados.localSala !== undefined ? (dados.localSala.trim() || undefined) : existente.localSala,
       anotacoes: dados.anotacoes !== undefined ? (dados.anotacoes.trim() || undefined) : existente.anotacoes,
       corIdentificacao: dados.corIdentificacao !== undefined ? dados.corIdentificacao : existente.corIdentificacao,
-      limiteMaximoFaltas: dados.limiteMaximoFaltas !== undefined ? Math.max(0, Math.floor(dados.limiteMaximoFaltas)) : existente.limiteMaximoFaltas,
+      limiteMaximoFaltas: novoLimite,
       criterioAprovacao: dados.criterioAprovacao !== undefined ? dados.criterioAprovacao : existente.criterioAprovacao,
       notaMinimaAprovacao: dados.notaMinimaAprovacao !== undefined ? dados.notaMinimaAprovacao : existente.notaMinimaAprovacao,
       dataAtualizacao: agora,

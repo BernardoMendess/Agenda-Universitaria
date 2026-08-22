@@ -24,11 +24,12 @@ A entidade **Falta** representa um registro de ausência individual do estudante
 O cálculo reativo de faltas agrega as ausências de uma disciplina em um objeto `ResumoFrequencia`:
 
 - `totalFaltas`: Quantidade de faltas computadas.
-- `limiteMaximoFaltas`: Limite máximo configurado na disciplina.
-- `faltasRestantes`: Saldo restante ($\max(0, \text{Limite} - \text{Total})$).
-- `percentualConsumido`: Porcentagem do limite já consumida.
+- `limiteMaximoFaltas`: Limite máximo configurado na disciplina (`null` se a presença não for obrigatória).
+- `presencaObrigatoria`: Booleano (`false` se a disciplina não tiver limite de faltas).
+- `faltasRestantes`: Saldo restante (`null` se a presença for facultativa).
+- `percentualConsumido`: Porcentagem do limite já consumida (`0` se a presença for facultativa).
 - `status`: Classificação visual (`SEGURO`, `MODERADO`, `ALERTA`, `CRITICO`).
-- `reprovadoPorFalta`: Booleano que indica se o limite foi atingido/excedido ou se houve falta em matéria de limite 0.
+- `reprovadoPorFalta`: Booleano que indica se o limite foi atingido/excedido (sempre `false` se a presença for facultativa).
 
 ## Wikilinks
 - [[Disciplina]]

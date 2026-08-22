@@ -22,6 +22,7 @@ describe('DisciplinaService - RF01: Cadastro de Disciplinas', () => {
       corIdentificacao: '#6366f1',
       limiteMaximoFaltas: 15,
       criterioAprovacao: 'ARITMETICA',
+      notaMinimaAprovacao: 7.0,
     };
 
     const disciplina = await service.criarDisciplina(dados);
@@ -31,20 +32,20 @@ describe('DisciplinaService - RF01: Cadastro de Disciplinas', () => {
     expect(disciplina.codigo).toBe('MAT001');
     expect(disciplina.limiteMaximoFaltas).toBe(15);
     expect(disciplina.criterioAprovacao).toBe('ARITMETICA');
+    expect(disciplina.notaMinimaAprovacao).toBe(7.0);
   });
 
-  it('deve permitir cadastro com limite de faltas igual a 0 (zero)', async () => {
+  it('deve permitir cadastro sem limite de faltas (presença facultativa)', async () => {
     const dados: CriarDisciplinaDTO = {
-      nome: 'Estágio Obrigatório',
-      corIdentificacao: '#ef4444',
-      limiteMaximoFaltas: 0,
+      nome: 'Seminários Avançados',
+      corIdentificacao: '#10b981',
       criterioAprovacao: 'CUSTOMIZADA',
     };
 
     const disciplina = await service.criarDisciplina(dados);
 
     expect(disciplina.id).toBeDefined();
-    expect(disciplina.limiteMaximoFaltas).toBe(0);
+    expect(disciplina.limiteMaximoFaltas).toBeNull();
   });
 
   it('deve rejeitar cadastro com limite de faltas negativo', async () => {
@@ -56,7 +57,7 @@ describe('DisciplinaService - RF01: Cadastro de Disciplinas', () => {
     };
 
     await expect(service.criarDisciplina(dados)).rejects.toThrow(
-      'O limite máximo de faltas deve ser um número maior ou igual a zero.'
+      'O limite de faltas deve ser um número maior ou igual a zero.'
     );
   });
 
@@ -69,7 +70,7 @@ describe('DisciplinaService - RF01: Cadastro de Disciplinas', () => {
     };
 
     await expect(service.criarDisciplina(dados)).rejects.toThrow(
-      'O limite máximo de faltas deve ser um número inteiro.'
+      'O limite de faltas deve ser um número inteiro.'
     );
   });
 

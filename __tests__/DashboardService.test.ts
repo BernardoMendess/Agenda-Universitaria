@@ -212,16 +212,44 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
       expect(alertas).toEqual([]);
     });
 
-    it('deve identificar matéria com falta em limite zero como CRITICO e tipo FALTA', () => {
+    it('deve identificar matéria com limite de faltas atingido como CRITICO e tipo FALTA', () => {
       const resumosFreq: Record<string, ResumoFrequencia> = {
-        d2: {
-          disciplinaId: 'd2',
-          totalFaltas: 1,
-          limiteMaximoFaltas: 0,
+        d1: {
+          disciplinaId: 'd1',
+          totalFaltas: 4,
+          limiteMaximoFaltas: 4,
+          presencaObrigatoria: true,
           faltasRestantes: 0,
           percentualConsumido: 100,
           status: 'CRITICO',
           reprovadoPorFalta: true,
+        },
+      };
+
+      const alertas = service.identificarMateriasEmAlerta(
+        [disciplinas[0]],
+        resumosFreq,
+        {}
+      );
+
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0].disciplinaNome).toBe('Cálculo I');
+      expect(alertas[0].nivelGravidade).toBe('CRITICO');
+      expect(alertas[0].tipoAlerta).toBe('FALTA');
+      expect(alertas[0].motivosFalta[0]).toContain('Limite de faltas atingido');
+    });
+
+    it('não deve gerar alerta de falta para matéria com presença facultativa', () => {
+      const resumosFreq: Record<string, ResumoFrequencia> = {
+        d2: {
+          disciplinaId: 'd2',
+          totalFaltas: 10,
+          limiteMaximoFaltas: null,
+          presencaObrigatoria: false,
+          faltasRestantes: null,
+          percentualConsumido: 0,
+          status: 'SEGURO',
+          reprovadoPorFalta: false,
         },
       };
 
@@ -231,11 +259,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
         {}
       );
 
-      expect(alertas).toHaveLength(1);
-      expect(alertas[0].disciplinaNome).toBe('Segurança da Informação');
-      expect(alertas[0].nivelGravidade).toBe('CRITICO');
-      expect(alertas[0].tipoAlerta).toBe('FALTA');
-      expect(alertas[0].motivosFalta[0]).toContain('Limite Zero');
+      expect(alertas).toHaveLength(0);
     });
 
     it('deve identificar matéria com >= 75% do limite de faltas como ALERTA', () => {
@@ -244,6 +268,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
           disciplinaId: 'd1',
           totalFaltas: 3,
           limiteMaximoFaltas: 4,
+          presencaObrigatoria: true,
           faltasRestantes: 1,
           percentualConsumido: 75,
           status: 'ALERTA',
@@ -336,6 +361,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
           disciplinaId: 'd1',
           totalFaltas: 3,
           limiteMaximoFaltas: 4,
+          presencaObrigatoria: true,
           faltasRestantes: 1,
           percentualConsumido: 75,
           status: 'ALERTA',
@@ -343,8 +369,9 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
         },
         d2: {
           disciplinaId: 'd2',
-          totalFaltas: 1,
-          limiteMaximoFaltas: 0,
+          totalFaltas: 2,
+          limiteMaximoFaltas: 2,
+          presencaObrigatoria: true,
           faltasRestantes: 0,
           percentualConsumido: 100,
           status: 'CRITICO',

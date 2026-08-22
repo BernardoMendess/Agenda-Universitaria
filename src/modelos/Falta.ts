@@ -19,9 +19,10 @@ export type CriarFaltaDTO = {
 export interface ResumoFrequencia {
   disciplinaId: string;
   totalFaltas: number;
-  limiteMaximoFaltas: number;
-  faltasRestantes: number;
-  percentualConsumido: number;
+  limiteMaximoFaltas?: number | null; // null/undefined se presença não for obrigatória
+  presencaObrigatoria: boolean; // false se não houver limite
+  faltasRestantes: number | null; // null se não houver limite
+  percentualConsumido: number; // 0 se não houver limite
   status: StatusFrequencia;
-  reprovadoPorFalta: boolean;
+  reprovadoPorFalta: boolean; // sempre false se presença não for obrigatória
 }

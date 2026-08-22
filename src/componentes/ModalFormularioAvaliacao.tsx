@@ -82,12 +82,12 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
       novosErros.horario = 'Horário inválido. Use HH:mm (ex: 08:30).';
     }
 
-    const pesoNum = Number(peso);
+    const pesoNum = Number(peso.trim().replace(',', '.'));
     if (isNaN(pesoNum) || pesoNum < 0) {
       novosErros.peso = 'O peso deve ser um número maior ou igual a 0.';
     }
 
-    const notaMaximaNum = Number(notaMaxima);
+    const notaMaximaNum = Number(notaMaxima.trim().replace(',', '.'));
     if (isNaN(notaMaximaNum) || notaMaximaNum <= 0) {
       novosErros.notaMaxima = 'A nota máxima deve ser maior que 0.';
     }
@@ -107,8 +107,8 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
         tipo,
         data,
         horario: horario.trim() || undefined,
-        peso: Number(peso),
-        notaMaxima: Number(notaMaxima),
+        peso: Number(peso.trim().replace(',', '.')),
+        notaMaxima: Number(notaMaxima.trim().replace(',', '.')),
         descricao: descricao.trim() || undefined,
       };
       await aoSalvar(dados);

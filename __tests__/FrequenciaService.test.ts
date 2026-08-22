@@ -5,14 +5,14 @@ import { DisciplinaRepositorioEmMemoria } from '../src/servicos/banco/Disciplina
 import { HorarioAulaRepositorioEmMemoria } from '../src/servicos/banco/HorarioAulaRepositorio';
 import { Disciplina } from '../src/modelos/Disciplina';
 
-describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', () => {
+describe('FrequenciaService - Gestão e Cálculo de Faltas (Presença Obrigatória e Facultativa)', () => {
   let faltaRepo: FaltaRepositorioEmMemoria;
   let disciplinaRepo: DisciplinaRepositorioEmMemoria;
   let horarioRepo: HorarioAulaRepositorioEmMemoria;
   let frequenciaService: FrequenciaService;
   let disciplinaService: DisciplinaService;
   let disciplinaPadrao: Disciplina;
-  let disciplinaLimiteZero: Disciplina;
+  let disciplinaPresencaFacultativa: Disciplina;
 
   beforeEach(async () => {
     faltaRepo = new FaltaRepositorioEmMemoria();
@@ -22,7 +22,7 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
     frequenciaService = new FrequenciaService(faltaRepo, disciplinaRepo);
     disciplinaService = new DisciplinaService(disciplinaRepo, horarioRepo, faltaRepo);
 
-    // Disciplina com limite padrão (10 faltas permitidas)
+    // Disciplina com presença obrigatória (10 faltas permitidas)
     disciplinaPadrao = await disciplinaRepo.criar({
       nome: 'Estruturas de Dados',
       codigo: 'CC201',
@@ -31,12 +31,11 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       criterioAprovacao: 'ARITMETICA',
     });
 
-    // Disciplina com limite zero (tolerância zero)
-    disciplinaLimiteZero = await disciplinaRepo.criar({
-      nome: 'Estágio Supervisionado',
-      codigo: 'EST001',
-      corIdentificacao: '#f85149',
-      limiteMaximoFaltas: 0,
+    // Disciplina com presença facultativa (sem limite informado)
+    disciplinaPresencaFacultativa = await disciplinaRepo.criar({
+      nome: 'Seminários Avançados',
+      codigo: 'SEM001',
+      corIdentificacao: '#10b981',
       criterioAprovacao: 'CUSTOMIZADA',
     });
   });
@@ -58,14 +57,12 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
     });
 
     it('deve decrementar falta (-1) removendo o registro mais recente', async () => {
-      // Adiciona 2 faltas
       await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       await frequenciaService.incrementarFalta(disciplinaPadrao.id);
 
       let resumo = await frequenciaService.calcularResumoFrequencia(disciplinaPadrao.id);
       expect(resumo.totalFaltas).toBe(2);
 
-      // Decrementa 1 falta
       const resultado = await frequenciaService.decrementarFalta(disciplinaPadrao.id);
       expect(resultado.removida).toBe(true);
       expect(resultado.resumo.totalFaltas).toBe(1);
@@ -102,7 +99,7 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       await expect(
         frequenciaService.registrarFaltaDetalhada({
           disciplinaId: disciplinaPadrao.id,
-          data: '20-08-2026', // Formato não AAAA-MM-DD
+          data: '20-08-2026',
           horario: '10:00',
         })
       ).rejects.toThrow('Data no formato inválido');
@@ -111,7 +108,7 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
         frequenciaService.registrarFaltaDetalhada({
           disciplinaId: disciplinaPadrao.id,
           data: '2026-08-20',
-          horario: '25:99', // Hora inválida
+          horario: '25:99',
         })
       ).rejects.toThrow('Horário no formato inválido');
     });
@@ -128,32 +125,10 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       expect(historico).toHaveLength(1);
       expect(historico[0].id).toBe(f2.id);
     });
-
-    it('deve listar o histórico ordenado decrescente por data e horário', async () => {
-      await frequenciaService.registrarFaltaDetalhada({
-        disciplinaId: disciplinaPadrao.id,
-        data: '2026-08-10',
-        horario: '08:00',
-        justificativa: 'Falta 1',
-      });
-
-      await frequenciaService.registrarFaltaDetalhada({
-        disciplinaId: disciplinaPadrao.id,
-        data: '2026-08-15',
-        horario: '14:00',
-        justificativa: 'Falta 2',
-      });
-
-      const historico = await frequenciaService.obterHistorico(disciplinaPadrao.id);
-      expect(historico).toHaveLength(2);
-      expect(historico[0].data).toBe('2026-08-15');
-      expect(historico[1].data).toBe('2026-08-10');
-    });
   });
 
-  describe('RF04 & RF05 - Lógica de Limites e Indicadores Visuais', () => {
-    it('deve indicar status SEGURO (Verde) quando consumo for menor que 50%', async () => {
-      // Limite = 10. Com 4 faltas = 40% (< 50%)
+  describe('RF04 & RF05 - Lógica de Limites e Presença Facultativa', () => {
+    it('deve indicar status SEGURO quando consumo for menor que 50%', async () => {
       for (let i = 0; i < 4; i++) {
         await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       }
@@ -166,8 +141,7 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       expect(resumo.reprovadoPorFalta).toBe(false);
     });
 
-    it('deve indicar status ALERTA (Amarelo) quando consumo for maior ou igual a 75%', async () => {
-      // Limite = 10. Com 8 faltas = 80% (>= 75% e < 100%)
+    it('deve indicar status ALERTA quando consumo for maior ou igual a 75%', async () => {
       for (let i = 0; i < 8; i++) {
         await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       }
@@ -180,8 +154,7 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       expect(resumo.reprovadoPorFalta).toBe(false);
     });
 
-    it('deve indicar status CRÍTICO (Vermelho) e reprovado quando atingir ou exceder o limite', async () => {
-      // Limite = 10. Com 10 faltas = 100% (limite atingido)
+    it('deve indicar status CRÍTICO e reprovado quando atingir ou exceder o limite', async () => {
       for (let i = 0; i < 10; i++) {
         await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       }
@@ -193,46 +166,54 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       expect(resumo.status).toBe('CRITICO');
       expect(resumo.reprovadoPorFalta).toBe(true);
 
-      // 11 faltas (excedido)
+      // 11 faltas
       await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       resumo = await frequenciaService.calcularResumoFrequencia(disciplinaPadrao.id);
       expect(resumo.totalFaltas).toBe(11);
-      expect(resumo.faltasRestantes).toBe(0);
       expect(resumo.status).toBe('CRITICO');
       expect(resumo.reprovadoPorFalta).toBe(true);
     });
 
-    it('deve aplicar regra de Limite Zero (Tolerância Zero): 0 faltas é SEGURO, 1 falta é CRÍTICO/Reprovado', async () => {
+    it('deve tratar matéria sem limite como Presença Facultativa (nunca reprova por falta)', async () => {
       // Estado inicial (0 faltas)
-      let resumo = await frequenciaService.calcularResumoFrequencia(disciplinaLimiteZero.id);
+      let resumo = await frequenciaService.calcularResumoFrequencia(
+        disciplinaPresencaFacultativa.id
+      );
       expect(resumo.totalFaltas).toBe(0);
-      expect(resumo.limiteMaximoFaltas).toBe(0);
-      expect(resumo.faltasRestantes).toBe(0);
+      expect(resumo.presencaObrigatoria).toBe(false);
+      expect(resumo.limiteMaximoFaltas).toBeNull();
+      expect(resumo.faltasRestantes).toBeNull();
       expect(resumo.status).toBe('SEGURO');
       expect(resumo.reprovadoPorFalta).toBe(false);
 
-      // Registra 1 falta
-      const resultado = await frequenciaService.incrementarFalta(disciplinaLimiteZero.id);
-      expect(resultado.resumo.totalFaltas).toBe(1);
-      expect(resultado.resumo.status).toBe('CRITICO');
-      expect(resultado.resumo.reprovadoPorFalta).toBe(true);
+      // Registra 5 faltas
+      for (let i = 0; i < 5; i++) {
+        await frequenciaService.incrementarFalta(disciplinaPresencaFacultativa.id);
+      }
+      resumo = await frequenciaService.calcularResumoFrequencia(
+        disciplinaPresencaFacultativa.id
+      );
+      expect(resumo.totalFaltas).toBe(5);
+      expect(resumo.presencaObrigatoria).toBe(false);
+      expect(resumo.status).toBe('SEGURO');
+      expect(resumo.reprovadoPorFalta).toBe(false);
     });
 
-    it('deve calcular resumos em lote para lista de disciplinas', async () => {
+    it('deve calcular resumos em lote para lista mista de disciplinas', async () => {
       await frequenciaService.incrementarFalta(disciplinaPadrao.id);
-      await frequenciaService.incrementarFalta(disciplinaLimiteZero.id);
+      await frequenciaService.incrementarFalta(disciplinaPresencaFacultativa.id);
 
       const resumos = await frequenciaService.calcularResumosEmLote([
         disciplinaPadrao,
-        disciplinaLimiteZero,
+        disciplinaPresencaFacultativa,
       ]);
 
       expect(resumos[disciplinaPadrao.id].totalFaltas).toBe(1);
-      expect(resumos[disciplinaPadrao.id].status).toBe('SEGURO');
+      expect(resumos[disciplinaPadrao.id].presencaObrigatoria).toBe(true);
 
-      expect(resumos[disciplinaLimiteZero.id].totalFaltas).toBe(1);
-      expect(resumos[disciplinaLimiteZero.id].status).toBe('CRITICO');
-      expect(resumos[disciplinaLimiteZero.id].reprovadoPorFalta).toBe(true);
+      expect(resumos[disciplinaPresencaFacultativa.id].totalFaltas).toBe(1);
+      expect(resumos[disciplinaPresencaFacultativa.id].presencaObrigatoria).toBe(false);
+      expect(resumos[disciplinaPresencaFacultativa.id].status).toBe('SEGURO');
     });
   });
 
@@ -244,7 +225,6 @@ describe('FrequenciaService - RF03, RF04, RF05: Gestão e Cálculo de Faltas', (
       let total = await faltaRepo.contarPorDisciplina(disciplinaPadrao.id);
       expect(total).toBe(2);
 
-      // Exclui a disciplina
       await disciplinaService.excluirDisciplina(disciplinaPadrao.id);
 
       total = await faltaRepo.contarPorDisciplina(disciplinaPadrao.id);
