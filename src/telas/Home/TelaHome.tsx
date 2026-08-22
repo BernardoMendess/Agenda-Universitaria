@@ -21,6 +21,7 @@ interface TelaHomeProps {
   aoIrParaDisciplinas: () => void;
   aoIrParaGrade: () => void;
   aoIrParaTarefas: () => void;
+  aoIrParaCalendario?: () => void;
   aoCriarDisciplina: () => void;
   aoEditarDisciplina: (disciplina: Disciplina) => void;
   aoVerDetalhesDisciplina: (disciplina: Disciplina) => void;
@@ -30,6 +31,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
   aoIrParaDisciplinas,
   aoIrParaGrade,
   aoIrParaTarefas,
+  aoIrParaCalendario,
   aoCriarDisciplina,
   aoEditarDisciplina,
   aoVerDetalhesDisciplina,
@@ -160,12 +162,22 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             <Text style={estilos.textoBotaoAtalhoRapido}>+ Matéria</Text>
           </TouchableOpacity>
 
+          {aoIrParaCalendario && (
+            <TouchableOpacity
+              style={estilos.botaoAtalhoRapidoSecundario}
+              onPress={aoIrParaCalendario}
+              activeOpacity={0.7}
+            >
+              <Text style={estilos.textoBotaoAtalhoSecundario}>Calendário</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={estilos.botaoAtalhoRapidoSecundario}
             onPress={aoIrParaGrade}
             activeOpacity={0.7}
           >
-            <Text style={estilos.textoBotaoAtalhoSecundario}>Grade Horária</Text>
+            <Text style={estilos.textoBotaoAtalhoSecundario}>Grade</Text>
           </TouchableOpacity>
         </View>
 
@@ -289,6 +301,11 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
                   Provas e entregas agendadas
                 </Text>
               </View>
+              {aoIrParaCalendario && (
+                <TouchableOpacity onPress={aoIrParaCalendario}>
+                  <Text style={estilos.linkVerTodas}>Ver calendário →</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             {proximasAvaliacoes.map((avaliacao) => {

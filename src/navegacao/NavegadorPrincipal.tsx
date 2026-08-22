@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-native';
 import { TelaHome } from '../telas/Home/TelaHome';
+import { TelaCalendario } from '../telas/Calendario/TelaCalendario';
 import { TelaDisciplinas } from '../telas/Disciplinas/TelaDisciplinas';
 import { TelaGradeHoraria } from '../telas/GradeHoraria/TelaGradeHoraria';
 import { TelaTarefas } from '../telas/Tarefas/TelaTarefas';
@@ -9,7 +10,14 @@ import { TelaDetalhesDisciplina } from '../telas/DetalhesDisciplina/TelaDetalhes
 import { Disciplina } from '../modelos/Disciplina';
 import { tema } from '../estilos/tema';
 
-type AbaAtiva = 'home' | 'tarefas' | 'disciplinas' | 'grade' | 'formulario' | 'detalhes';
+type AbaAtiva =
+  | 'home'
+  | 'calendario'
+  | 'tarefas'
+  | 'grade'
+  | 'disciplinas'
+  | 'formulario'
+  | 'detalhes';
 
 export const NavegadorPrincipal: React.FC = () => {
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('home');
@@ -44,6 +52,12 @@ export const NavegadorPrincipal: React.FC = () => {
     setAbaAtiva('tarefas');
   };
 
+  const irParaCalendario = () => {
+    setDisciplinaEdicao(null);
+    setDisciplinaDetalhes(null);
+    setAbaAtiva('calendario');
+  };
+
   const irParaHome = () => {
     setDisciplinaEdicao(null);
     setDisciplinaDetalhes(null);
@@ -65,24 +79,28 @@ export const NavegadorPrincipal: React.FC = () => {
             aoIrParaDisciplinas={irParaDisciplinas}
             aoIrParaGrade={irParaGrade}
             aoIrParaTarefas={irParaTarefas}
+            aoIrParaCalendario={irParaCalendario}
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
             aoVerDetalhesDisciplina={irParaDetalhesDisciplina}
           />
         )}
+        {abaAtiva === 'calendario' && (
+          <TelaCalendario />
+        )}
         {abaAtiva === 'tarefas' && (
           <TelaTarefas />
+        )}
+        {abaAtiva === 'grade' && (
+          <TelaGradeHoraria
+            aoCriarDisciplina={irParaCriarDisciplina}
+          />
         )}
         {abaAtiva === 'disciplinas' && (
           <TelaDisciplinas
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
             aoSelecionarDisciplina={irParaDetalhesDisciplina}
-          />
-        )}
-        {abaAtiva === 'grade' && (
-          <TelaGradeHoraria
-            aoCriarDisciplina={irParaCriarDisciplina}
           />
         )}
         {abaAtiva === 'formulario' && (
@@ -110,6 +128,23 @@ export const NavegadorPrincipal: React.FC = () => {
           >
             <Text style={[estilos.textoAba, abaAtiva === 'home' ? estilos.textoAbaAtiva : null]}>
               Início
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              estilos.itemAba,
+              abaAtiva === 'calendario' ? estilos.itemAbaAtiva : null,
+            ]}
+            onPress={irParaCalendario}
+          >
+            <Text
+              style={[
+                estilos.textoAba,
+                abaAtiva === 'calendario' ? estilos.textoAbaAtiva : null,
+              ]}
+            >
+              Calendário
             </Text>
           </TouchableOpacity>
 
@@ -188,7 +223,7 @@ const estilos = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   itemAbaAtiva: {
     borderTopWidth: 2,
@@ -196,7 +231,7 @@ const estilos = StyleSheet.create({
   },
   textoAba: {
     color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.pequeno,
+    fontSize: 11,
     fontWeight: '500',
   },
   textoAbaAtiva: {
