@@ -10,11 +10,13 @@ import {
 import { useDisciplinas } from '../../hooks/useDisciplinas';
 import { useGradeHoraria } from '../../hooks/useGradeHoraria';
 import { useFrequencia } from '../../hooks/useFrequencia';
+import { useAvaliacoes } from '../../hooks/useAvaliacoes';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
 import { CardHorarioAula } from '../../componentes/CardHorarioAula';
 import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
 import { Disciplina } from '../../modelos/Disciplina';
+import { TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../../modelos/Avaliacao';
 import { DIAS_SEMANA_LABELS } from '../../modelos/HorarioAula';
 import { gradeHorariaService } from '../../servicos/GradeHorariaService';
 import { tema } from '../../estilos/tema';
@@ -24,6 +26,7 @@ interface TelaHomeProps {
   aoIrParaGrade: () => void;
   aoCriarDisciplina: () => void;
   aoEditarDisciplina: (disciplina: Disciplina) => void;
+  aoVerDetalhesDisciplina: (disciplina: Disciplina) => void;
 }
 
 export const TelaHome: React.FC<TelaHomeProps> = ({
@@ -31,6 +34,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
   aoIrParaGrade,
   aoCriarDisciplina,
   aoEditarDisciplina,
+  aoVerDetalhesDisciplina,
 }) => {
   const { disciplinas, excluirDisciplina } = useDisciplinas();
   const { aulasDeHoje } = useGradeHoraria();
@@ -43,6 +47,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
     removerFalta,
     obterHistorico,
   } = useFrequencia();
+  const { proximasAvaliacoes, carregarProximasAvaliacoes } = useAvaliacoes();
 
   const [disciplinaHistorico, setDisciplinaHistorico] = useState<Disciplina | null>(null);
   const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<Disciplina | null>(null);
@@ -54,7 +59,8 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
     if (disciplinas.length > 0) {
       carregarResumos(disciplinas);
     }
-  }, [disciplinas, carregarResumos]);
+    carregarProximasAvaliacoes(5);
+  }, [disciplinas, carregarResumos, carregarProximasAvaliacoes]);
 
   const totalFaltasGeral = Object.values(resumos).reduce(
     (acc, r) => acc + (r?.totalFaltas || 0),
@@ -187,7 +193,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
               key={disc.id}
               disciplina={disc}
               resumo={resumos[disc.id]}
-              aoPressionar={() => {}}
+              aoPressionar={aoVerDetalhesDisciplina}
               aoEditar={aoEditarDisciplina}
               aoExcluir={(d) => setDisciplinaParaExcluir(d)}
               aoIncrementarFalta={incrementar}
@@ -195,6 +201,40 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
               aoAbrirHistoricoFaltas={(d) => setDisciplinaHistorico(d)}
             />
           ))
+        )}
+
+        {/* Seção Próximas Avaliações */}
+        {proximasAvaliacoes.length > 0 && (
+          <>
+            <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
+              <Text style={estilos.secaoTitulo}>Próximas Avaliações</Text>
+            </View>
+            {proximasAvaliacoes.map((avaliacao) => {
+              const corTipo = TIPO_AVALIACAO_CORES[avaliacao.tipo];
+              const hoje = new Date();
+              hoje.setHours(0, 0, 0, 0);
+              const dataAval = new Date(`${avaliacao.data}T00:00:00`);
+              const diasRestantes = Math.round((dataAval.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+              return (
+                <View key={avaliacao.id} style={estilos.cardProximaAvaliacao}>
+                  <View style={[estilos.barraLateralAvaliacao, { backgroundColor: corTipo }]} />
+                  <View style={estilos.infoProximaAvaliacao}>
+                    <Text style={estilos.tituloProximaAvaliacao} numberOfLines={1}>{avaliacao.titulo}</Text>
+                    <Text style={estilos.disciplinaProximaAvaliacao}>{avaliacao.disciplinaNome}</Text>
+                  </View>
+                  <View style={estilos.prazoContainer}>
+                    <Text style={[
+                      estilos.prazoNumero,
+                      { color: diasRestantes <= 2 ? tema.cores.corStatusCritico : diasRestantes <= 7 ? tema.cores.corStatusAlerta : tema.cores.corTextoSecundario }
+                    ]}>
+                      {diasRestantes === 0 ? 'Hoje!' : diasRestantes === 1 ? 'Amanhã' : `${diasRestantes}d`}
+                    </Text>
+                    <Text style={estilos.prazoLabel}>{TIPO_AVALIACAO_LABELS[avaliacao.tipo]}</Text>
+                  </View>
+                </View>
+              );
+            })}
+          </>
         )}
       </ScrollView>
 
@@ -368,5 +408,47 @@ const estilos = StyleSheet.create({
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.pequeno,
     fontWeight: '700',
+  },
+  cardProximaAvaliacao: {
+    backgroundColor: tema.cores.corFundoCard,
+    borderRadius: tema.raioBorda.padrao,
+    marginBottom: tema.espacamento.sm,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#21262d',
+    alignItems: 'center',
+  },
+  barraLateralAvaliacao: {
+    width: 4,
+    alignSelf: 'stretch',
+  },
+  infoProximaAvaliacao: {
+    flex: 1,
+    paddingVertical: tema.espacamento.sm,
+    paddingLeft: tema.espacamento.sm,
+  },
+  tituloProximaAvaliacao: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: '700',
+  },
+  disciplinaProximaAvaliacao: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+    marginTop: 2,
+  },
+  prazoContainer: {
+    alignItems: 'center',
+    paddingHorizontal: tema.espacamento.md,
+  },
+  prazoNumero: {
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: '800',
+  },
+  prazoLabel: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: 10,
+    marginTop: 1,
   },
 });

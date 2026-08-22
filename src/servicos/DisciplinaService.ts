@@ -2,20 +2,24 @@ import { Disciplina, CriarDisciplinaDTO, AtualizarDisciplinaDTO } from '../model
 import { IDisciplinaRepositorio, disciplinaRepositorio } from './banco/DisciplinaRepositorio';
 import { IHorarioAulaRepositorio, horarioAulaRepositorio } from './banco/HorarioAulaRepositorio';
 import { IFaltaRepositorio, faltaRepositorio } from './banco/FaltaRepositorio';
+import { IAvaliacaoRepositorio, avaliacaoRepositorio } from './banco/AvaliacaoRepositorio';
 
 export class DisciplinaService {
   private repositorio: IDisciplinaRepositorio;
   private horarioRepositorio: IHorarioAulaRepositorio;
   private faltaRepositorio: IFaltaRepositorio;
+  private avaliacaoRepositorio: IAvaliacaoRepositorio;
 
   constructor(
     repositorio: IDisciplinaRepositorio = disciplinaRepositorio,
     horarioRepositorio: IHorarioAulaRepositorio = horarioAulaRepositorio,
-    faltaRepositorioInstancia: IFaltaRepositorio = faltaRepositorio
+    faltaRepositorioInstancia: IFaltaRepositorio = faltaRepositorio,
+    avaliacaoRepositorioInstancia: IAvaliacaoRepositorio = avaliacaoRepositorio
   ) {
     this.repositorio = repositorio;
     this.horarioRepositorio = horarioRepositorio;
     this.faltaRepositorio = faltaRepositorioInstancia;
+    this.avaliacaoRepositorio = avaliacaoRepositorioInstancia;
   }
 
 
@@ -80,9 +84,10 @@ export class DisciplinaService {
       throw new Error('Disciplina não encontrada para exclusão.');
     }
 
-    // Exclui horários e faltas vinculados
+    // Exclui horários, faltas e avaliações vinculados (cascata)
     await this.horarioRepositorio.excluirPorDisciplina(id);
     await this.faltaRepositorio.excluirPorDisciplina(id);
+    await this.avaliacaoRepositorio.excluirPorDisciplina(id);
 
     return await this.repositorio.excluir(id);
   }
@@ -110,6 +115,12 @@ export class DisciplinaService {
     if (!dados.criterioAprovacao || !['ARITMETICA', 'PONDERADA', 'CUSTOMIZADA'].includes(dados.criterioAprovacao)) {
       throw new Error('Critério de aprovação inválido.');
     }
+
+    if (dados.notaMinimaAprovacao !== undefined) {
+      if (typeof dados.notaMinimaAprovacao !== 'number' || isNaN(dados.notaMinimaAprovacao) || dados.notaMinimaAprovacao < 0 || dados.notaMinimaAprovacao > 10) {
+        throw new Error('A nota mínima de aprovação deve ser um número entre 0 e 10.');
+      }
+    }
   }
 
   private validarDadosAtualizacao(dados: AtualizarDisciplinaDTO): void {
@@ -128,6 +139,12 @@ export class DisciplinaService {
 
     if (dados.criterioAprovacao !== undefined && !['ARITMETICA', 'PONDERADA', 'CUSTOMIZADA'].includes(dados.criterioAprovacao)) {
       throw new Error('Critério de aprovação inválido.');
+    }
+
+    if (dados.notaMinimaAprovacao !== undefined) {
+      if (typeof dados.notaMinimaAprovacao !== 'number' || isNaN(dados.notaMinimaAprovacao) || dados.notaMinimaAprovacao < 0 || dados.notaMinimaAprovacao > 10) {
+        throw new Error('A nota mínima de aprovação deve ser um número entre 0 e 10.');
+      }
     }
   }
 }

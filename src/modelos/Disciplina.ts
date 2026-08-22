@@ -11,6 +11,7 @@ export interface Disciplina {
   corIdentificacao: string;
   limiteMaximoFaltas: number; // Inteiro obrigatório >= 0
   criterioAprovacao: CriterioAprovacao;
+  notaMinimaAprovacao?: number; // Nota mínima para aprovação (padrão 6.0, entre 0 e 10)
   dataCriacao: string;
   dataAtualizacao: string;
 }

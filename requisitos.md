@@ -36,9 +36,9 @@
 
 ### 1.3. Avaliações, Notas e Tarefas
 
-* **RF06 — Gestão de Avaliações e Notas:**
+* ~~**RF06 — Gestão de Avaliações e Notas:**
   * Agendamento de provas, testes e trabalhos com pesos/pontuações atribuídas.
-  * Lançamento de notas com recálculo automático da média atual e projeção da nota necessária para aprovação.
+  * Lançamento de notas com recálculo automático da média atual e projeção da nota necessária para aprovação.~~
 * **RF07 — Lista de Tarefas (To-Do List):**
   * Criação de tarefas vinculadas a uma disciplina ou avulsas (ex: "Leitura do artigo X").
   * Checkbox de conclusão e definição de data/hora limite.

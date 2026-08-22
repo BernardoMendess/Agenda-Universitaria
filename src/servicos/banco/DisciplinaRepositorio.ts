@@ -33,6 +33,7 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
       corIdentificacao: dados.corIdentificacao || '#6366f1',
       limiteMaximoFaltas: Math.max(0, Math.floor(dados.limiteMaximoFaltas)),
       criterioAprovacao: dados.criterioAprovacao,
+      notaMinimaAprovacao: dados.notaMinimaAprovacao ?? 6.0,
       dataCriacao: agora,
       dataAtualizacao: agora,
     };
@@ -70,6 +71,7 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
       corIdentificacao: dados.corIdentificacao !== undefined ? dados.corIdentificacao : existente.corIdentificacao,
       limiteMaximoFaltas: dados.limiteMaximoFaltas !== undefined ? Math.max(0, Math.floor(dados.limiteMaximoFaltas)) : existente.limiteMaximoFaltas,
       criterioAprovacao: dados.criterioAprovacao !== undefined ? dados.criterioAprovacao : existente.criterioAprovacao,
+      notaMinimaAprovacao: dados.notaMinimaAprovacao !== undefined ? dados.notaMinimaAprovacao : existente.notaMinimaAprovacao,
       dataAtualizacao: agora,
     };
 

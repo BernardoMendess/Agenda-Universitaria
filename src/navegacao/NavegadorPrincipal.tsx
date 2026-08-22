@@ -4,14 +4,16 @@ import { TelaHome } from '../telas/Home/TelaHome';
 import { TelaDisciplinas } from '../telas/Disciplinas/TelaDisciplinas';
 import { TelaGradeHoraria } from '../telas/GradeHoraria/TelaGradeHoraria';
 import { TelaFormularioDisciplina } from '../telas/CriarDisciplina/TelaFormularioDisciplina';
+import { TelaDetalhesDisciplina } from '../telas/DetalhesDisciplina/TelaDetalhesDisciplina';
 import { Disciplina } from '../modelos/Disciplina';
 import { tema } from '../estilos/tema';
 
-type AbaAtiva = 'home' | 'disciplinas' | 'grade' | 'formulario';
+type AbaAtiva = 'home' | 'disciplinas' | 'grade' | 'formulario' | 'detalhes';
 
 export const NavegadorPrincipal: React.FC = () => {
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('disciplinas');
   const [disciplinaEdicao, setDisciplinaEdicao] = useState<Disciplina | null>(null);
+  const [disciplinaDetalhes, setDisciplinaDetalhes] = useState<Disciplina | null>(null);
 
   const irParaCriarDisciplina = () => {
     setDisciplinaEdicao(null);
@@ -25,18 +27,28 @@ export const NavegadorPrincipal: React.FC = () => {
 
   const irParaDisciplinas = () => {
     setDisciplinaEdicao(null);
+    setDisciplinaDetalhes(null);
     setAbaAtiva('disciplinas');
   };
 
   const irParaGrade = () => {
     setDisciplinaEdicao(null);
+    setDisciplinaDetalhes(null);
     setAbaAtiva('grade');
   };
 
   const irParaHome = () => {
     setDisciplinaEdicao(null);
+    setDisciplinaDetalhes(null);
     setAbaAtiva('home');
   };
+
+  const irParaDetalhesDisciplina = (disciplina: Disciplina) => {
+    setDisciplinaDetalhes(disciplina);
+    setAbaAtiva('detalhes');
+  };
+
+  const mostrarBarraAbas = abaAtiva !== 'formulario' && abaAtiva !== 'detalhes';
 
   return (
     <View style={estilos.container}>
@@ -47,13 +59,14 @@ export const NavegadorPrincipal: React.FC = () => {
             aoIrParaGrade={irParaGrade}
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
+            aoVerDetalhesDisciplina={irParaDetalhesDisciplina}
           />
         )}
         {abaAtiva === 'disciplinas' && (
           <TelaDisciplinas
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
-            aoSelecionarDisciplina={irParaEditarDisciplina}
+            aoSelecionarDisciplina={irParaDetalhesDisciplina}
           />
         )}
         {abaAtiva === 'grade' && (
@@ -68,10 +81,17 @@ export const NavegadorPrincipal: React.FC = () => {
             aoSalvarSucesso={irParaDisciplinas}
           />
         )}
+        {abaAtiva === 'detalhes' && disciplinaDetalhes && (
+          <TelaDetalhesDisciplina
+            disciplina={disciplinaDetalhes}
+            aoVoltar={irParaDisciplinas}
+            aoEditar={irParaEditarDisciplina}
+          />
+        )}
       </View>
 
       {/* Barra de Abas Inferior */}
-      {abaAtiva !== 'formulario' && (
+      {mostrarBarraAbas && (
         <SafeAreaView style={estilos.barraAbas}>
           <TouchableOpacity
             style={[estilos.itemAba, abaAtiva === 'home' ? estilos.itemAbaAtiva : null]}
