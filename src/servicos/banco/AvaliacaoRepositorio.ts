@@ -30,6 +30,9 @@ export class AvaliacaoRepositorioEmMemoria implements IAvaliacaoRepositorio {
     const agora = new Date().toISOString();
     const id = `aval_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
+    const peso = dados.peso !== undefined && Number(dados.peso) > 0 ? Number(dados.peso) : 1;
+    const notaMaxima = dados.notaMaxima !== undefined && Number(dados.notaMaxima) > 0 ? Number(dados.notaMaxima) : 10;
+
     const novaAvaliacao: Avaliacao = {
       id,
       disciplinaId: dados.disciplinaId,
@@ -37,8 +40,8 @@ export class AvaliacaoRepositorioEmMemoria implements IAvaliacaoRepositorio {
       tipo: dados.tipo,
       data: dados.data,
       horario: dados.horario?.trim() || undefined,
-      peso: dados.peso,
-      notaMaxima: dados.notaMaxima,
+      peso,
+      notaMaxima,
       nota: null,
       descricao: dados.descricao?.trim() || undefined,
       dataCriacao: agora,

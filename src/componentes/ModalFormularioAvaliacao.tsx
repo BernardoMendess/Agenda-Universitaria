@@ -11,11 +11,13 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Avaliacao, CriarAvaliacaoDTO, AtualizarAvaliacaoDTO, TipoAvaliacao, TIPO_AVALIACAO_LABELS } from '../modelos/Avaliacao';
+import { CriterioAprovacao } from '../modelos/Disciplina';
 import { tema } from '../estilos/tema';
 
 interface ModalFormularioAvaliacaoProps {
   visivel: boolean;
   disciplinaId: string;
+  criterioAprovacao?: CriterioAprovacao;
   avaliacaoParaEditar?: Avaliacao | null;
   aoFechar: () => void;
   aoSalvar: (dados: CriarAvaliacaoDTO | AtualizarAvaliacaoDTO) => Promise<void>;
@@ -30,11 +32,13 @@ const obterDataHoje = (): string => {
 export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> = ({
   visivel,
   disciplinaId,
+  criterioAprovacao,
   avaliacaoParaEditar,
   aoFechar,
   aoSalvar,
 }) => {
   const editando = !!avaliacaoParaEditar;
+  const ehPonderada = criterioAprovacao === 'PONDERADA';
 
   const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState<TipoAvaliacao>('PROVA');
@@ -82,9 +86,11 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
       novosErros.horario = 'Horário inválido. Use HH:mm (ex: 08:30).';
     }
 
-    const pesoNum = Number(peso.trim().replace(',', '.'));
-    if (isNaN(pesoNum) || pesoNum < 0) {
-      novosErros.peso = 'O peso deve ser um número maior ou igual a 0.';
+    if (ehPonderada) {
+      const pesoNum = Number(peso.trim().replace(',', '.'));
+      if (isNaN(pesoNum) || pesoNum <= 0) {
+        novosErros.peso = 'O peso deve ser um número maior que 0.';
+      }
     }
 
     const notaMaximaNum = Number(notaMaxima.trim().replace(',', '.'));
@@ -101,13 +107,17 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
 
     try {
       setSalvando(true);
+      const pesoFinal = ehPonderada
+        ? Number(peso.trim().replace(',', '.'))
+        : (peso.trim() ? Number(peso.trim().replace(',', '.')) : 1);
+
       const dados: CriarAvaliacaoDTO = {
         disciplinaId,
         titulo: titulo.trim(),
         tipo,
         data,
         horario: horario.trim() || undefined,
-        peso: Number(peso.trim().replace(',', '.')),
+        peso: pesoFinal > 0 ? pesoFinal : 1,
         notaMaxima: Number(notaMaxima.trim().replace(',', '.')),
         descricao: descricao.trim() || undefined,
       };
@@ -201,22 +211,37 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
           {erros.horario ? <Text style={estilos.textoErro}>{erros.horario}</Text> : null}
 
           {/* Peso e Nota Máxima */}
-          <View style={estilos.linhaDouble}>
-            <View style={estilos.campoMeio}>
-              <Text style={estilos.rotulo}>Peso *</Text>
-              <TextInput
-                style={[estilos.input, erros.peso ? estilos.inputErro : null]}
-                placeholder="Ex: 1, 2, 3"
-                placeholderTextColor={tema.cores.corTextoSecundario}
-                value={peso}
-                onChangeText={setPeso}
-                keyboardType="numeric"
-              />
-              {erros.peso ? <Text style={estilos.textoErro}>{erros.peso}</Text> : null}
-            </View>
+          {ehPonderada ? (
+            <View style={estilos.linhaDouble}>
+              <View style={estilos.campoMeio}>
+                <Text style={estilos.rotulo}>Peso da Avaliação *</Text>
+                <TextInput
+                  style={[estilos.input, erros.peso ? estilos.inputErro : null]}
+                  placeholder="Ex: 2, 3 ou 0.4"
+                  placeholderTextColor={tema.cores.corTextoSecundario}
+                  value={peso}
+                  onChangeText={setPeso}
+                  keyboardType="numeric"
+                />
+                {erros.peso ? <Text style={estilos.textoErro}>{erros.peso}</Text> : null}
+              </View>
 
-            <View style={estilos.campoMeio}>
-              <Text style={estilos.rotulo}>Nota Máxima *</Text>
+              <View style={estilos.campoMeio}>
+                <Text style={estilos.rotulo}>Nota Máxima *</Text>
+                <TextInput
+                  style={[estilos.input, erros.notaMaxima ? estilos.inputErro : null]}
+                  placeholder="Ex: 10"
+                  placeholderTextColor={tema.cores.corTextoSecundario}
+                  value={notaMaxima}
+                  onChangeText={setNotaMaxima}
+                  keyboardType="numeric"
+                />
+                {erros.notaMaxima ? <Text style={estilos.textoErro}>{erros.notaMaxima}</Text> : null}
+              </View>
+            </View>
+          ) : (
+            <View style={{ marginTop: tema.espacamento.md }}>
+              <Text style={estilos.rotulo}>Nota Máxima (padrão: 10)</Text>
               <TextInput
                 style={[estilos.input, erros.notaMaxima ? estilos.inputErro : null]}
                 placeholder="Ex: 10"
@@ -227,7 +252,7 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
               />
               {erros.notaMaxima ? <Text style={estilos.textoErro}>{erros.notaMaxima}</Text> : null}
             </View>
-          </View>
+          )}
 
           {/* Descrição */}
           <Text style={[estilos.rotulo, { marginTop: tema.espacamento.md }]}>Descrição (opcional)</Text>

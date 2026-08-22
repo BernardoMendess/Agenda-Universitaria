@@ -21,7 +21,13 @@ export interface Avaliacao {
   dataAtualizacao: string;
 }
 
-export type CriarAvaliacaoDTO = Omit<Avaliacao, 'id' | 'dataCriacao' | 'dataAtualizacao' | 'nota'>;
+export type CriarAvaliacaoDTO = Omit<
+  Avaliacao,
+  'id' | 'dataCriacao' | 'dataAtualizacao' | 'nota' | 'peso' | 'notaMaxima'
+> & {
+  peso?: number;
+  notaMaxima?: number;
+};
 
 export type AtualizarAvaliacaoDTO = Partial<Omit<CriarAvaliacaoDTO, 'disciplinaId'>>;
 

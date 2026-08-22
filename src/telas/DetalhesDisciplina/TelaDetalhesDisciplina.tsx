@@ -320,6 +320,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
       <ModalFormularioAvaliacao
         visivel={modalFormularioVisivel}
         disciplinaId={disciplina.id}
+        criterioAprovacao={disciplina.criterioAprovacao}
         avaliacaoParaEditar={avaliacaoEmEdicao}
         aoFechar={() => setModalFormularioVisivel(false)}
         aoSalvar={salvarFormulario}

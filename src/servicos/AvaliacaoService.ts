@@ -262,8 +262,7 @@ export class AvaliacaoService {
       mediaAtual,
       projecaoNotaNecessaria,
       avaliacoesPendentes,
-      notaMinimaAprovacao,
-      pendentes
+      notaMinimaAprovacao
     );
 
     const mensagemProjecao = this.gerarMensagemProjecao(
@@ -271,7 +270,8 @@ export class AvaliacaoService {
       mediaAtual,
       projecaoNotaNecessaria,
       avaliacoesPendentes,
-      notaMinimaAprovacao
+      notaMinimaAprovacao,
+      isPonderada
     );
 
     return {
@@ -287,21 +287,34 @@ export class AvaliacaoService {
     };
   }
 
-  /** Média Aritmética simples entre as notas lançadas */
+  /** Média Aritmética simples normalizada na escala 0-10 */
   private calcularMediaAritmetica(lancadas: Avaliacao[]): number {
     if (lancadas.length === 0) return 0;
-    const soma = lancadas.reduce((acc, a) => acc + (a.nota ?? 0), 0);
+    const soma = lancadas.reduce((acc, a) => {
+      const nota = a.nota ?? 0;
+      const notaMaxima = a.notaMaxima > 0 ? a.notaMaxima : 10;
+      const notaNormalizada = (nota / notaMaxima) * 10;
+      return acc + notaNormalizada;
+    }, 0);
     return Math.round((soma / lancadas.length) * 100) / 100;
   }
 
-  /** Média Ponderada: soma(nota * peso) / soma(pesos) */
+  /** Média Ponderada: soma(notaNormalizada * peso) / soma(pesos) */
   private calcularMediaPonderada(lancadas: Avaliacao[]): number {
     if (lancadas.length === 0) return 0;
-    const somaPonderada = lancadas.reduce(
-      (acc, a) => acc + (a.nota ?? 0) * a.peso,
-      0
-    );
-    const somaPesos = lancadas.reduce((acc, a) => acc + a.peso, 0);
+    let somaPonderada = 0;
+    let somaPesos = 0;
+
+    for (const a of lancadas) {
+      const nota = a.nota ?? 0;
+      const notaMaxima = a.notaMaxima > 0 ? a.notaMaxima : 10;
+      const peso = a.peso > 0 ? a.peso : 1;
+      const notaNormalizada = (nota / notaMaxima) * 10;
+
+      somaPonderada += notaNormalizada * peso;
+      somaPesos += peso;
+    }
+
     if (somaPesos === 0) return 0;
     return Math.round((somaPonderada / somaPesos) * 100) / 100;
   }
@@ -316,37 +329,57 @@ export class AvaliacaoService {
     totalAvaliacoes: number,
     meta: number
   ): number {
-    const somaLancadas = lancadas.reduce((acc, a) => acc + (a.nota ?? 0), 0);
+    const somaLancadas = lancadas.reduce((acc, a) => {
+      const nota = a.nota ?? 0;
+      const notaMaxima = a.notaMaxima > 0 ? a.notaMaxima : 10;
+      return acc + (nota / notaMaxima) * 10;
+    }, 0);
+
     const pontosNecessarios = meta * totalAvaliacoes - somaLancadas;
+    if (pontosNecessarios <= 0) return 0;
+
     const notaMedia = pontosNecessarios / pendentes.length;
     return Math.round(notaMedia * 100) / 100;
   }
 
   /**
    * Projeção Ponderada:
-   * notaMedia = (meta * somaTodosPesos - somaPonderadaLancadas) / somaPesosPendentes
+   * meta * somaTodosPesos - somaPonderadaLancadas = pontosPonderadosNecessarios
+   * notaMedia = pontosPonderadosNecessarios / somaPesosPendentes
    */
   private projetarNotaNecessariaPonderada(
     lancadas: Avaliacao[],
     pendentes: Avaliacao[],
     meta: number
   ): number {
-    const somaTodosPesos =
-      lancadas.reduce((acc, a) => acc + a.peso, 0) +
-      pendentes.reduce((acc, a) => acc + a.peso, 0);
+    let somaPonderadaLancadas = 0;
+    let somaPesosLancadas = 0;
 
-    const somaPonderadaLancadas = lancadas.reduce(
-      (acc, a) => acc + (a.nota ?? 0) * a.peso,
-      0
-    );
+    for (const a of lancadas) {
+      const nota = a.nota ?? 0;
+      const notaMaxima = a.notaMaxima > 0 ? a.notaMaxima : 10;
+      const peso = a.peso > 0 ? a.peso : 1;
+      const notaNormalizada = (nota / notaMaxima) * 10;
 
-    const somaPesosPendentes = pendentes.reduce((acc, a) => acc + a.peso, 0);
+      somaPonderadaLancadas += notaNormalizada * peso;
+      somaPesosLancadas += peso;
+    }
+
+    let somaPesosPendentes = 0;
+    for (const p of pendentes) {
+      const peso = p.peso > 0 ? p.peso : 1;
+      somaPesosPendentes += peso;
+    }
+
     if (somaPesosPendentes === 0) return 0;
 
+    const somaTodosPesos = somaPesosLancadas + somaPesosPendentes;
     const pontosPonderadosNecessarios =
       meta * somaTodosPesos - somaPonderadaLancadas;
-    const notaMedia = pontosPonderadosNecessarios / somaPesosPendentes;
 
+    if (pontosPonderadosNecessarios <= 0) return 0;
+
+    const notaMedia = pontosPonderadosNecessarios / somaPesosPendentes;
     return Math.round(notaMedia * 100) / 100;
   }
 
@@ -354,8 +387,7 @@ export class AvaliacaoService {
     mediaAtual: number | null,
     projecaoNotaNecessaria: number | null,
     avaliacoesPendentes: number,
-    notaMinimaAprovacao: number,
-    pendentes: Avaliacao[]
+    notaMinimaAprovacao: number
   ): StatusAprovacao {
     // Todas as avaliações foram lançadas — resultado final
     if (avaliacoesPendentes === 0 && mediaAtual !== null) {
@@ -370,22 +402,18 @@ export class AvaliacaoService {
       return 'APROVADO';
     }
 
-    // Nota necessária excede a nota máxima possível (considera notaMaxima da pendente)
-    const notaMaximaMedia =
-      pendentes.length > 0
-        ? Math.max(...pendentes.map((p) => p.notaMaxima))
-        : 10;
+    // Nota necessária excede 10.0 (impossível alcançar a meta)
     if (
       projecaoNotaNecessaria !== null &&
-      projecaoNotaNecessaria > notaMaximaMedia
+      projecaoNotaNecessaria > 10.0
     ) {
       return 'REPROVADO_POR_NOTA';
     }
 
-    // Situação de risco (precisa de >= 75% da nota máxima nas pendentes)
+    // Situação de risco (precisa de média >= 7.5 nas pendentes)
     if (
       projecaoNotaNecessaria !== null &&
-      projecaoNotaNecessaria >= notaMaximaMedia * 0.75
+      projecaoNotaNecessaria >= 7.5
     ) {
       return 'EM_RISCO';
     }
@@ -398,25 +426,26 @@ export class AvaliacaoService {
     mediaAtual: number | null,
     projecaoNotaNecessaria: number | null,
     avaliacoesPendentes: number,
-    notaMinimaAprovacao: number
+    notaMinimaAprovacao: number,
+    isPonderada: boolean = false
   ): string {
     if (status === 'APROVADO' && avaliacoesPendentes === 0) {
-      return `Aprovado! Média final ${mediaAtual?.toFixed(1)} ≥ ${notaMinimaAprovacao}.`;
+      return `Aprovado! Média final ${mediaAtual?.toFixed(1)} ≥ ${notaMinimaAprovacao.toFixed(1)}.`;
     }
     if (status === 'APROVADO' && avaliacoesPendentes > 0) {
-      return `Aprovação já garantida! Você pode tirar 0 nas avaliações restantes.`;
+      return `Aprovação já garantida! Média necessária restante: 0.0.`;
     }
     if (status === 'REPROVADO_POR_NOTA' && avaliacoesPendentes === 0) {
-      return `Reprovado. Média final ${mediaAtual?.toFixed(1)} < ${notaMinimaAprovacao}.`;
+      return `Reprovado. Média final ${mediaAtual?.toFixed(1)} < ${notaMinimaAprovacao.toFixed(1)}.`;
     }
     if (status === 'REPROVADO_POR_NOTA' && avaliacoesPendentes > 0) {
-      return `Situação crítica. Nota necessária (${projecaoNotaNecessaria?.toFixed(1)}) excede o máximo possível.`;
+      return `Situação crítica: média necessária (${projecaoNotaNecessaria?.toFixed(1)}) excede 10.0.`;
     }
     if (status === 'EM_RISCO') {
-      return `Atenção! Você precisa de ${projecaoNotaNecessaria?.toFixed(1)} nas próximas ${avaliacoesPendentes} avaliação(ões).`;
+      return `Atenção! Você precisa de média ${projecaoNotaNecessaria?.toFixed(1)} nas próximas ${avaliacoesPendentes} avaliação(ões).`;
     }
     if (projecaoNotaNecessaria !== null && avaliacoesPendentes > 0) {
-      return `Precisa de ${projecaoNotaNecessaria.toFixed(1)} nas ${avaliacoesPendentes} avaliação(ões) restante(s).`;
+      return `Precisa de média ${projecaoNotaNecessaria.toFixed(1)}${isPonderada ? ' (ponderada)' : ''} nas ${avaliacoesPendentes} avaliação(ões) restante(s).`;
     }
     return 'Sem avaliações cadastradas.';
   }
@@ -450,14 +479,15 @@ export class AvaliacaoService {
       );
     }
 
-    if (typeof dados.peso !== 'number' || isNaN(dados.peso) || dados.peso < 0) {
-      throw new Error('O peso da avaliação deve ser um número maior ou igual a 0.');
+    if (dados.peso !== undefined && (typeof dados.peso !== 'number' || isNaN(dados.peso) || dados.peso <= 0)) {
+      throw new Error('O peso da avaliação deve ser um número maior que 0.');
     }
 
     if (
-      typeof dados.notaMaxima !== 'number' ||
-      isNaN(dados.notaMaxima) ||
-      dados.notaMaxima <= 0
+      dados.notaMaxima !== undefined &&
+      (typeof dados.notaMaxima !== 'number' ||
+        isNaN(dados.notaMaxima) ||
+        dados.notaMaxima <= 0)
     ) {
       throw new Error('A nota máxima deve ser um número maior que 0.');
     }
@@ -487,9 +517,9 @@ export class AvaliacaoService {
 
     if (
       dados.peso !== undefined &&
-      (typeof dados.peso !== 'number' || isNaN(dados.peso) || dados.peso < 0)
+      (typeof dados.peso !== 'number' || isNaN(dados.peso) || dados.peso <= 0)
     ) {
-      throw new Error('O peso da avaliação deve ser um número maior ou igual a 0.');
+      throw new Error('O peso da avaliação deve ser um número maior que 0.');
     }
 
     const notaMaxima =

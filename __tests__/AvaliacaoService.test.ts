@@ -69,12 +69,16 @@ describe('AvaliacaoService — Validações de Cadastro', () => {
     ).rejects.toThrow('formato inválido');
   });
 
-  it('deve lançar erro com peso negativo', async () => {
+  it('deve lançar erro com peso menor ou igual a zero se informado', async () => {
     const { servico, disciplinaRepo } = criarServico();
     const disciplina = await criarDisciplinaBase(disciplinaRepo);
 
     await expect(
       servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id, { peso: -1 }))
+    ).rejects.toThrow('peso');
+
+    await expect(
+      servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id, { peso: 0 }))
     ).rejects.toThrow('peso');
   });
 
@@ -87,13 +91,20 @@ describe('AvaliacaoService — Validações de Cadastro', () => {
     ).rejects.toThrow('nota máxima');
   });
 
-  it('deve criar avaliação com dados válidos', async () => {
+  it('deve criar avaliação com dados válidos e peso opcional (padrão 1)', async () => {
     const { servico, disciplinaRepo } = criarServico();
     const disciplina = await criarDisciplinaBase(disciplinaRepo);
-    const avaliacao = await servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id));
+    const avaliacao = await servico.criarAvaliacao({
+      disciplinaId: disciplina.id,
+      titulo: 'Prova 1',
+      tipo: 'PROVA',
+      data: '2026-10-15',
+    });
 
     expect(avaliacao.id).toBeDefined();
     expect(avaliacao.titulo).toBe('Prova 1');
+    expect(avaliacao.peso).toBe(1);
+    expect(avaliacao.notaMaxima).toBe(10);
     expect(avaliacao.nota).toBeNull();
   });
 });
@@ -187,7 +198,7 @@ describe('AvaliacaoService — Cálculo de Média Aritmética', () => {
 });
 
 describe('AvaliacaoService — Cálculo de Média Ponderada', () => {
-  it('deve calcular média ponderada corretamente', async () => {
+  it('deve calcular média ponderada corretamente com pesos inteiros', async () => {
     const { servico, disciplinaRepo } = criarServico();
     // Prova1 (peso 2, nota 8.0) e Trabalho1 (peso 1, nota 5.0) → (16 + 5) / 3 = 7.0
     const disciplina = await criarDisciplinaBase(disciplinaRepo, { criterioAprovacao: 'PONDERADA' });
@@ -201,13 +212,42 @@ describe('AvaliacaoService — Cálculo de Média Ponderada', () => {
     const resumo = await servico.calcularDesempenho(disciplina.id);
     expect(resumo.mediaAtual).toBe(7.0);
   });
+
+  it('deve calcular média ponderada com pesos decimais (ex: 0.4 e 0.6)', async () => {
+    const { servico, disciplinaRepo } = criarServico();
+    const disciplina = await criarDisciplinaBase(disciplinaRepo, { criterioAprovacao: 'PONDERADA' });
+
+    const a1 = await servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id, { titulo: 'P1', peso: 0.4 }));
+    const a2 = await servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id, { titulo: 'P2', peso: 0.6 }));
+
+    await servico.lancarNota(a1.id, 7.0);
+    await servico.lancarNota(a2.id, 8.0);
+
+    const resumo = await servico.calcularDesempenho(disciplina.id);
+    // (7 * 0.4 + 8 * 0.6) / 1.0 = (2.8 + 4.8) / 1.0 = 7.6
+    expect(resumo.mediaAtual).toBe(7.6);
+  });
+
+  it('deve normalizar notas com notaMaxima diferente de 10', async () => {
+    const { servico, disciplinaRepo } = criarServico();
+    const disciplina = await criarDisciplinaBase(disciplinaRepo, { criterioAprovacao: 'PONDERADA' });
+
+    // Trabalho vale 2 pontos (tirou 2.0 = 100% = 10.0 escala 10) peso 2
+    // Prova vale 8 pontos (tirou 6.0 = 75% = 7.5 escala 10) peso 8
+    const a1 = await servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id, { titulo: 'Trab', notaMaxima: 2, peso: 2 }));
+    const a2 = await servico.criarAvaliacao(criarAvaliacaoBase(disciplina.id, { titulo: 'Prova', notaMaxima: 8, peso: 8 }));
+
+    await servico.lancarNota(a1.id, 2.0);
+    await servico.lancarNota(a2.id, 6.0);
+
+    const resumo = await servico.calcularDesempenho(disciplina.id);
+    // (10.0 * 2 + 7.5 * 8) / 10 = (20 + 60) / 10 = 8.0
+    expect(resumo.mediaAtual).toBe(8.0);
+  });
 });
 
 describe('AvaliacaoService — Projeção de Nota Necessária (Aritmética)', () => {
   it('deve calcular projeção corretamente: 3 provas, meta 6.0, 2 lançadas com 5.0 e 6.0', async () => {
-    // Notas lançadas: 5.0 + 6.0 = 11.0
-    // Necessário total: 3 * 6.0 = 18.0
-    // Projeção restante: (18.0 - 11.0) / 1 = 7.0
     const { servico, disciplinaRepo } = criarServico();
     const disciplina = await criarDisciplinaBase(disciplinaRepo, { notaMinimaAprovacao: 6.0 });
 
@@ -224,7 +264,6 @@ describe('AvaliacaoService — Projeção de Nota Necessária (Aritmética)', ()
   });
 
   it('deve indicar aprovação garantida quando nota necessária ≤ 0', async () => {
-    // Tirou 10.0 e 9.0 em 2 de 3 provas; soma = 19.0; necessário = 18.0 → projeção negativa
     const { servico, disciplinaRepo } = criarServico();
     const disciplina = await criarDisciplinaBase(disciplinaRepo, { notaMinimaAprovacao: 6.0 });
 
@@ -237,10 +276,10 @@ describe('AvaliacaoService — Projeção de Nota Necessária (Aritmética)', ()
 
     const resumo = await servico.calcularDesempenho(disciplina.id);
     expect(resumo.statusAprovacao).toBe('APROVADO');
+    expect(resumo.projecaoNotaNecessaria).toBe(0);
   });
 
-  it('deve indicar situação crítica quando nota necessária excede nota máxima', async () => {
-    // Tirou 0.0 em todas menos a última; projeção muito alta
+  it('deve indicar situação crítica quando nota necessária excede 10.0', async () => {
     const { servico, disciplinaRepo } = criarServico();
     const disciplina = await criarDisciplinaBase(disciplinaRepo, { notaMinimaAprovacao: 6.0 });
 
@@ -277,7 +316,6 @@ describe('AvaliacaoService — Projeção de Nota Necessária (Ponderada)', () =
     await servico.lancarNota(a1.id, 4.0);
 
     const resumo = await servico.calcularDesempenho(disciplina.id);
-    // Arredonda para 2 casas decimais
     expect(resumo.projecaoNotaNecessaria).toBeCloseTo(7.33, 2);
   });
 });
@@ -286,7 +324,6 @@ describe('AvaliacaoService — Exclusão em Cascata via DisciplinaService', () =
   it('todas as avaliações são excluídas ao remover a disciplina', async () => {
     const { servico, avaliacaoRepo, disciplinaRepo } = criarServico();
 
-    // Importa DisciplinaService e injeta o repositório de avaliações
     const { DisciplinaService } = require('../src/servicos/DisciplinaService');
     const { HorarioAulaRepositorioEmMemoria } = require('../src/servicos/banco/HorarioAulaRepositorio');
     const { FaltaRepositorioEmMemoria } = require('../src/servicos/banco/FaltaRepositorio');
