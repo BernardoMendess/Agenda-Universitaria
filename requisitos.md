@@ -70,7 +70,7 @@
 ## 2. Requisitos Não Funcionais (RNF)
 
 * ~~**RNF01 — Zero Conectividade (Offline por Padrão):** O app funciona 100% isolado, sem chamadas a APIs, servidores web ou serviços em nuvem.~~
-* **RNF02 — Persistência Estritamente Local:** Todos os dados são armazenados localmente no dispositivo (via SQLite, Room, WatermelonDB ou Realm).
+* ~~**RNF02 — Persistência Estritamente Local:** Todos os dados são armazenados localmente no dispositivo (via SQLite, Room, WatermelonDB ou Realm).~~
 * **RNF03 — Usabilidade Mobile (Ações em 1 Toque):** O registro de faltas e a conclusão de tarefas devem ser acessíveis diretamente na tela inicial sem navegação profunda.
 * **RNF04 — Eficiência Energética:** Uso exclusivo de agendadores nativos de alarmes locais para evitar rotinas em segundo plano drenando bateria.
 * **RNF05 — Privacidade Total:** Nenhum dado acadêmico, pessoal ou estatístico sai do aparelho do usuário.

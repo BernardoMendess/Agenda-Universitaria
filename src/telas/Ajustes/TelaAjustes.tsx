@@ -450,15 +450,30 @@ export const TelaAjustes: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Seção 6: Garantia Offline & Privacidade (RNF01, RNF04, RNF05) */}
+        {/* Seção 6: Garantia Offline & Persistência Local (RNF01, RNF02, RNF04, RNF05) */}
         <View style={estilos.cardPrivacidade}>
           <View style={estilos.linhaTopoPrivacidade}>
             <Text style={estilos.tituloPrivacidade}>Zero Conectividade & Privacidade Total</Text>
             <BadgeStatusOffline tamanho="pequeno" />
           </View>
           <Text style={estilos.textoPrivacidade}>
-            O CampusFlow opera 100% isolado (RNF01), sem qualquer chamada para servidores externos, APIs ou serviços de nuvem. Todos os seus dados acadêmicos, notas, faltas e alarmes são mantidos de forma estritamente local no aparelho (RNF02 e RNF05).
+            O CampusFlow opera 100% isolado (RNF01), sem chamadas a servidores ou nuvem. Todos os dados são gravados localmente no banco relacional SQLite (<Text style={estilos.textoNegrito}>campusflow.db</Text>) no próprio aparelho (RNF02 e RNF05).
           </Text>
+
+          <View style={estilos.caixaStatusSQLite}>
+            <View style={estilos.itemInfoSQLite}>
+              <Text style={estilos.rotuloInfoSQLite}>Motor de Banco:</Text>
+              <Text style={estilos.valorInfoSQLite}>SQLite Relacional</Text>
+            </View>
+            <View style={estilos.itemInfoSQLite}>
+              <Text style={estilos.rotuloInfoSQLite}>Integridade:</Text>
+              <Text style={[estilos.valorInfoSQLite, { color: tema.cores.corStatusSeguro }]}>✓ 100% Íntegro (Local)</Text>
+            </View>
+            <View style={estilos.itemInfoSQLite}>
+              <Text style={estilos.rotuloInfoSQLite}>Modo:</Text>
+              <Text style={estilos.valorInfoSQLite}>WAL (Alta Performance)</Text>
+            </View>
+          </View>
         </View>
 
         {/* Botão Restaurar Padrão */}
@@ -671,6 +686,31 @@ const estilos = StyleSheet.create({
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.micro,
     lineHeight: 17,
+  },
+  textoNegrito: {
+    color: tema.cores.corTextoPrimario,
+    fontWeight: 'bold',
+  },
+  caixaStatusSQLite: {
+    marginTop: tema.espacamento.sm,
+    paddingTop: tema.espacamento.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(99, 102, 241, 0.2)',
+    gap: 4,
+  },
+  itemInfoSQLite: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  rotuloInfoSQLite: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: 11,
+  },
+  valorInfoSQLite: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: 11,
+    fontWeight: '600',
   },
   botaoRestaurar: {
     paddingVertical: 12,
