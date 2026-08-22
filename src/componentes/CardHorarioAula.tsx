@@ -1,15 +1,36 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { AulaGradeItem } from '../servicos/GradeHorariaService';
+import { StatusMomentoAula } from '../modelos/Dashboard';
 import { tema } from '../estilos/tema';
 
 interface CardHorarioAulaProps {
-  aula: AulaGradeItem;
+  aula: AulaGradeItem & { statusMomento?: StatusMomentoAula };
+  aoPressionar?: (disciplinaId: string) => void;
+  aoIncrementarFalta?: (disciplinaId: string) => void;
 }
 
-export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({ aula }) => {
+export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({
+  aula,
+  aoPressionar,
+  aoIncrementarFalta,
+}) => {
+  const status = aula.statusMomento;
+  const ehAgora = status === 'EM_ANDAMENTO';
+  const ehProxima = status === 'PROXIMA';
+  const ehEncerrada = status === 'ENCERRADA';
+
   return (
-    <View style={estilos.card}>
+    <TouchableOpacity
+      style={[
+        estilos.card,
+        ehAgora && estilos.cardEmAndamento,
+        ehEncerrada && estilos.cardEncerrada,
+      ]}
+      onPress={() => aoPressionar?.(aula.disciplinaId)}
+      activeOpacity={aoPressionar ? 0.75 : 1}
+      disabled={!aoPressionar}
+    >
       {/* Barra lateral com a cor da disciplina */}
       <View
         style={[
@@ -19,13 +40,46 @@ export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({ aula }) => {
       />
 
       <View style={estilos.conteudo}>
-        {/* Cabeçalho do Card: Horário e Código */}
+        {/* Cabeçalho do Card: Horário, Status do Momento e Código */}
         <View style={estilos.cabecalho}>
-          <View style={estilos.badgeHorario}>
-            <Text style={estilos.textoHorario}>
-              {aula.horarioInicio} - {aula.horarioFim}
-            </Text>
+          <View style={estilos.linhaHorario}>
+            <View
+              style={[
+                estilos.badgeHorario,
+                ehAgora && estilos.badgeHorarioAgora,
+              ]}
+            >
+              <Text
+                style={[
+                  estilos.textoHorario,
+                  ehAgora && estilos.textoHorarioAgora,
+                ]}
+              >
+                {aula.horarioInicio} - {aula.horarioFim}
+              </Text>
+            </View>
+
+            {/* Badge de Status do Momento */}
+            {ehAgora && (
+              <View style={estilos.badgeAgora}>
+                <View style={estilos.pontoPulso} />
+                <Text style={estilos.textoBadgeAgora}>Agora</Text>
+              </View>
+            )}
+
+            {ehProxima && (
+              <View style={estilos.badgeProxima}>
+                <Text style={estilos.textoBadgeProxima}>Próxima</Text>
+              </View>
+            )}
+
+            {ehEncerrada && (
+              <View style={estilos.badgeEncerrada}>
+                <Text style={estilos.textoBadgeEncerrada}>Encerrada</Text>
+              </View>
+            )}
           </View>
+
           {aula.codigoDisciplina ? (
             <Text style={estilos.codigo}>{aula.codigoDisciplina}</Text>
           ) : null}
@@ -36,22 +90,35 @@ export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({ aula }) => {
           {aula.nomeDisciplina}
         </Text>
 
-        {/* Detalhes: Sala e Professor */}
+        {/* Detalhes: Sala, Professor e Ação Rápida */}
         <View style={estilos.rodape}>
-          {aula.localSala ? (
-            <View style={estilos.infoItem}>
-              <Text style={estilos.textoInfo}>Sala: {aula.localSala}</Text>
-            </View>
-          ) : null}
+          <View style={estilos.infoGrupo}>
+            {aula.localSala ? (
+              <View style={estilos.infoItem}>
+                <Text style={estilos.textoInfo}>Sala: {aula.localSala}</Text>
+              </View>
+            ) : null}
 
-          {aula.nomeProfessor ? (
-            <View style={estilos.infoItem}>
-              <Text style={estilos.textoInfo}>Prof: {aula.nomeProfessor}</Text>
-            </View>
-          ) : null}
+            {aula.nomeProfessor ? (
+              <View style={estilos.infoItem}>
+                <Text style={estilos.textoInfo}>Prof: {aula.nomeProfessor}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Ação Rápida em 1 Toque (RNF03): Registrar Falta */}
+          {aoIncrementarFalta && !ehEncerrada && (
+            <TouchableOpacity
+              style={estilos.botaoFaltaRapida}
+              onPress={() => aoIncrementarFalta(aula.disciplinaId)}
+              activeOpacity={0.7}
+            >
+              <Text style={estilos.textoBotaoFaltaRapida}>+1 Falta</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -64,6 +131,13 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#21262d',
     overflow: 'hidden',
+  },
+  cardEmAndamento: {
+    borderColor: tema.cores.corMarcaPrimaria,
+    backgroundColor: '#161d2b',
+  },
+  cardEncerrada: {
+    opacity: 0.6,
   },
   indicadorCor: {
     width: 6,
@@ -78,23 +152,76 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
-  badgeHorario: {
+  linhaHorario: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+  },
+  badgeHorario: {
     backgroundColor: tema.cores.corFundoElevado,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
-    gap: 4,
   },
-  iconeRelogio: {
-    fontSize: 12,
+  badgeHorarioAgora: {
+    backgroundColor: `${tema.cores.corMarcaPrimaria}30`,
+    borderWidth: 1,
+    borderColor: tema.cores.corMarcaPrimaria,
   },
   textoHorario: {
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.micro,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  textoHorarioAgora: {
+    color: '#818cf8',
+  },
+  badgeAgora: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${tema.cores.corStatusSeguro}25`,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: tema.raioBorda.redondo,
+    borderWidth: 1,
+    borderColor: tema.cores.corStatusSeguro,
+    gap: 4,
+  },
+  pontoPulso: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: tema.cores.corStatusSeguro,
+  },
+  textoBadgeAgora: {
+    color: tema.cores.corStatusSeguro,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  badgeProxima: {
+    backgroundColor: `${tema.cores.corStatusAlerta}20`,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: tema.raioBorda.redondo,
+    borderWidth: 1,
+    borderColor: tema.cores.corStatusAlerta,
+  },
+  textoBadgeProxima: {
+    color: tema.cores.corStatusAlerta,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  badgeEncerrada: {
+    backgroundColor: tema.cores.corFundoElevado,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: tema.raioBorda.redondo,
+  },
+  textoBadgeEncerrada: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: 10,
+    fontWeight: '500',
   },
   codigo: {
     color: tema.cores.corTextoSecundario,
@@ -109,20 +236,35 @@ const estilos = StyleSheet.create({
   },
   rodape: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  infoGrupo: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: tema.espacamento.sm,
-    marginTop: 2,
+    flex: 1,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
-  iconeInfo: {
-    fontSize: 12,
   },
   textoInfo: {
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.micro,
+  },
+  botaoFaltaRapida: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: tema.raioBorda.pequeno,
+    backgroundColor: `${tema.cores.corStatusCritico}20`,
+    borderWidth: 1,
+    borderColor: 'rgba(248, 81, 73, 0.4)',
+  },
+  textoBotaoFaltaRapida: {
+    color: tema.cores.corStatusCritico,
+    fontSize: 10,
+    fontWeight: '700',
   },
 });

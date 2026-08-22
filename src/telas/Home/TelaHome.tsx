@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,20 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { useDisciplinas } from '../../hooks/useDisciplinas';
-import { useGradeHoraria } from '../../hooks/useGradeHoraria';
-import { useFrequencia } from '../../hooks/useFrequencia';
-import { useAvaliacoes } from '../../hooks/useAvaliacoes';
-import { useTarefas } from '../../hooks/useTarefas';
-import { CardDisciplina } from '../../componentes/CardDisciplina';
+import { useDashboard } from '../../hooks/useDashboard';
+import { CardMateriaAlerta } from '../../componentes/CardMateriaAlerta';
 import { CardHorarioAula } from '../../componentes/CardHorarioAula';
 import { CardTarefa } from '../../componentes/CardTarefa';
+import { ModalFormularioTarefa } from '../../componentes/ModalFormularioTarefa';
 import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
-import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
 import { Disciplina } from '../../modelos/Disciplina';
 import { TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../../modelos/Avaliacao';
-import { DIAS_SEMANA_LABELS } from '../../modelos/HorarioAula';
-import { gradeHorariaService } from '../../servicos/GradeHorariaService';
 import { tema } from '../../estilos/tema';
 
 interface TelaHomeProps {
@@ -40,53 +34,32 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
   aoEditarDisciplina,
   aoVerDetalhesDisciplina,
 }) => {
-  const { disciplinas, excluirDisciplina } = useDisciplinas();
-  const { aulasDeHoje } = useGradeHoraria();
   const {
-    resumos,
-    carregarResumos,
-    incrementar,
-    decrementar,
+    disciplinas,
+    aulasProcessadas,
+    materiasEmAlerta,
+    tarefasHome,
+    proximasAvaliacoes,
+    estatisticas,
+    metricas,
+    dataExtenso,
+    resumosFrequencia,
+    alternarConclusao,
+    criarTarefa,
+    incrementarFalta,
+    decrementarFalta,
     registrarFaltaDetalhada,
     removerFalta,
-    obterHistorico,
-  } = useFrequencia();
-  const { proximasAvaliacoes, carregarProximasAvaliacoes } = useAvaliacoes();
-  const { tarefasHome, estatisticas, carregarTarefasHome, alternarConclusao } = useTarefas();
+    obterHistoricoFaltas,
+  } = useDashboard();
 
+  const [modalNovaTarefaVisivel, setModalNovaTarefaVisivel] = useState(false);
   const [disciplinaHistorico, setDisciplinaHistorico] = useState<Disciplina | null>(null);
-  const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<Disciplina | null>(null);
-  const [excluindo, setExcluindo] = useState(false);
 
-  const diaHoje = gradeHorariaService.converterDateParaDiaSemana();
-
-  useEffect(() => {
-    if (disciplinas.length > 0) {
-      carregarResumos(disciplinas);
-    }
-    carregarProximasAvaliacoes(5);
-    carregarTarefasHome(4);
-  }, [disciplinas, carregarResumos, carregarProximasAvaliacoes, carregarTarefasHome]);
-
-  const totalFaltasGeral = Object.values(resumos).reduce(
-    (acc, r) => acc + (r?.totalFaltas || 0),
-    0
-  );
-
-  const materiasEmAlertaOuCritico = Object.values(resumos).filter(
-    (r) => r?.status === 'ALERTA' || r?.status === 'CRITICO'
-  ).length;
-
-  const confirmarExclusao = async () => {
-    if (!disciplinaParaExcluir) return;
-    try {
-      setExcluindo(true);
-      await excluirDisciplina(disciplinaParaExcluir.id);
-      setDisciplinaParaExcluir(null);
-    } catch (e) {
-      // Erro tratado
-    } finally {
-      setExcluindo(false);
+  const abrirDetalhesPorId = (disciplinaId: string) => {
+    const disc = disciplinas.find((d) => d.id === disciplinaId);
+    if (disc) {
+      aoVerDetalhesDisciplina(disc);
     }
   };
 
@@ -96,101 +69,148 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         contentContainerStyle={estilos.conteudo}
         showsVerticalScrollIndicator={false}
       >
-        {/* Boas-vindas */}
+        {/* Cabeçalho do Dashboard */}
         <View style={estilos.cabecalho}>
           <Text style={estilos.saudacao}>CampusFlow</Text>
-          <Text style={estilos.subtitulo}>Gestão Acadêmica Offline</Text>
+          <Text style={estilos.dataSubtitulo}>{dataExtenso}</Text>
         </View>
 
-        {/* Resumo Rápido com Frequência e Tarefas */}
+        {/* Métricas Consolidadas do Topo (RF08) */}
         <View style={estilos.cardResumo}>
           <View style={estilos.linhaResumo}>
+            {/* Aulas Hoje */}
             <View style={estilos.itemEstatistica}>
-              <Text style={estilos.numeroEstatistica}>{disciplinas.length}</Text>
-              <Text style={estilos.rotuloEstatistica}>Disciplinas</Text>
-            </View>
-            <View style={estilos.separador} />
-            <View style={estilos.itemEstatistica}>
-              <Text style={estilos.numeroEstatistica}>{aulasDeHoje.length}</Text>
+              <Text style={estilos.numeroEstatistica}>{metricas.aulasHoje}</Text>
               <Text style={estilos.rotuloEstatistica}>Aulas Hoje</Text>
             </View>
+
             <View style={estilos.separador} />
+
+            {/* Tarefas Pendentes */}
             <View style={estilos.itemEstatistica}>
               <Text
                 style={[
                   estilos.numeroEstatistica,
                   {
                     color:
-                      estatisticas.pendentes > 0
+                      metricas.tarefasAtrasadas > 0
+                        ? tema.cores.corStatusCritico
+                        : metricas.tarefasPendentes > 0
                         ? tema.cores.corMarcaPrimaria
                         : tema.cores.corTextoPrimario,
                   },
                 ]}
               >
-                {estatisticas.pendentes}
+                {metricas.tarefasPendentes}
               </Text>
-              <Text style={estilos.rotuloEstatistica}>Tarefas</Text>
+              <Text style={estilos.rotuloEstatistica}>
+                {metricas.tarefasAtrasadas > 0
+                  ? `${metricas.tarefasAtrasadas} Atrasada${metricas.tarefasAtrasadas > 1 ? 's' : ''}`
+                  : 'Tarefas'}
+              </Text>
             </View>
+
             <View style={estilos.separador} />
+
+            {/* Matérias em Alerta */}
             <View style={estilos.itemEstatistica}>
               <Text
                 style={[
                   estilos.numeroEstatistica,
                   {
                     color:
-                      materiasEmAlertaOuCritico > 0
-                        ? tema.cores.corStatusAlerta
-                        : tema.cores.corTextoPrimario,
+                      metricas.materiasEmAlerta > 0
+                        ? tema.cores.corStatusCritico
+                        : tema.cores.corStatusSeguro,
                   },
                 ]}
               >
-                {totalFaltasGeral}
+                {metricas.materiasEmAlerta}
               </Text>
-              <Text style={estilos.rotuloEstatistica}>Faltas Totais</Text>
+              <Text style={estilos.rotuloEstatistica}>Em Risco</Text>
+            </View>
+
+            <View style={estilos.separador} />
+
+            {/* Total de Matérias */}
+            <View style={estilos.itemEstatistica}>
+              <Text style={estilos.numeroEstatistica}>
+                {metricas.totalDisciplinas}
+              </Text>
+              <Text style={estilos.rotuloEstatistica}>Matérias</Text>
             </View>
           </View>
         </View>
 
-        {/* Alerta de Matérias em Risco */}
-        {materiasEmAlertaOuCritico > 0 && (
-          <View style={estilos.cardAtencao}>
-            <View style={estilos.infoAtencao}>
-              <Text style={estilos.tituloAtencao}>Atenção à Frequência</Text>
-              <Text style={estilos.textoAtencao}>
-                Você tem {materiasEmAlertaOuCritico}{' '}
-                {materiasEmAlertaOuCritico === 1
-                  ? 'matéria em estado de alerta ou limite crítico'
-                  : 'matérias em estado de alerta ou limite crítico'}
-                .
-              </Text>
-            </View>
-          </View>
-        )}
+        {/* Barra de Ações Rápidas em 1 Toque (RNF03) */}
+        <View style={estilos.barraAtalhos}>
+          <TouchableOpacity
+            style={estilos.botaoAtalhoRapido}
+            onPress={() => setModalNovaTarefaVisivel(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoBotaoAtalhoRapido}>+ Nova Tarefa</Text>
+          </TouchableOpacity>
 
-        {/* Alerta de Tarefas Atrasadas */}
-        {estatisticas.atrasadas > 0 && (
-          <View style={[estilos.cardAtencao, estilos.cardAtencaoCritico]}>
-            <View style={estilos.infoAtencao}>
-              <Text style={[estilos.tituloAtencao, { color: tema.cores.corStatusCritico }]}>
-                Tarefas Atrasadas
-              </Text>
-              <Text style={estilos.textoAtencao}>
-                Você tem {estatisticas.atrasadas}{' '}
-                {estatisticas.atrasadas === 1
-                  ? 'tarefa com prazo vencido pendente de entrega'
-                  : 'tarefas com prazo vencido pendentes de entrega'}
-                .
-              </Text>
-            </View>
-          </View>
-        )}
+          <TouchableOpacity
+            style={estilos.botaoAtalhoRapido}
+            onPress={aoCriarDisciplina}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoBotaoAtalhoRapido}>+ Matéria</Text>
+          </TouchableOpacity>
 
-        {/* Seção Aulas de Hoje */}
+          <TouchableOpacity
+            style={estilos.botaoAtalhoRapidoSecundario}
+            onPress={aoIrParaGrade}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoBotaoAtalhoSecundario}>Grade Horária</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Seção 1: Resumo das Matérias em Estado de Alerta (Faltas e Notas Baixas - RF08) */}
         <View style={estilos.secaoCabecalho}>
+          <View>
+            <Text style={estilos.secaoTitulo}>Diagnóstico Acadêmico</Text>
+            <Text style={estilos.secaoSubtitulo}>
+              {materiasEmAlerta.length > 0
+                ? `${materiasEmAlerta.length} matéria(s) com atenção necessária`
+                : 'Frequência e notas sob controle'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={aoIrParaDisciplinas}>
+            <Text style={estilos.linkVerTodas}>Ver matérias →</Text>
+          </TouchableOpacity>
+        </View>
+
+        {materiasEmAlerta.length === 0 ? (
+          <View style={estilos.cardSituacaoRegular}>
+            <View style={estilos.badgeRegular}>
+              <Text style={estilos.textoBadgeRegular}>✓ Situação Regular</Text>
+            </View>
+            <Text style={estilos.textoRegular}>
+              Tudo sob controle! Nenhuma matéria está com limite de faltas em risco ou reprovação por nota.
+            </Text>
+          </View>
+        ) : (
+          materiasEmAlerta.map((alerta) => (
+            <CardMateriaAlerta
+              key={alerta.disciplinaId}
+              alerta={alerta}
+              aoVerDetalhes={abrirDetalhesPorId}
+            />
+          ))
+        )}
+
+        {/* Seção 2: Aulas de Hoje (RF08) */}
+        <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
           <View>
             <Text style={estilos.secaoTitulo}>Aulas de Hoje</Text>
             <Text style={estilos.secaoSubtitulo}>
-              {DIAS_SEMANA_LABELS[diaHoje]}
+              {aulasProcessadas.length > 0
+                ? `${aulasProcessadas.length} aula(s) programada(s)`
+                : 'Dia livre de aulas'}
             </Text>
           </View>
           <TouchableOpacity onPress={aoIrParaGrade}>
@@ -198,58 +218,37 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           </TouchableOpacity>
         </View>
 
-        {aulasDeHoje.length === 0 ? (
-          <View style={estilos.cardAulasVazio}>
-            <Text style={estilos.textoAulasVazio}>
-              Nenhuma aula programada para hoje ({DIAS_SEMANA_LABELS[diaHoje].toLowerCase()}).
-            </Text>
-          </View>
-        ) : (
-          aulasDeHoje.map((aula) => (
-            <CardHorarioAula key={aula.id} aula={aula} />
-          ))
-        )}
-
-        {/* Seção Minhas Disciplinas */}
-        <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
-          <Text style={estilos.secaoTitulo}>Minhas Matérias</Text>
-          <TouchableOpacity onPress={aoIrParaDisciplinas}>
-            <Text style={estilos.linkVerTodas}>Ver todas →</Text>
-          </TouchableOpacity>
-        </View>
-
-        {disciplinas.length === 0 ? (
+        {aulasProcessadas.length === 0 ? (
           <View style={estilos.cardVazio}>
-            <Text style={estilos.textoVazio}>Nenhuma matéria cadastrada ainda.</Text>
+            <Text style={estilos.textoVazio}>
+              Nenhuma aula cadastrada para hoje.
+            </Text>
             <TouchableOpacity
-              style={estilos.botaoAdicionar}
-              onPress={aoCriarDisciplina}
+              style={estilos.botaoAdicionarVazio}
+              onPress={aoIrParaGrade}
             >
-              <Text style={estilos.textoBotaoAdicionar}>+ Cadastrar Disciplina</Text>
+              <Text style={estilos.textoBotaoAdicionarVazio}>
+                Consultar Grade Semanal
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
-          disciplinas.slice(0, 3).map((disc) => (
-            <CardDisciplina
-              key={disc.id}
-              disciplina={disc}
-              resumo={resumos[disc.id]}
-              aoPressionar={aoVerDetalhesDisciplina}
-              aoEditar={aoEditarDisciplina}
-              aoExcluir={(d) => setDisciplinaParaExcluir(d)}
-              aoIncrementarFalta={incrementar}
-              aoDecrementarFalta={decrementar}
-              aoAbrirHistoricoFaltas={(d) => setDisciplinaHistorico(d)}
+          aulasProcessadas.map((aula) => (
+            <CardHorarioAula
+              key={aula.id}
+              aula={aula}
+              aoPressionar={abrirDetalhesPorId}
+              aoIncrementarFalta={incrementarFalta}
             />
           ))
         )}
 
-        {/* Seção Tarefas Pendentes (Ação em 1 Toque - RNF03) */}
+        {/* Seção 3: Tarefas Pendentes com Vencimento Próximo (RF08 & RNF03) */}
         <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
           <View>
-            <Text style={estilos.secaoTitulo}>Tarefas Pendentes</Text>
+            <Text style={estilos.secaoTitulo}>Tarefas Prioritárias</Text>
             <Text style={estilos.secaoSubtitulo}>
-              {estatisticas.pendentes} {estatisticas.pendentes === 1 ? 'pendência restante' : 'pendências restantes'}
+              {estatisticas.pendentes} pendente(s) • Conclusão em 1 toque
             </Text>
           </View>
           <TouchableOpacity onPress={aoIrParaTarefas}>
@@ -258,10 +257,16 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         </View>
 
         {tarefasHome.length === 0 ? (
-          <View style={estilos.cardAulasVazio}>
-            <Text style={estilos.textoAulasVazio}>
+          <View style={estilos.cardVazio}>
+            <Text style={estilos.textoVazio}>
               Tudo em dia! Nenhuma tarefa pendente no momento.
             </Text>
+            <TouchableOpacity
+              style={estilos.botaoAdicionarVazio}
+              onPress={() => setModalNovaTarefaVisivel(true)}
+            >
+              <Text style={estilos.textoBotaoAdicionarVazio}>+ Criar Tarefa</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           tarefasHome.map((tarefa) => (
@@ -274,62 +279,98 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           ))
         )}
 
-        {/* Seção Próximas Avaliações */}
+        {/* Seção 4: Próximas Avaliações */}
         {proximasAvaliacoes.length > 0 && (
           <>
             <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
-              <Text style={estilos.secaoTitulo}>Próximas Avaliações</Text>
+              <View>
+                <Text style={estilos.secaoTitulo}>Próximas Avaliações</Text>
+                <Text style={estilos.secaoSubtitulo}>
+                  Provas e entregas agendadas
+                </Text>
+              </View>
             </View>
+
             {proximasAvaliacoes.map((avaliacao) => {
               const corTipo = TIPO_AVALIACAO_CORES[avaliacao.tipo];
               const hoje = new Date();
               hoje.setHours(0, 0, 0, 0);
               const dataAval = new Date(`${avaliacao.data}T00:00:00`);
-              const diasRestantes = Math.round((dataAval.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+              const diasRestantes = Math.round(
+                (dataAval.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)
+              );
+
               return (
-                <View key={avaliacao.id} style={estilos.cardProximaAvaliacao}>
-                  <View style={[estilos.barraLateralAvaliacao, { backgroundColor: corTipo }]} />
+                <TouchableOpacity
+                  key={avaliacao.id}
+                  style={estilos.cardProximaAvaliacao}
+                  onPress={() => abrirDetalhesPorId(avaliacao.disciplinaId)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      estilos.barraLateralAvaliacao,
+                      { backgroundColor: corTipo },
+                    ]}
+                  />
                   <View style={estilos.infoProximaAvaliacao}>
-                    <Text style={estilos.tituloProximaAvaliacao} numberOfLines={1}>{avaliacao.titulo}</Text>
-                    <Text style={estilos.disciplinaProximaAvaliacao}>{avaliacao.disciplinaNome}</Text>
+                    <Text style={estilos.tituloProximaAvaliacao} numberOfLines={1}>
+                      {avaliacao.titulo}
+                    </Text>
+                    <Text style={estilos.disciplinaProximaAvaliacao}>
+                      {avaliacao.disciplinaNome}
+                    </Text>
                   </View>
                   <View style={estilos.prazoContainer}>
-                    <Text style={[
-                      estilos.prazoNumero,
-                      { color: diasRestantes <= 2 ? tema.cores.corStatusCritico : diasRestantes <= 7 ? tema.cores.corStatusAlerta : tema.cores.corTextoSecundario }
-                    ]}>
-                      {diasRestantes === 0 ? 'Hoje!' : diasRestantes === 1 ? 'Amanhã' : `${diasRestantes}d`}
+                    <Text
+                      style={[
+                        estilos.prazoNumero,
+                        {
+                          color:
+                            diasRestantes <= 2
+                              ? tema.cores.corStatusCritico
+                              : diasRestantes <= 7
+                              ? tema.cores.corStatusAlerta
+                              : tema.cores.corTextoSecundario,
+                        },
+                      ]}
+                    >
+                      {diasRestantes === 0
+                        ? 'Hoje!'
+                        : diasRestantes === 1
+                        ? 'Amanhã'
+                        : `${diasRestantes}d`}
                     </Text>
-                    <Text style={estilos.prazoLabel}>{TIPO_AVALIACAO_LABELS[avaliacao.tipo]}</Text>
+                    <Text style={estilos.prazoLabel}>
+                      {TIPO_AVALIACAO_LABELS[avaliacao.tipo]}
+                    </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </>
         )}
       </ScrollView>
 
+      {/* Modal de Criação Rápida de Tarefa (Acesso direto do Dashboard) */}
+      <ModalFormularioTarefa
+        visivel={modalNovaTarefaVisivel}
+        disciplinas={disciplinas}
+        aoFechar={() => setModalNovaTarefaVisivel(false)}
+        aoSalvar={async (dados) => {
+          await criarTarefa(dados as any);
+        }}
+      />
+
       {/* Modal de Histórico de Faltas */}
       <ModalHistoricoFaltas
         visivel={!!disciplinaHistorico}
         disciplina={disciplinaHistorico}
-        resumo={disciplinaHistorico ? resumos[disciplinaHistorico.id] : undefined}
+        resumo={disciplinaHistorico ? resumosFrequencia[disciplinaHistorico.id] : undefined}
         aoFechar={() => setDisciplinaHistorico(null)}
-        aoBuscarHistorico={obterHistorico}
+        aoBuscarHistorico={obterHistoricoFaltas}
         aoAdicionarFaltaDetalhada={registrarFaltaDetalhada}
         aoRemoverFalta={removerFalta}
-      />
-
-      {/* Modal de Exclusão */}
-      <ModalConfirmacao
-        visivel={!!disciplinaParaExcluir}
-        titulo="Excluir Disciplina"
-        mensagem={`Tem certeza que deseja excluir "${disciplinaParaExcluir?.nome}"? Todos os horários e faltas serão excluídos.`}
-        textoConfirmar="Excluir"
-        textoCancelar="Cancelar"
-        aoConfirmar={confirmarExclusao}
-        aoCancelar={() => setDisciplinaParaExcluir(null)}
-        carregando={excluindo}
       />
     </SafeAreaView>
   );
@@ -354,16 +395,17 @@ const estilos = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: -0.5,
   },
-  subtitulo: {
+  dataSubtitulo: {
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.pequeno,
     marginTop: 2,
+    fontWeight: '500',
   },
   cardResumo: {
     backgroundColor: tema.cores.corFundoCard,
     borderRadius: tema.raioBorda.card,
     padding: tema.espacamento.md,
-    marginBottom: tema.espacamento.md,
+    marginBottom: tema.espacamento.sm,
     borderWidth: 1,
     borderColor: '#21262d',
   },
@@ -374,52 +416,59 @@ const estilos = StyleSheet.create({
   },
   itemEstatistica: {
     alignItems: 'center',
+    flex: 1,
   },
   numeroEstatistica: {
     color: tema.cores.corTextoPrimario,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
   },
   rotuloEstatistica: {
     color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.micro,
+    fontSize: 10,
     marginTop: 2,
+    textAlign: 'center',
+    fontWeight: '500',
   },
   separador: {
     width: 1,
-    height: 30,
+    height: 28,
     backgroundColor: tema.cores.corFundoElevado,
   },
-  cardAtencao: {
-    backgroundColor: 'rgba(210, 153, 34, 0.1)',
-    borderRadius: tema.raioBorda.padrao,
-    padding: tema.espacamento.sm + 2,
-    marginBottom: tema.espacamento.md,
+  barraAtalhos: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(210, 153, 34, 0.3)',
-    gap: 10,
+    gap: 8,
+    marginBottom: tema.espacamento.md,
   },
-  cardAtencaoCritico: {
-    backgroundColor: 'rgba(248, 81, 73, 0.1)',
-    borderColor: 'rgba(248, 81, 73, 0.3)',
-  },
-  iconeAtencao: {
-    fontSize: 20,
-  },
-  infoAtencao: {
+  botaoAtalhoRapido: {
     flex: 1,
+    backgroundColor: `${tema.cores.corMarcaPrimaria}20`,
+    borderWidth: 1,
+    borderColor: tema.cores.corMarcaPrimaria,
+    borderRadius: tema.raioBorda.padrao,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tituloAtencao: {
-    color: tema.cores.corStatusAlerta,
-    fontSize: tema.tipografia.pequeno,
+  textoBotaoAtalhoRapido: {
+    color: tema.cores.corMarcaPrimaria,
+    fontSize: 11,
     fontWeight: '700',
   },
-  textoAtencao: {
-    color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.micro,
-    marginTop: 2,
+  botaoAtalhoRapidoSecundario: {
+    flex: 1,
+    backgroundColor: tema.cores.corFundoElevado,
+    borderWidth: 1,
+    borderColor: '#30363d',
+    borderRadius: tema.raioBorda.padrao,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textoBotaoAtalhoSecundario: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: 11,
+    fontWeight: '600',
   },
   secaoCabecalho: {
     flexDirection: 'row',
@@ -434,7 +483,7 @@ const estilos = StyleSheet.create({
   },
   secaoSubtitulo: {
     color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.micro,
+    fontSize: 11,
     marginTop: 1,
   },
   linkVerTodas: {
@@ -442,47 +491,59 @@ const estilos = StyleSheet.create({
     fontSize: tema.tipografia.pequeno,
     fontWeight: '600',
   },
-  cardAulasVazio: {
-    backgroundColor: tema.cores.corFundoCard,
+  cardSituacaoRegular: {
+    backgroundColor: 'rgba(46, 160, 67, 0.08)',
     borderRadius: tema.raioBorda.card,
     padding: tema.espacamento.md,
-    alignItems: 'center',
-    flexDirection: 'row',
     borderWidth: 1,
-    borderColor: '#21262d',
-    gap: 12,
+    borderColor: 'rgba(46, 160, 67, 0.3)',
+    marginBottom: tema.espacamento.sm,
   },
-  iconeAulasVazio: {
-    fontSize: 24,
+  badgeRegular: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(46, 160, 67, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: tema.raioBorda.redondo,
+    marginBottom: 6,
   },
-  textoAulasVazio: {
-    flex: 1,
+  textoBadgeRegular: {
+    color: tema.cores.corStatusSeguro,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  textoRegular: {
     color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.micro,
+    fontSize: tema.tipografia.micro + 1,
+    lineHeight: 18,
   },
   cardVazio: {
     backgroundColor: tema.cores.corFundoCard,
     borderRadius: tema.raioBorda.card,
-    padding: tema.espacamento.lg,
+    padding: tema.espacamento.md,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#21262d',
+    marginBottom: tema.espacamento.sm,
   },
   textoVazio: {
     color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.pequeno,
-    marginBottom: tema.espacamento.md,
+    fontSize: tema.tipografia.micro + 1,
+    marginBottom: tema.espacamento.sm,
+    textAlign: 'center',
   },
-  botaoAdicionar: {
-    backgroundColor: tema.cores.corMarcaPrimaria,
-    paddingHorizontal: tema.espacamento.md,
-    paddingVertical: tema.espacamento.sm,
-    borderRadius: tema.raioBorda.padrao,
+  botaoAdicionarVazio: {
+    backgroundColor: tema.cores.corFundoElevado,
+    borderWidth: 1,
+    borderColor: '#30363d',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: tema.raioBorda.pequeno,
   },
-  textoBotaoAdicionar: {
+  textoBotaoAdicionarVazio: {
     color: tema.cores.corTextoPrimario,
-    fontSize: tema.tipografia.pequeno,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '600',
   },
   cardProximaAvaliacao: {
     backgroundColor: tema.cores.corFundoCard,

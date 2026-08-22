@@ -47,10 +47,10 @@
 
 ### 1.4. Dashboard, Calendário e Notificações Locais
 
-* **RF08 — Dashboard Inicial ("Hoje"):**
+* ~~**RF08 — Dashboard Inicial ("Hoje"):**
   * Visão rápida das aulas do dia com sala/horário.
   * Tarefas pendentes com vencimento próximo.
-  * Resumo das matérias em estado de alerta (faltas ou notas baixas).
+  * Resumo das matérias em estado de alerta (faltas ou notas baixas).~~
 * **RF09 — Calendário Integrado:** Visão mensal e semanal unificando provas, entregas e eventos acadêmicos.
 * **RF10 — Notificações Locais (AlarmManager / Local Notifications):**
   * Disparo de lembretes locais agendados no próprio dispositivo antes das aulas.
