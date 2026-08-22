@@ -6,6 +6,10 @@ import { useAvaliacoes } from './useAvaliacoes';
 import { useTarefas } from './useTarefas';
 import { dashboardService } from '../servicos/DashboardService';
 import {
+  acoesRapidasService,
+  FeedbackAcaoRapida,
+} from '../servicos/AcoesRapidasService';
+import {
   AulaHojeComStatus,
   MateriaAlertaItem,
   MetricasDashboard,
@@ -41,6 +45,7 @@ export const useDashboard = () => {
   } = useTarefas();
 
   const [carregandoGeral, setCarregandoGeral] = useState(false);
+  const [feedbackAcaoRapida, setFeedbackAcaoRapida] = useState<FeedbackAcaoRapida | null>(null);
 
   /**
    * Recarrega todos os dados do dashboard em paralelo.
@@ -123,6 +128,109 @@ export const useDashboard = () => {
     return dashboardService.formatarDataExtenso();
   }, []);
 
+  /**
+   * Registro de falta em 1 toque com feedback imediato e suporte a desfazer (RNF03).
+   */
+  const incrementarFaltaRapida = useCallback(
+    async (disciplinaId: string) => {
+      const disc = disciplinas.find((d) => d.id === disciplinaId);
+      const resumoAtual = resumos[disciplinaId];
+      const faltasAnteriores = resumoAtual?.totalFaltas || 0;
+      const novoTotal = faltasAnteriores + 1;
+
+      await incrementar(disciplinaId);
+
+      const acao = acoesRapidasService.registrarAcao({
+        tipo: 'INCREMENTAR_FALTA',
+        descricao: `Falta registrada em ${disc?.nome || 'Disciplina'}`,
+        disciplinaId,
+        disciplinaNome: disc?.nome,
+        totalFaltasAposAcao: novoTotal,
+        limiteFaltas: disc?.limiteMaximoFaltas,
+      });
+
+      const feedback = acoesRapidasService.criarFeedback(acao);
+      setFeedbackAcaoRapida(feedback);
+    },
+    [disciplinas, resumos, incrementar]
+  );
+
+  /**
+   * Remoção de falta em 1 toque com feedback imediato (RNF03).
+   */
+  const decrementarFaltaRapida = useCallback(
+    async (disciplinaId: string) => {
+      const disc = disciplinas.find((d) => d.id === disciplinaId);
+      const resumoAtual = resumos[disciplinaId];
+      const faltasAnteriores = resumoAtual?.totalFaltas || 0;
+      const novoTotal = Math.max(0, faltasAnteriores - 1);
+
+      await decrementar(disciplinaId);
+
+      const acao = acoesRapidasService.registrarAcao({
+        tipo: 'DECREMENTAR_FALTA',
+        descricao: `Falta removida de ${disc?.nome || 'Disciplina'}`,
+        disciplinaId,
+        disciplinaNome: disc?.nome,
+        totalFaltasAposAcao: novoTotal,
+        limiteFaltas: disc?.limiteMaximoFaltas,
+      });
+
+      const feedback = acoesRapidasService.criarFeedback(acao);
+      setFeedbackAcaoRapida(feedback);
+    },
+    [disciplinas, resumos, decrementar]
+  );
+
+  /**
+   * Conclusão de tarefa em 1 toque com feedback imediato e suporte a desfazer (RNF03).
+   */
+  const alternarConclusaoTarefaRapida = useCallback(
+    async (tarefaId: string) => {
+      const tarefa = tarefasHome.find((t) => t.id === tarefaId);
+      const novoEstado = !tarefa?.concluida;
+
+      await alternarConclusao(tarefaId);
+
+      const acao = acoesRapidasService.registrarAcao({
+        tipo: novoEstado ? 'CONCLUIR_TAREFA' : 'REABRIR_TAREFA',
+        descricao: novoEstado ? 'Tarefa concluída' : 'Tarefa reaberta',
+        tarefaId,
+        tarefaTitulo: tarefa?.titulo,
+        concluidaAposAcao: novoEstado,
+      });
+
+      const feedback = acoesRapidasService.criarFeedback(acao);
+      setFeedbackAcaoRapida(feedback);
+    },
+    [tarefasHome, alternarConclusao]
+  );
+
+  /**
+   * Desfaz a última ação rápida de 1 toque executada (RNF03).
+   */
+  const desfazerUltimaAcao = useCallback(async () => {
+    const ultimaAcao = acoesRapidasService.desfazerUltimaAcao();
+    if (!ultimaAcao) return;
+
+    if (ultimaAcao.tipo === 'INCREMENTAR_FALTA' && ultimaAcao.disciplinaId) {
+      await decrementar(ultimaAcao.disciplinaId);
+    } else if (ultimaAcao.tipo === 'DECREMENTAR_FALTA' && ultimaAcao.disciplinaId) {
+      await incrementar(ultimaAcao.disciplinaId);
+    } else if (
+      (ultimaAcao.tipo === 'CONCLUIR_TAREFA' || ultimaAcao.tipo === 'REABRIR_TAREFA') &&
+      ultimaAcao.tarefaId
+    ) {
+      await alternarConclusao(ultimaAcao.tarefaId);
+    }
+
+    setFeedbackAcaoRapida(null);
+  }, [incrementar, decrementar, alternarConclusao]);
+
+  const fecharFeedback = useCallback(() => {
+    setFeedbackAcaoRapida(null);
+  }, []);
+
   const carregando =
     carregandoDisciplinas ||
     carregandoGrade ||
@@ -144,13 +252,16 @@ export const useDashboard = () => {
     alertaCritico,
     fecharAlertaCritico,
     recarregarDashboard,
-    alternarConclusao,
+    alternarConclusao: alternarConclusaoTarefaRapida,
     criarTarefa,
-    incrementarFalta: incrementar,
-    decrementarFalta: decrementar,
+    incrementarFalta: incrementarFaltaRapida,
+    decrementarFalta: decrementarFaltaRapida,
     registrarFaltaDetalhada,
     removerFalta,
     obterHistoricoFaltas: obterHistorico,
     excluirDisciplina,
+    feedbackAcaoRapida,
+    desfazerUltimaAcao,
+    fecharFeedback,
   };
 };

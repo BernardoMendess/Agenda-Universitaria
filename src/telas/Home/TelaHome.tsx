@@ -11,6 +11,8 @@ import { useDashboard } from '../../hooks/useDashboard';
 import { CardMateriaAlerta } from '../../componentes/CardMateriaAlerta';
 import { CardHorarioAula } from '../../componentes/CardHorarioAula';
 import { CardTarefa } from '../../componentes/CardTarefa';
+import { SecaoFrequenciaRapidaHome } from '../../componentes/SecaoFrequenciaRapidaHome';
+import { BarraAcaoRapidaFeedback } from '../../componentes/BarraAcaoRapidaFeedback';
 import { ModalFormularioTarefa } from '../../componentes/ModalFormularioTarefa';
 import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
@@ -57,6 +59,9 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
     registrarFaltaDetalhada,
     removerFalta,
     obterHistoricoFaltas,
+    feedbackAcaoRapida,
+    desfazerUltimaAcao,
+    fecharFeedback,
   } = useDashboard();
 
   const [modalNovaTarefaVisivel, setModalNovaTarefaVisivel] = useState(false);
@@ -188,7 +193,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Seção 1: Resumo das Matérias em Estado de Alerta (Faltas e Notas Baixas - RF08) */}
+        {/* Seção 1: Resumo das Matérias em Estado de Alerta (Faltas e Notas Baixas - RF08 & RNF03) */}
         <View style={estilos.secaoCabecalho}>
           <View>
             <Text style={estilos.secaoTitulo}>Diagnóstico Acadêmico</Text>
@@ -218,17 +223,19 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
               key={alerta.disciplinaId}
               alerta={alerta}
               aoVerDetalhes={abrirDetalhesPorId}
+              aoIncrementarFalta={incrementarFalta}
+              aoDecrementarFalta={decrementarFalta}
             />
           ))
         )}
 
-        {/* Seção 2: Aulas de Hoje (RF08) */}
+        {/* Seção 2: Aulas de Hoje (RF08 & RNF03) */}
         <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
           <View>
             <Text style={estilos.secaoTitulo}>Aulas de Hoje</Text>
             <Text style={estilos.secaoSubtitulo}>
               {aulasProcessadas.length > 0
-                ? `${aulasProcessadas.length} aula(s) programada(s)`
+                ? `${aulasProcessadas.length} aula(s) programada(s) • Faltas em 1 toque`
                 : 'Dia livre de aulas'}
             </Text>
           </View>
@@ -252,14 +259,32 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             </TouchableOpacity>
           </View>
         ) : (
-          aulasProcessadas.map((aula) => (
-            <CardHorarioAula
-              key={aula.id}
-              aula={aula}
-              aoPressionar={abrirDetalhesPorId}
-              aoIncrementarFalta={incrementarFalta}
-            />
-          ))
+          aulasProcessadas.map((aula) => {
+            const resumo = resumosFrequencia[aula.disciplinaId];
+            const disciplinaObj = disciplinas.find((d) => d.id === aula.disciplinaId);
+            return (
+              <CardHorarioAula
+                key={aula.id}
+                aula={aula}
+                totalFaltas={resumo?.totalFaltas}
+                limiteFaltas={disciplinaObj?.limiteMaximoFaltas}
+                aoPressionar={abrirDetalhesPorId}
+                aoIncrementarFalta={incrementarFalta}
+                aoDecrementarFalta={decrementarFalta}
+              />
+            );
+          })
+        )}
+
+        {/* Seção: Lançamento Rápido de Faltas para qualquer disciplina (RNF03) */}
+        {disciplinas.length > 0 && (
+          <SecaoFrequenciaRapidaHome
+            disciplinas={disciplinas}
+            resumosFrequencia={resumosFrequencia}
+            aoIncrementarFalta={incrementarFalta}
+            aoDecrementarFalta={decrementarFalta}
+            aoVerDetalhesDisciplina={abrirDetalhesPorId}
+          />
         )}
 
         {/* Seção 3: Tarefas Pendentes com Vencimento Próximo (RF08 & RNF03) */}
@@ -375,6 +400,13 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           </>
         )}
       </ScrollView>
+
+      {/* Barra de Feedback de Ações Rápidas com Desfazer em 1 Toque (RNF03) */}
+      <BarraAcaoRapidaFeedback
+        feedback={feedbackAcaoRapida}
+        aoDesfazer={desfazerUltimaAcao}
+        aoFechar={fecharFeedback}
+      />
 
       {/* Modal de Criação Rápida de Tarefa (Acesso direto do Dashboard) */}
       <ModalFormularioTarefa

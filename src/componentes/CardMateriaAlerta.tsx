@@ -6,16 +6,22 @@ import { tema } from '../estilos/tema';
 interface CardMateriaAlertaProps {
   alerta: MateriaAlertaItem;
   aoVerDetalhes: (disciplinaId: string) => void;
+  aoIncrementarFalta?: (disciplinaId: string) => void;
+  aoDecrementarFalta?: (disciplinaId: string) => void;
 }
 
 export const CardMateriaAlerta: React.FC<CardMateriaAlertaProps> = ({
   alerta,
   aoVerDetalhes,
+  aoIncrementarFalta,
+  aoDecrementarFalta,
 }) => {
   const ehCritico = alerta.nivelGravidade === 'CRITICO';
   const corDestaque = ehCritico
     ? tema.cores.corStatusCritico
     : tema.cores.corStatusAlerta;
+
+  const temFaltas = alerta.resumoFrequencia && alerta.resumoFrequencia.totalFaltas > 0;
 
   return (
     <View
@@ -101,15 +107,45 @@ export const CardMateriaAlerta: React.FC<CardMateriaAlertaProps> = ({
           ))}
         </View>
 
-        {/* Rodapé com Ação Rápida */}
+        {/* Rodapé com Ações Rápidas (1 Toque - RNF03) e Ver Detalhes */}
         <View style={estilos.rodape}>
+          <View style={estilos.acoesFrequenciaAlerta}>
+            {aoDecrementarFalta && temFaltas && (
+              <TouchableOpacity
+                style={estilos.botaoAlertaFaltaMenos}
+                onPress={() => aoDecrementarFalta(alerta.disciplinaId)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Diminuir falta em ${alerta.disciplinaNome}`}
+              >
+                <Text style={estilos.textoBotaoAlertaMenos}>-1</Text>
+              </TouchableOpacity>
+            )}
+
+            {aoIncrementarFalta && (
+              <TouchableOpacity
+                style={estilos.botaoAlertaFaltaMais}
+                onPress={() => aoIncrementarFalta(alerta.disciplinaId)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Registrar falta em ${alerta.disciplinaNome}`}
+              >
+                <Text style={estilos.textoBotaoAlertaMais}>+1 Falta</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
           <TouchableOpacity
             style={[estilos.botaoAcao, { borderColor: corDestaque }]}
             onPress={() => aoVerDetalhes(alerta.disciplinaId)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver detalhes de ${alerta.disciplinaNome}`}
           >
             <Text style={[estilos.textoBotaoAcao, { color: corDestaque }]}>
-              Ver Detalhes da Matéria →
+              Ver Detalhes →
             </Text>
           </TouchableOpacity>
         </View>
@@ -221,7 +257,40 @@ const estilos = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.07)',
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  acoesFrequenciaAlerta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  botaoAlertaFaltaMenos: {
+    backgroundColor: tema.cores.corFundoElevado,
+    borderWidth: 1,
+    borderColor: '#30363d',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: tema.raioBorda.pequeno,
+  },
+  textoBotaoAlertaMenos: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  botaoAlertaFaltaMais: {
+    backgroundColor: `${tema.cores.corStatusCritico}20`,
+    borderWidth: 1,
+    borderColor: 'rgba(248, 81, 73, 0.4)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: tema.raioBorda.pequeno,
+  },
+  textoBotaoAlertaMais: {
+    color: tema.cores.corStatusCritico,
+    fontSize: 10,
+    fontWeight: '700',
   },
   botaoAcao: {
     paddingVertical: 4,

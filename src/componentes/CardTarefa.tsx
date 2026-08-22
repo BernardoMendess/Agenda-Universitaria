@@ -68,7 +68,7 @@ export const CardTarefa: React.FC<CardTarefaProps> = ({
 
       <View style={estilos.conteudo}>
         <View style={estilos.linhaPrincipal}>
-          {/* Checkbox customizado */}
+          {/* Checkbox customizado com alvo de toque ampliado (1 toque - RNF03) */}
           <TouchableOpacity
             style={[
               estilos.checkbox,
@@ -77,6 +77,10 @@ export const CardTarefa: React.FC<CardTarefaProps> = ({
             ]}
             onPress={() => aoAlternarConclusao(tarefa.id)}
             activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: tarefa.concluida }}
+            accessibilityLabel={`Tarefa ${tarefa.titulo}. Status: ${tarefa.concluida ? 'concluída' : 'pendente'}. Toque para alternar.`}
           >
             {tarefa.concluida && <Text style={estilos.checkTexto}>✓</Text>}
           </TouchableOpacity>

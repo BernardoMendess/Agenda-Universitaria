@@ -6,14 +6,20 @@ import { tema } from '../estilos/tema';
 
 interface CardHorarioAulaProps {
   aula: AulaGradeItem & { statusMomento?: StatusMomentoAula };
+  totalFaltas?: number;
+  limiteFaltas?: number | null;
   aoPressionar?: (disciplinaId: string) => void;
   aoIncrementarFalta?: (disciplinaId: string) => void;
+  aoDecrementarFalta?: (disciplinaId: string) => void;
 }
 
 export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({
   aula,
+  totalFaltas,
+  limiteFaltas,
   aoPressionar,
   aoIncrementarFalta,
+  aoDecrementarFalta,
 }) => {
   const status = aula.statusMomento;
   const ehAgora = status === 'EM_ANDAMENTO';
@@ -30,6 +36,8 @@ export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({
       onPress={() => aoPressionar?.(aula.disciplinaId)}
       activeOpacity={aoPressionar ? 0.75 : 1}
       disabled={!aoPressionar}
+      accessibilityRole="button"
+      accessibilityLabel={`Aula de ${aula.nomeDisciplina}, horário ${aula.horarioInicio} às ${aula.horarioFim}`}
     >
       {/* Barra lateral com a cor da disciplina */}
       <View
@@ -104,18 +112,45 @@ export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({
                 <Text style={estilos.textoInfo}>Prof: {aula.nomeProfessor}</Text>
               </View>
             ) : null}
+
+            {typeof totalFaltas === 'number' ? (
+              <View style={estilos.infoItem}>
+                <Text style={estilos.textoFaltasContador}>
+                  Faltas: {totalFaltas}
+                  {limiteFaltas && limiteFaltas > 0 ? `/${limiteFaltas}` : ''}
+                </Text>
+              </View>
+            ) : null}
           </View>
 
-          {/* Ação Rápida em 1 Toque (RNF03): Registrar Falta */}
-          {aoIncrementarFalta && !ehEncerrada && (
-            <TouchableOpacity
-              style={estilos.botaoFaltaRapida}
-              onPress={() => aoIncrementarFalta(aula.disciplinaId)}
-              activeOpacity={0.7}
-            >
-              <Text style={estilos.textoBotaoFaltaRapida}>+1 Falta</Text>
-            </TouchableOpacity>
-          )}
+          {/* Ações Rápidas em 1 Toque (RNF03): Registrar / Remover Falta */}
+          <View style={estilos.grupoBotoesFalta}>
+            {aoDecrementarFalta && typeof totalFaltas === 'number' && totalFaltas > 0 && (
+              <TouchableOpacity
+                style={estilos.botaoFaltaMenos}
+                onPress={() => aoDecrementarFalta(aula.disciplinaId)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Diminuir falta em ${aula.nomeDisciplina}`}
+              >
+                <Text style={estilos.textoBotaoFaltaMenos}>-1</Text>
+              </TouchableOpacity>
+            )}
+
+            {aoIncrementarFalta && (
+              <TouchableOpacity
+                style={estilos.botaoFaltaRapida}
+                onPress={() => aoIncrementarFalta(aula.disciplinaId)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Registrar falta em ${aula.nomeDisciplina}`}
+              >
+                <Text style={estilos.textoBotaoFaltaRapida}>+1 Falta</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -253,6 +288,29 @@ const estilos = StyleSheet.create({
   textoInfo: {
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.micro,
+  },
+  textoFaltasContador: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: tema.tipografia.micro,
+    fontWeight: '600',
+  },
+  grupoBotoesFalta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  botaoFaltaMenos: {
+    backgroundColor: tema.cores.corFundoElevado,
+    borderWidth: 1,
+    borderColor: '#30363d',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: tema.raioBorda.pequeno,
+  },
+  textoBotaoFaltaMenos: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: 10,
+    fontWeight: '700',
   },
   botaoFaltaRapida: {
     paddingHorizontal: 8,
