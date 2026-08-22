@@ -81,7 +81,7 @@ export const ModalAlertaFaltasCritico: React.FC<ModalAlertaFaltasCriticoProps> =
                 <Text style={estilos.textoMensagem}>
                   {reprovadoPorFalta
                     ? 'Você ultrapassou a tolerância máxima permitida para esta disciplina. Caso tenha atestados médicos ou justificativas legais, apresente-os à secretaria o quanto antes.'
-                    : 'Atenção máxima: seu saldo de faltas restantes chegou a ZERO. Qualquer nova falta causará a sua reprovação imediata por frequência (RF04/RF10).'}
+                    : 'Atenção máxima: seu saldo de faltas restantes chegou a zero. Qualquer nova falta causará a sua reprovação imediata por frequência.'}
                 </Text>
               </View>
 

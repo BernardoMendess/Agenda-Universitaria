@@ -129,10 +129,10 @@ export class FrequenciaService {
 
   private computarResumo(disciplina: Disciplina, totalFaltas: number): ResumoFrequencia {
     const limite = disciplina.limiteMaximoFaltas;
-    const presencaObrigatoria = typeof limite === 'number' && limite > 0;
+    const presencaObrigatoria = typeof limite === 'number' && limite >= 0;
 
     // Se presença NÃO é obrigatória (sem limite definido):
-    if (!presencaObrigatoria) {
+    if (!presencaObrigatoria || limite === null || limite === undefined) {
       return {
         disciplinaId: disciplina.id,
         totalFaltas,
@@ -145,13 +145,29 @@ export class FrequenciaService {
       };
     }
 
+    // Se limite === 0: Qualquer falta coloca como reprovado por falta
+    if (limite === 0) {
+      const reprovadoPorFalta = totalFaltas > 0;
+      return {
+        disciplinaId: disciplina.id,
+        totalFaltas,
+        limiteMaximoFaltas: 0,
+        presencaObrigatoria: true,
+        faltasRestantes: 0,
+        percentualConsumido: totalFaltas > 0 ? 100 : 0,
+        status: totalFaltas > 0 ? 'CRITICO' : 'SEGURO',
+        reprovadoPorFalta,
+      };
+    }
+
     // Se presença é obrigatória (limite > 0):
     const faltasRestantes = Math.max(0, limite - totalFaltas);
     const percentualConsumido = Math.min(100, Math.round((totalFaltas / limite) * 100));
-    const reprovadoPorFalta = totalFaltas >= limite;
+    // Reprovado apenas se exceder o limite de faltas permitidas
+    const reprovadoPorFalta = totalFaltas > limite;
 
     let status: StatusFrequencia = 'SEGURO';
-    if (reprovadoPorFalta) {
+    if (reprovadoPorFalta || faltasRestantes === 0) {
       status = 'CRITICO';
     } else if (percentualConsumido >= 75) {
       status = 'ALERTA';

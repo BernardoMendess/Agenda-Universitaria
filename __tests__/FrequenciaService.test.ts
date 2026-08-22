@@ -154,7 +154,7 @@ describe('FrequenciaService - Gestão e Cálculo de Faltas (Presença Obrigatór
       expect(resumo.reprovadoPorFalta).toBe(false);
     });
 
-    it('deve indicar status CRÍTICO e reprovado quando atingir ou exceder o limite', async () => {
+    it('deve indicar status CRÍTICO ao atingir o limite (sem reprovação) e reprovado apenas ao exceder', async () => {
       for (let i = 0; i < 10; i++) {
         await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       }
@@ -164,14 +164,38 @@ describe('FrequenciaService - Gestão e Cálculo de Faltas (Presença Obrigatór
       expect(resumo.faltasRestantes).toBe(0);
       expect(resumo.percentualConsumido).toBe(100);
       expect(resumo.status).toBe('CRITICO');
-      expect(resumo.reprovadoPorFalta).toBe(true);
+      expect(resumo.reprovadoPorFalta).toBe(false);
 
-      // 11 faltas
+      // 11 faltas: agora sim excede o limite e é reprovado por falta
       await frequenciaService.incrementarFalta(disciplinaPadrao.id);
       resumo = await frequenciaService.calcularResumoFrequencia(disciplinaPadrao.id);
       expect(resumo.totalFaltas).toBe(11);
+      expect(resumo.faltasRestantes).toBe(0);
       expect(resumo.status).toBe('CRITICO');
       expect(resumo.reprovadoPorFalta).toBe(true);
+    });
+
+    it('deve reprovar imediatamente na primeira falta se o limite de faltas for 0', async () => {
+      const disciplinaLimiteZero = await disciplinaRepo.criar({
+        nome: 'Laboratório Obrigatório',
+        codigo: 'LAB01',
+        corIdentificacao: '#ef4444',
+        limiteMaximoFaltas: 0,
+        criterioAprovacao: 'ARITMETICA',
+      });
+
+      let resumo = await frequenciaService.calcularResumoFrequencia(disciplinaLimiteZero.id);
+      expect(resumo.totalFaltas).toBe(0);
+      expect(resumo.faltasRestantes).toBe(0);
+      expect(resumo.reprovadoPorFalta).toBe(false);
+      expect(resumo.status).toBe('SEGURO');
+
+      await frequenciaService.incrementarFalta(disciplinaLimiteZero.id);
+      resumo = await frequenciaService.calcularResumoFrequencia(disciplinaLimiteZero.id);
+      expect(resumo.totalFaltas).toBe(1);
+      expect(resumo.faltasRestantes).toBe(0);
+      expect(resumo.reprovadoPorFalta).toBe(true);
+      expect(resumo.status).toBe('CRITICO');
     });
 
     it('deve tratar matéria sem limite como Presença Facultativa (nunca reprova por falta)', async () => {
