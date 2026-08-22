@@ -19,11 +19,13 @@ import { ModalFormularioAvaliacao } from '../../componentes/ModalFormularioAvali
 import { ModalFormularioTarefa } from '../../componentes/ModalFormularioTarefa';
 import { ModalLancamentoNota } from '../../componentes/ModalLancamentoNota';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
+import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
 import { ControleFrequencia } from '../../componentes/ControleFrequencia';
 import { useAvaliacoes } from '../../hooks/useAvaliacoes';
 import { useFrequencia } from '../../hooks/useFrequencia';
 import { useGradeHoraria } from '../../hooks/useGradeHoraria';
 import { useTarefas } from '../../hooks/useTarefas';
+import { notificacaoService } from '../../servicos/NotificacaoService';
 import { DIAS_SEMANA_LABELS } from '../../modelos/HorarioAula';
 import { tema } from '../../estilos/tema';
 
@@ -43,7 +45,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
   aoEditar,
 }) => {
   const { avaliacoes, resumosDesempenho, carregarAvaliacoes, carregarDesempenhos, criarAvaliacao, atualizarAvaliacao, lancarNota, excluirAvaliacao } = useAvaliacoes();
-  const { resumos, carregarResumos, incrementar, decrementar, registrarFaltaDetalhada, removerFalta, obterHistorico } = useFrequencia();
+  const { resumos, alertaCritico, fecharAlertaCritico, carregarResumos, incrementar, decrementar, registrarFaltaDetalhada, removerFalta, obterHistorico } = useFrequencia();
   const { obterHorariosDisciplina } = useGradeHoraria();
   const { tarefas, carregarTarefas, criarTarefa, atualizarTarefa, alternarConclusao, excluirTarefa } = useTarefas();
 
@@ -369,6 +371,19 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
         aoConfirmar={confirmarExclusaoTarefa}
         aoCancelar={() => setTarefaParaExcluir(null)}
         carregando={excluindo}
+      />
+
+      {/* Modal de Alerta Crítico de Faltas (RF10) */}
+      <ModalAlertaFaltasCritico
+        visivel={!!alertaCritico}
+        disciplinaNome={alertaCritico?.disciplinaNome || ''}
+        limiteMaximoFaltas={alertaCritico?.limiteMaximoFaltas || 0}
+        totalFaltas={alertaCritico?.totalFaltas || 0}
+        reprovadoPorFalta={alertaCritico?.reprovadoPorFalta || false}
+        aoFechar={fecharAlertaCritico}
+        aoAbrirHistorico={() => {
+          setAbaAtiva('frequencia');
+        }}
       />
     </SafeAreaView>
   );

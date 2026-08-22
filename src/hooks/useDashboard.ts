@@ -139,6 +139,8 @@ export const useDashboard = () => {
     resumosFrequencia: resumos,
     resumosDesempenho,
     carregando,
+    alertaCritico,
+    fecharAlertaCritico,
     recarregarDashboard,
     alternarConclusao,
     criarTarefa,

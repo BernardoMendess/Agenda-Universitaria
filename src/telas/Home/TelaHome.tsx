@@ -13,6 +13,7 @@ import { CardHorarioAula } from '../../componentes/CardHorarioAula';
 import { CardTarefa } from '../../componentes/CardTarefa';
 import { ModalFormularioTarefa } from '../../componentes/ModalFormularioTarefa';
 import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
+import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
 import { Disciplina } from '../../modelos/Disciplina';
 import { TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../../modelos/Avaliacao';
 import { tema } from '../../estilos/tema';
@@ -46,6 +47,8 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
     metricas,
     dataExtenso,
     resumosFrequencia,
+    alertaCritico,
+    fecharAlertaCritico,
     alternarConclusao,
     criarTarefa,
     incrementarFalta,
@@ -388,6 +391,24 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         aoBuscarHistorico={obterHistoricoFaltas}
         aoAdicionarFaltaDetalhada={registrarFaltaDetalhada}
         aoRemoverFalta={removerFalta}
+      />
+
+      {/* Modal de Alerta Crítico de Faltas (RF10) */}
+      <ModalAlertaFaltasCritico
+        visivel={!!alertaCritico}
+        disciplinaNome={alertaCritico?.disciplinaNome || ''}
+        limiteMaximoFaltas={alertaCritico?.limiteMaximoFaltas || 0}
+        totalFaltas={alertaCritico?.totalFaltas || 0}
+        reprovadoPorFalta={alertaCritico?.reprovadoPorFalta || false}
+        aoFechar={fecharAlertaCritico}
+        aoAbrirHistorico={() => {
+          if (alertaCritico) {
+            const disc = disciplinas.find((d) => d.id === alertaCritico.disciplinaId);
+            if (disc) {
+              setDisciplinaHistorico(disc);
+            }
+          }
+        }}
       />
     </SafeAreaView>
   );

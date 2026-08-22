@@ -14,6 +14,7 @@ import { useFrequencia } from '../../hooks/useFrequencia';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
 import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
+import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
 import { Disciplina } from '../../modelos/Disciplina';
 import { tema } from '../../estilos/tema';
 
@@ -31,6 +32,8 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
   const { disciplinas, carregando, erro, excluirDisciplina } = useDisciplinas();
   const {
     resumos,
+    alertaCritico,
+    fecharAlertaCritico,
     carregarResumos,
     incrementar,
     decrementar,
@@ -179,6 +182,24 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
         aoBuscarHistorico={obterHistorico}
         aoAdicionarFaltaDetalhada={registrarFaltaDetalhada}
         aoRemoverFalta={removerFalta}
+      />
+
+      {/* Modal de Alerta Crítico de Faltas (RF10) */}
+      <ModalAlertaFaltasCritico
+        visivel={!!alertaCritico}
+        disciplinaNome={alertaCritico?.disciplinaNome || ''}
+        limiteMaximoFaltas={alertaCritico?.limiteMaximoFaltas || 0}
+        totalFaltas={alertaCritico?.totalFaltas || 0}
+        reprovadoPorFalta={alertaCritico?.reprovadoPorFalta || false}
+        aoFechar={fecharAlertaCritico}
+        aoAbrirHistorico={() => {
+          if (alertaCritico) {
+            const disc = disciplinas.find((d) => d.id === alertaCritico.disciplinaId);
+            if (disc) {
+              setDisciplinaHistorico(disc);
+            }
+          }
+        }}
       />
     </SafeAreaView>
   );

@@ -5,6 +5,7 @@ import { TelaCalendario } from '../telas/Calendario/TelaCalendario';
 import { TelaDisciplinas } from '../telas/Disciplinas/TelaDisciplinas';
 import { TelaGradeHoraria } from '../telas/GradeHoraria/TelaGradeHoraria';
 import { TelaTarefas } from '../telas/Tarefas/TelaTarefas';
+import { TelaAjustes } from '../telas/Ajustes/TelaAjustes';
 import { TelaFormularioDisciplina } from '../telas/CriarDisciplina/TelaFormularioDisciplina';
 import { TelaDetalhesDisciplina } from '../telas/DetalhesDisciplina/TelaDetalhesDisciplina';
 import { Disciplina } from '../modelos/Disciplina';
@@ -16,6 +17,7 @@ type AbaAtiva =
   | 'tarefas'
   | 'grade'
   | 'disciplinas'
+  | 'ajustes'
   | 'formulario'
   | 'detalhes';
 
@@ -64,6 +66,12 @@ export const NavegadorPrincipal: React.FC = () => {
     setAbaAtiva('home');
   };
 
+  const irParaAjustes = () => {
+    setDisciplinaEdicao(null);
+    setDisciplinaDetalhes(null);
+    setAbaAtiva('ajustes');
+  };
+
   const irParaDetalhesDisciplina = (disciplina: Disciplina) => {
     setDisciplinaDetalhes(disciplina);
     setAbaAtiva('detalhes');
@@ -102,6 +110,9 @@ export const NavegadorPrincipal: React.FC = () => {
             aoEditarDisciplina={irParaEditarDisciplina}
             aoSelecionarDisciplina={irParaDetalhesDisciplina}
           />
+        )}
+        {abaAtiva === 'ajustes' && (
+          <TelaAjustes />
         )}
         {abaAtiva === 'formulario' && (
           <TelaFormularioDisciplina
@@ -196,6 +207,23 @@ export const NavegadorPrincipal: React.FC = () => {
               ]}
             >
               Disciplinas
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              estilos.itemAba,
+              abaAtiva === 'ajustes' ? estilos.itemAbaAtiva : null,
+            ]}
+            onPress={irParaAjustes}
+          >
+            <Text
+              style={[
+                estilos.textoAba,
+                abaAtiva === 'ajustes' ? estilos.textoAbaAtiva : null,
+              ]}
+            >
+              Ajustes
             </Text>
           </TouchableOpacity>
         </SafeAreaView>

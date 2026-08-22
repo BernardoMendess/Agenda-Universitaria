@@ -52,10 +52,10 @@
   * Tarefas pendentes com vencimento próximo.
   * Resumo das matérias em estado de alerta (faltas ou notas baixas).~~
 * ~~**RF09 — Calendário Integrado:** Visão mensal e semanal unificando provas, entregas e eventos acadêmicos.~~
-* **RF10 — Notificações Locais (AlarmManager / Local Notifications):**
+* ~~**RF10 — Notificações Locais (AlarmManager / Local Notifications):**
   * Disparo de lembretes locais agendados no próprio dispositivo antes das aulas.
   * Avisos locais com antecedência configurável (ex: 24h / 2h antes) para provas e entregas sem depender de serviços externos de push.
-  * Alerta visual/sonoro imediato ao atingir o limite de faltas.
+  * Alerta visual/sonoro imediato ao atingir o limite de faltas.~~
 
 ---
 

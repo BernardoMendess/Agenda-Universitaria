@@ -115,6 +115,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
         criterioAprovacao: 'ARITMETICA',
         corIdentificacao: '#6366f1',
         dataCriacao: '2026-01-01',
+        dataAtualizacao: '2026-01-01',
       },
       {
         id: 'd2',
@@ -124,6 +125,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
         criterioAprovacao: 'ARITMETICA',
         corIdentificacao: '#ef4444',
         dataCriacao: '2026-01-01',
+        dataAtualizacao: '2026-01-01',
       },
       {
         id: 'd3',
@@ -133,6 +135,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
         criterioAprovacao: 'ARITMETICA',
         corIdentificacao: '#10b981',
         dataCriacao: '2026-01-01',
+        dataAtualizacao: '2026-01-01',
       },
     ];
 
@@ -142,6 +145,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
           disciplinaId: 'd1',
           totalFaltas: 1,
           limiteMaximoFaltas: 4,
+          presencaObrigatoria: true,
           faltasRestantes: 3,
           percentualConsumido: 25,
           status: 'SEGURO',
@@ -151,6 +155,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
           disciplinaId: 'd2',
           totalFaltas: 0,
           limiteMaximoFaltas: 0,
+          presencaObrigatoria: false,
           faltasRestantes: 0,
           percentualConsumido: 0,
           status: 'SEGURO',
@@ -160,6 +165,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
           disciplinaId: 'd3',
           totalFaltas: 2,
           limiteMaximoFaltas: 8,
+          presencaObrigatoria: true,
           faltasRestantes: 6,
           percentualConsumido: 25,
           status: 'SEGURO',
@@ -321,6 +327,7 @@ describe('DashboardService - RF08 (Dashboard Inicial)', () => {
           disciplinaId: 'd1',
           totalFaltas: 4,
           limiteMaximoFaltas: 4,
+          presencaObrigatoria: true,
           faltasRestantes: 0,
           percentualConsumido: 100,
           status: 'CRITICO',
