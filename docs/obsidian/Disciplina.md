@@ -25,12 +25,21 @@ A entidade **Disciplina** representa uma matéria acadêmica matriculada pelo es
 | `dataCriacao` | `string` (ISO) | Sim | Data e hora de cadastro |
 | `dataAtualizacao` | `string` (ISO) | Sim | Data e hora da última modificação |
 
+## Campos Adicionais (RF06)
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `notaMinimaAprovacao` | `number` ($[0,10]$) | Sim | Nota mínima para aprovação (padrão `6.0`) |
+
 ## Regras de Negócio e Serviços Associados
 - [[Regra - Limite de Faltas]]
 - [[Regra - Grade Horaria]]
+- [[Regra - Calculo de Media e Projecao]]
 - [[DisciplinaService]]
 - [[Falta]]
 - [[FrequenciaService]]
 - [[GradeHoraria]]
 - [[GradeHorariaService]]
+- [[Avaliacao]]
+- [[AvaliacaoService]]
 - [[Stack Tecnológica]]
