@@ -11,8 +11,12 @@ import {
 } from 'react-native';
 import { useNotificacoes } from '../../hooks/useNotificacoes';
 import { useBackup } from '../../hooks/useBackup';
+import { usePrivacidadeEEficiencia } from '../../hooks/usePrivacidadeEEficiencia';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { ModalBackup } from '../../componentes/ModalBackup';
+import { CardEficienciaEnergetica } from '../../componentes/CardEficienciaEnergetica';
+import { CardPrivacidadeTotal } from '../../componentes/CardPrivacidadeTotal';
+import { ModalCertificadoPrivacidade } from '../../componentes/ModalCertificadoPrivacidade';
 import { BadgeStatusOffline } from '../../componentes/BadgeStatusOffline';
 import { tema } from '../../estilos/tema';
 
@@ -43,6 +47,14 @@ export const TelaAjustes: React.FC = () => {
   } = useNotificacoes();
 
   const { resumoLocal, carregarResumo: recarregarBackupResumo } = useBackup();
+  const {
+    diagnosticoEficiencia,
+    relatorioPrivacidade,
+    modalCertificadoVisivel,
+    carregarAuditorias,
+    abrirModalCertificado,
+    fecharModalCertificado,
+  } = usePrivacidadeEEficiencia();
 
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [modalBackupVisivel, setModalBackupVisivel] = useState<boolean>(false);
@@ -450,31 +462,14 @@ export const TelaAjustes: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Seção 6: Garantia Offline & Persistência Local (RNF01, RNF02, RNF04, RNF05) */}
-        <View style={estilos.cardPrivacidade}>
-          <View style={estilos.linhaTopoPrivacidade}>
-            <Text style={estilos.tituloPrivacidade}>Zero Conectividade & Privacidade Total</Text>
-            <BadgeStatusOffline tamanho="pequeno" />
-          </View>
-          <Text style={estilos.textoPrivacidade}>
-            O CampusFlow opera 100% isolado (RNF01), sem chamadas a servidores ou nuvem. Todos os dados são gravados localmente no banco relacional SQLite (<Text style={estilos.textoNegrito}>campusflow.db</Text>) no próprio aparelho (RNF02 e RNF05).
-          </Text>
+        {/* Seção 6: Eficiência Energética (RNF04) */}
+        <CardEficienciaEnergetica diagnostico={diagnosticoEficiencia} />
 
-          <View style={estilos.caixaStatusSQLite}>
-            <View style={estilos.itemInfoSQLite}>
-              <Text style={estilos.rotuloInfoSQLite}>Motor de Banco:</Text>
-              <Text style={estilos.valorInfoSQLite}>SQLite Relacional</Text>
-            </View>
-            <View style={estilos.itemInfoSQLite}>
-              <Text style={estilos.rotuloInfoSQLite}>Integridade:</Text>
-              <Text style={[estilos.valorInfoSQLite, { color: tema.cores.corStatusSeguro }]}>✓ 100% Íntegro (Local)</Text>
-            </View>
-            <View style={estilos.itemInfoSQLite}>
-              <Text style={estilos.rotuloInfoSQLite}>Modo:</Text>
-              <Text style={estilos.valorInfoSQLite}>WAL (Alta Performance)</Text>
-            </View>
-          </View>
-        </View>
+        {/* Seção 7: Privacidade Total & Isolamento (RNF05) */}
+        <CardPrivacidadeTotal
+          relatorio={relatorioPrivacidade}
+          aoPressionarVerCertificado={abrirModalCertificado}
+        />
 
         {/* Botão Restaurar Padrão */}
         <TouchableOpacity
@@ -495,8 +490,16 @@ export const TelaAjustes: React.FC = () => {
         aoRestaurarSucesso={async () => {
           await carregarConfiguracoes();
           await recarregarBackupResumo();
+          await carregarAuditorias();
           exibirFeedback('Backup restaurado e dados sincronizados com sucesso!');
         }}
+      />
+
+      {/* Modal de Certificado de Privacidade Total (RNF05) */}
+      <ModalCertificadoPrivacidade
+        visivel={modalCertificadoVisivel}
+        certificado={relatorioPrivacidade?.certificado}
+        aoFechar={fecharModalCertificado}
       />
     </SafeAreaView>
   );
