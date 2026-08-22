@@ -119,7 +119,6 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
         </View>
       ) : disciplinasFiltradas.length === 0 ? (
         <View style={estilos.emptyState}>
-          <Text style={estilos.emptyIcone}>📚</Text>
           <Text style={estilos.emptyTitulo}>
             {busca ? 'Nenhuma disciplina encontrada' : 'Nenhuma disciplina cadastrada'}
           </Text>

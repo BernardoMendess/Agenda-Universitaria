@@ -150,7 +150,6 @@ export const TelaGradeHoraria: React.FC<TelaGradeHorariaProps> = ({
           {/* Lista de Aulas do Dia */}
           {aulasDoDia.length === 0 ? (
             <View style={estilos.cardVazio}>
-              <Text style={estilos.iconeVazio}>🏖️</Text>
               <Text style={estilos.tituloVazio}>Sem aulas neste dia</Text>
               <Text style={estilos.textoVazio}>
                 Nenhum bloco de horário cadastrado para {DIAS_SEMANA_LABELS[diaSelecionado].toLowerCase()}.
@@ -194,7 +193,6 @@ export const TelaGradeHoraria: React.FC<TelaGradeHorariaProps> = ({
 
           {totalAulasSemana === 0 && (
             <View style={estilos.cardVazio}>
-              <Text style={estilos.iconeVazio}>📅</Text>
               <Text style={estilos.tituloVazio}>Grade Semanal Vazia</Text>
               <Text style={estilos.textoVazio}>
                 Você ainda não configurou horários para nenhuma disciplina.

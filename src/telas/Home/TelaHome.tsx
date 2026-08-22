@@ -125,7 +125,6 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         {/* Alerta de Matérias em Risco */}
         {materiasEmAlertaOuCritico > 0 && (
           <View style={estilos.cardAtencao}>
-            <Text style={estilos.iconeAtencao}>⚠️</Text>
             <View style={estilos.infoAtencao}>
               <Text style={estilos.tituloAtencao}>Atenção à Frequência</Text>
               <Text style={estilos.textoAtencao}>
@@ -154,7 +153,6 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
 
         {aulasDeHoje.length === 0 ? (
           <View style={estilos.cardAulasVazio}>
-            <Text style={estilos.iconeAulasVazio}>🏖️</Text>
             <Text style={estilos.textoAulasVazio}>
               Nenhuma aula programada para hoje ({DIAS_SEMANA_LABELS[diaHoje].toLowerCase()}).
             </Text>

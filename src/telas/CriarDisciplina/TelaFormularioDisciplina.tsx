@@ -252,7 +252,7 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
                   {h.horarioInicio} às {h.horarioFim}
                 </Text>
                 {h.localSala ? (
-                  <Text style={estilos.textoSalaBloco}>📍 {h.localSala}</Text>
+                  <Text style={estilos.textoSalaBloco}>Sala: {h.localSala}</Text>
                 ) : null}
               </View>
               <View style={estilos.acoesHorario}>
@@ -260,13 +260,13 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
                   style={estilos.botaoAcaoHorario}
                   onPress={() => abrirModalEditarHorario(index)}
                 >
-                  <Text style={estilos.iconeAcao}>✏️</Text>
+                  <Text style={estilos.textoAcaoHorario}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={estilos.botaoAcaoHorario}
                   onPress={() => removerHorario(index)}
                 >
-                  <Text style={estilos.iconeAcao}>🗑️</Text>
+                  <Text style={estilos.textoAcaoHorarioExcluir}>Excluir</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -450,12 +450,22 @@ const estilos = StyleSheet.create({
     gap: 6,
   },
   botaoAcaoHorario: {
-    padding: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#30363d',
   },
-  iconeAcao: {
-    fontSize: 12,
+  textoAcaoHorario: {
+    color: tema.cores.corMarcaPrimaria,
+    fontSize: tema.tipografia.micro,
+    fontWeight: '600',
+  },
+  textoAcaoHorarioExcluir: {
+    color: tema.cores.corStatusCritico,
+    fontSize: tema.tipografia.micro,
+    fontWeight: '600',
   },
   campoContainer: {
     marginBottom: tema.espacamento.md,

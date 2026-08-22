@@ -75,12 +75,12 @@ export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
           <View style={estilos.secaoDetalhes}>
             {disciplina.nomeProfessor ? (
               <Text style={estilos.detalheTexto}>
-                👤 {disciplina.nomeProfessor}
+                Prof: {disciplina.nomeProfessor}
                 {disciplina.contatoProfessor ? ` (${disciplina.contatoProfessor})` : ''}
               </Text>
             ) : null}
             {disciplina.localSala ? (
-              <Text style={estilos.detalheTexto}>📍 Sala: {disciplina.localSala}</Text>
+              <Text style={estilos.detalheTexto}>Sala: {disciplina.localSala}</Text>
             ) : null}
           </View>
         ) : null}

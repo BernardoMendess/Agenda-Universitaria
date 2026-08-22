@@ -22,7 +22,6 @@ export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({ aula }) => {
         {/* Cabeçalho do Card: Horário e Código */}
         <View style={estilos.cabecalho}>
           <View style={estilos.badgeHorario}>
-            <Text style={estilos.iconeRelogio}>⏰</Text>
             <Text style={estilos.textoHorario}>
               {aula.horarioInicio} - {aula.horarioFim}
             </Text>
@@ -41,15 +40,13 @@ export const CardHorarioAula: React.FC<CardHorarioAulaProps> = ({ aula }) => {
         <View style={estilos.rodape}>
           {aula.localSala ? (
             <View style={estilos.infoItem}>
-              <Text style={estilos.iconeInfo}>📍</Text>
-              <Text style={estilos.textoInfo}>{aula.localSala}</Text>
+              <Text style={estilos.textoInfo}>Sala: {aula.localSala}</Text>
             </View>
           ) : null}
 
           {aula.nomeProfessor ? (
             <View style={estilos.infoItem}>
-              <Text style={estilos.iconeInfo}>👨‍🏫</Text>
-              <Text style={estilos.textoInfo}>{aula.nomeProfessor}</Text>
+              <Text style={estilos.textoInfo}>Prof: {aula.nomeProfessor}</Text>
             </View>
           ) : null}
         </View>

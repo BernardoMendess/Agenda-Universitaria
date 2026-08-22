@@ -63,7 +63,7 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
                 <View style={[estilos.pontoStatus, { backgroundColor: corStatus }]} />
                 <Text style={[estilos.textoStatus, { color: corStatus }]}>
                   {reprovado
-                    ? `⚠️ Reprovado por Falta (${totalFaltas})`
+                    ? `Reprovado por Falta (${totalFaltas})`
                     : 'Tolerância Zero (0 Faltas)'}
                 </Text>
               </View>
@@ -128,7 +128,7 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
           activeOpacity={0.7}
           accessibilityLabel="Abrir histórico de faltas"
         >
-          <Text style={estilos.textoBotaoHistorico}>📋 Histórico</Text>
+          <Text style={estilos.textoBotaoHistorico}>Histórico</Text>
         </TouchableOpacity>
 
         <View style={estilos.grupoContadores}>

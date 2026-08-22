@@ -77,9 +77,6 @@ export const NavegadorPrincipal: React.FC = () => {
             style={[estilos.itemAba, abaAtiva === 'home' ? estilos.itemAbaAtiva : null]}
             onPress={irParaHome}
           >
-            <Text style={[estilos.iconeAba, abaAtiva === 'home' ? estilos.iconeAbaAtiva : null]}>
-              🏠
-            </Text>
             <Text style={[estilos.textoAba, abaAtiva === 'home' ? estilos.textoAbaAtiva : null]}>
               Início
             </Text>
@@ -94,19 +91,11 @@ export const NavegadorPrincipal: React.FC = () => {
           >
             <Text
               style={[
-                estilos.iconeAba,
-                abaAtiva === 'grade' ? estilos.iconeAbaAtiva : null,
-              ]}
-            >
-              📅
-            </Text>
-            <Text
-              style={[
                 estilos.textoAba,
                 abaAtiva === 'grade' ? estilos.textoAbaAtiva : null,
               ]}
             >
-              Grade
+              Grade Horária
             </Text>
           </TouchableOpacity>
 
@@ -117,14 +106,6 @@ export const NavegadorPrincipal: React.FC = () => {
             ]}
             onPress={irParaDisciplinas}
           >
-            <Text
-              style={[
-                estilos.iconeAba,
-                abaAtiva === 'disciplinas' ? estilos.iconeAbaAtiva : null,
-              ]}
-            >
-              📚
-            </Text>
             <Text
               style={[
                 estilos.textoAba,
@@ -158,23 +139,17 @@ const estilos = StyleSheet.create({
   itemAba: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 6,
+    justifyContent: 'center',
+    paddingVertical: 12,
   },
   itemAbaAtiva: {
     borderTopWidth: 2,
     borderTopColor: tema.cores.corMarcaPrimaria,
   },
-  iconeAba: {
-    fontSize: 18,
-    opacity: 0.6,
-  },
-  iconeAbaAtiva: {
-    opacity: 1,
-  },
   textoAba: {
     color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.micro,
-    marginTop: 2,
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: '500',
   },
   textoAbaAtiva: {
     color: tema.cores.corMarcaPrimaria,

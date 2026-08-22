@@ -275,7 +275,6 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
             </View>
           ) : historico.length === 0 ? (
             <View style={estilos.emptyState}>
-              <Text style={estilos.emptyIcone}>🎉</Text>
               <Text style={estilos.emptyTitulo}>Nenhuma falta registrada</Text>
               <Text style={estilos.emptyDescricao}>
                 Você ainda não possui faltas computadas nesta disciplina.
@@ -291,15 +290,15 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
                   <View style={estilos.infoItemFalta}>
                     <View style={estilos.linhaDataHora}>
                       <Text style={estilos.dataFalta}>
-                        📅 {formatarDataExibicao(item.data)}
+                        {formatarDataExibicao(item.data)}
                       </Text>
-                      <Text style={estilos.horarioFalta}>⏰ {item.horario}</Text>
+                      <Text style={estilos.horarioFalta}>{item.horario}</Text>
                     </View>
 
                     {item.justificativa ? (
                       <View style={estilos.tagJustificativa}>
                         <Text style={estilos.textoJustificativa}>
-                          📝 {item.justificativa}
+                          {item.justificativa}
                         </Text>
                       </View>
                     ) : (
@@ -312,7 +311,7 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
                     onPress={() => handleExcluirFalta(item.id)}
                     accessibilityLabel="Excluir esta falta"
                   >
-                    <Text style={estilos.textoExcluirItem}>🗑️</Text>
+                    <Text style={estilos.textoExcluirItem}>Excluir</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -559,10 +558,17 @@ const estilos = StyleSheet.create({
     marginTop: 4,
   },
   botaoExcluirItem: {
-    padding: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(248, 81, 73, 0.1)',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(248, 81, 73, 0.25)',
     marginLeft: 8,
   },
   textoExcluirItem: {
-    fontSize: 16,
+    color: tema.cores.corStatusCritico,
+    fontSize: tema.tipografia.micro,
+    fontWeight: '600',
   },
 });
