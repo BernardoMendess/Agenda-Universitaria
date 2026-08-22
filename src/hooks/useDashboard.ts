@@ -16,6 +16,8 @@ export const useDashboard = () => {
   const { aulasDeHoje, carregando: carregandoGrade, carregarGrade } = useGradeHoraria();
   const {
     resumos,
+    alertaCritico,
+    fecharAlertaCritico,
     carregarResumos,
     incrementar,
     decrementar,
