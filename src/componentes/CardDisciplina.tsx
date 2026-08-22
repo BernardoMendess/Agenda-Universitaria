@@ -1,20 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Disciplina } from '../modelos/Disciplina';
+import { ResumoFrequencia } from '../modelos/Falta';
+import { ControleFrequencia } from './ControleFrequencia';
 import { tema } from '../estilos/tema';
 
 interface CardDisciplinaProps {
   disciplina: Disciplina;
+  resumo?: ResumoFrequencia;
   aoPressionar: (disciplina: Disciplina) => void;
   aoEditar: (disciplina: Disciplina) => void;
   aoExcluir: (disciplina: Disciplina) => void;
+  aoIncrementarFalta?: (disciplinaId: string) => void;
+  aoDecrementarFalta?: (disciplinaId: string) => void;
+  aoAbrirHistoricoFaltas?: (disciplina: Disciplina) => void;
 }
 
 export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
   disciplina,
+  resumo,
   aoPressionar,
   aoEditar,
   aoExcluir,
+  aoIncrementarFalta,
+  aoDecrementarFalta,
+  aoAbrirHistoricoFaltas,
 }) => {
   const obterDescricaoCriterio = (criterio: string) => {
     switch (criterio) {
@@ -33,7 +43,7 @@ export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
     <TouchableOpacity
       style={estilos.card}
       onPress={() => aoPressionar(disciplina)}
-      activeOpacity={0.85}
+      activeOpacity={0.92}
       accessibilityRole="button"
     >
       {/* Barra de identificação visual da matéria */}
@@ -52,6 +62,12 @@ export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
               <Text style={estilos.codigo}>{disciplina.codigo}</Text>
             ) : null}
           </View>
+
+          <View style={[estilos.badge, estilos.badgePadrao]}>
+            <Text style={estilos.textoBadge}>
+              {obterDescricaoCriterio(disciplina.criterioAprovacao)}
+            </Text>
+          </View>
         </View>
 
         {/* Informações de Professor e Local */}
@@ -69,36 +85,16 @@ export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
           </View>
         ) : null}
 
-        {/* Badges de Frequência e Critério */}
-        <View style={estilos.linhaBadges}>
-          <View
-            style={[
-              estilos.badge,
-              disciplina.limiteMaximoFaltas === 0
-                ? estilos.badgeLimiteZero
-                : estilos.badgePadrao,
-            ]}
-          >
-            <Text
-              style={[
-                estilos.textoBadge,
-                disciplina.limiteMaximoFaltas === 0
-                  ? estilos.textoBadgeAlerta
-                  : null,
-              ]}
-            >
-              {disciplina.limiteMaximoFaltas === 0
-                ? '⚠️ Limite 0 (Tolerância Zero)'
-                : `Máx: ${disciplina.limiteMaximoFaltas} faltas`}
-            </Text>
-          </View>
-
-          <View style={[estilos.badge, estilos.badgePadrao]}>
-            <Text style={estilos.textoBadge}>
-              {obterDescricaoCriterio(disciplina.criterioAprovacao)}
-            </Text>
-          </View>
-        </View>
+        {/* Controle Rápido de Frequência & Faltas (RF03 / RF04 / RF05) */}
+        {aoIncrementarFalta && aoDecrementarFalta && aoAbrirHistoricoFaltas && (
+          <ControleFrequencia
+            resumo={resumo}
+            limiteMaximoFaltas={disciplina.limiteMaximoFaltas}
+            aoIncrementar={() => aoIncrementarFalta(disciplina.id)}
+            aoDecrementar={() => aoDecrementarFalta(disciplina.id)}
+            aoAbrirHistorico={() => aoAbrirHistoricoFaltas(disciplina)}
+          />
+        )}
 
         {/* Botões de Ações Rápidas */}
         <View style={estilos.rodapeCard}>
@@ -148,6 +144,7 @@ const estilos = StyleSheet.create({
   },
   tituloContainer: {
     flex: 1,
+    marginRight: 8,
   },
   nome: {
     color: tema.cores.corTextoPrimario,
@@ -169,39 +166,26 @@ const estilos = StyleSheet.create({
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.pequeno,
   },
-  linhaBadges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: tema.espacamento.xs,
-    marginTop: tema.espacamento.sm,
-  },
   badge: {
     paddingHorizontal: tema.espacamento.sm,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: tema.raioBorda.pequeno,
+    alignSelf: 'flex-start',
   },
   badgePadrao: {
     backgroundColor: tema.cores.corFundoElevado,
-  },
-  badgeLimiteZero: {
-    backgroundColor: 'rgba(248, 81, 73, 0.15)',
-    borderWidth: 1,
-    borderColor: tema.cores.corStatusCritico,
   },
   textoBadge: {
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.micro,
     fontWeight: '600',
   },
-  textoBadgeAlerta: {
-    color: tema.cores.corStatusCritico,
-  },
   rodapeCard: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: tema.espacamento.md,
-    marginTop: tema.espacamento.md,
+    marginTop: tema.espacamento.sm,
     paddingTop: tema.espacamento.xs,
     borderTopWidth: 1,
     borderTopColor: '#21262d',

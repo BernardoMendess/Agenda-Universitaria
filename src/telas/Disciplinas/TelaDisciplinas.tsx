@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useDisciplinas } from '../../hooks/useDisciplinas';
+import { useFrequencia } from '../../hooks/useFrequencia';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
+import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { Disciplina } from '../../modelos/Disciplina';
 import { tema } from '../../estilos/tema';
 
@@ -27,9 +29,26 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
   aoSelecionarDisciplina,
 }) => {
   const { disciplinas, carregando, erro, excluirDisciplina } = useDisciplinas();
+  const {
+    resumos,
+    carregarResumos,
+    incrementar,
+    decrementar,
+    registrarFaltaDetalhada,
+    removerFalta,
+    obterHistorico,
+  } = useFrequencia();
+
   const [busca, setBusca] = useState('');
   const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<Disciplina | null>(null);
+  const [disciplinaHistorico, setDisciplinaHistorico] = useState<Disciplina | null>(null);
   const [excluindo, setExcluindo] = useState(false);
+
+  useEffect(() => {
+    if (disciplinas.length > 0) {
+      carregarResumos(disciplinas);
+    }
+  }, [disciplinas, carregarResumos]);
 
   const disciplinasFiltradas = useMemo(() => {
     if (!busca.trim()) return disciplinas;
@@ -126,9 +145,13 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
           renderItem={({ item }) => (
             <CardDisciplina
               disciplina={item}
+              resumo={resumos[item.id]}
               aoPressionar={aoSelecionarDisciplina}
               aoEditar={aoEditarDisciplina}
               aoExcluir={(disc) => setDisciplinaParaExcluir(disc)}
+              aoIncrementarFalta={incrementar}
+              aoDecrementarFalta={decrementar}
+              aoAbrirHistoricoFaltas={(disc) => setDisciplinaHistorico(disc)}
             />
           )}
           contentContainerStyle={estilos.lista}
@@ -140,12 +163,23 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
       <ModalConfirmacao
         visivel={!!disciplinaParaExcluir}
         titulo="Excluir Disciplina"
-        mensagem={`Tem certeza que deseja excluir "${disciplinaParaExcluir?.nome}"? Todos os dados associados a esta matéria serão removidos permanentemente.`}
+        mensagem={`Tem certeza que deseja excluir "${disciplinaParaExcluir?.nome}"? Todos os horários e histórico de faltas associados serão removidos permanentemente.`}
         textoConfirmar="Excluir"
         textoCancelar="Cancelar"
         aoConfirmar={confirmarExclusao}
         aoCancelar={() => setDisciplinaParaExcluir(null)}
         carregando={excluindo}
+      />
+
+      {/* Modal de Histórico de Faltas */}
+      <ModalHistoricoFaltas
+        visivel={!!disciplinaHistorico}
+        disciplina={disciplinaHistorico}
+        resumo={disciplinaHistorico ? resumos[disciplinaHistorico.id] : undefined}
+        aoFechar={() => setDisciplinaHistorico(null)}
+        aoBuscarHistorico={obterHistorico}
+        aoAdicionarFaltaDetalhada={registrarFaltaDetalhada}
+        aoRemoverFalta={removerFalta}
       />
     </SafeAreaView>
   );

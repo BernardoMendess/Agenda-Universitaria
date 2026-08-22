@@ -20,17 +20,17 @@
 
 ### 1.2. Módulo de Faltas e Frequência (Regra Personalizada)
 
-* **RF03 — Registro Rápido de Faltas:**
+* ~~**RF03 — Registro Rápido de Faltas:**
   * Botão de incremento rápido (+1 / -1) diretamente no card da matéria ou na visão do dia.
-  * Histórico local de faltas com data, horário e justificativa opcional (atestado, imprevisto).
-* **RF04 — Lógica do Limite Máximo:**
+  * Histórico local de faltas com data, horário e justificativa opcional (atestado, imprevisto).~~
+* ~~**RF04 — Lógica do Limite Máximo:**
   * **Se limite = 0:** Qualquer falta registrada coloca a matéria imediatamente como *Reprovado por Falta* / *Limite Excedido*.
   * **Se limite > 0:** Cálculo local do saldo restante:
-    $$\text{Faltas Restantes} = \text{Limite Máximo} - \text{Faltas Atuais}$$
-* **RF05 — Indicadores Visuais de Status:**
+    $$\text{Faltas Restantes} = \text{Limite Máximo} - \text{Faltas Atuais}$$~~
+* ~~**RF05 — Indicadores Visuais de Status:**
   * **Verde:** Frequência segura (menos de 50% do limite consumido).
   * **Amarelo / Laranja:** Alerta (mais de 75% do limite consumido).
-  * **Vermelho / Crítico:** Limite atingido, ultrapassado ou $\ge 1$ falta em disciplina com limite 0.
+  * **Vermelho / Crítico:** Limite atingido, ultrapassado ou $\ge 1$ falta em disciplina com limite 0.~~
 
 ---
 

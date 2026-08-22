@@ -25,10 +25,12 @@ A entidade **Disciplina** representa uma matéria acadêmica matriculada pelo es
 | `dataCriacao` | `string` (ISO) | Sim | Data e hora de cadastro |
 | `dataAtualizacao` | `string` (ISO) | Sim | Data e hora da última modificação |
 
-## Regras de Negócio Associadas
+## Regras de Negócio e Serviços Associados
 - [[Regra - Limite de Faltas]]
 - [[Regra - Grade Horaria]]
 - [[DisciplinaService]]
+- [[Falta]]
+- [[FrequenciaService]]
 - [[GradeHoraria]]
 - [[GradeHorariaService]]
 - [[Stack Tecnológica]]

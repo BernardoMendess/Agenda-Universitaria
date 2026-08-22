@@ -7,7 +7,7 @@ import { tema } from './src/estilos/tema';
 export default function App() {
   return (
     <View style={estilos.container}>
-      <StatusBar style="light" backgroundColor={tema.cores.corFundoPrincipal} />
+      <StatusBar style="light" />
       <NavegadorPrincipal />
     </View>
   );

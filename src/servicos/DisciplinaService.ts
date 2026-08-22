@@ -1,17 +1,21 @@
 import { Disciplina, CriarDisciplinaDTO, AtualizarDisciplinaDTO } from '../modelos/Disciplina';
 import { IDisciplinaRepositorio, disciplinaRepositorio } from './banco/DisciplinaRepositorio';
 import { IHorarioAulaRepositorio, horarioAulaRepositorio } from './banco/HorarioAulaRepositorio';
+import { IFaltaRepositorio, faltaRepositorio } from './banco/FaltaRepositorio';
 
 export class DisciplinaService {
   private repositorio: IDisciplinaRepositorio;
   private horarioRepositorio: IHorarioAulaRepositorio;
+  private faltaRepositorio: IFaltaRepositorio;
 
   constructor(
     repositorio: IDisciplinaRepositorio = disciplinaRepositorio,
-    horarioRepositorio: IHorarioAulaRepositorio = horarioAulaRepositorio
+    horarioRepositorio: IHorarioAulaRepositorio = horarioAulaRepositorio,
+    faltaRepositorioInstancia: IFaltaRepositorio = faltaRepositorio
   ) {
     this.repositorio = repositorio;
     this.horarioRepositorio = horarioRepositorio;
+    this.faltaRepositorio = faltaRepositorioInstancia;
   }
 
 
@@ -76,8 +80,9 @@ export class DisciplinaService {
       throw new Error('Disciplina não encontrada para exclusão.');
     }
 
-    // Exclui horários vinculados
+    // Exclui horários e faltas vinculados
     await this.horarioRepositorio.excluirPorDisciplina(id);
+    await this.faltaRepositorio.excluirPorDisciplina(id);
 
     return await this.repositorio.excluir(id);
   }
