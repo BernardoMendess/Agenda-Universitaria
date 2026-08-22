@@ -1,0 +1,3 @@
+@echo off
+echo Iniciando o CampusFlow (Expo)...
+npm start
