@@ -61,9 +61,9 @@
 
 ### 1.5. Gerenciamento e Portabilidade de Dados
 
-* **RF11 — Exportação/Importação Manual de Dados:**
+* ~~**RF11 — Exportação/Importação Manual de Dados:**
   * Opção de exportar todos os dados locais em um arquivo estruturado (`.json` ou `.sqlite`).
-  * Opção de restaurar o backup a partir de um arquivo salvo no armazenamento do próprio aparelho.
+  * Opção de restaurar o backup a partir de um arquivo salvo no armazenamento do próprio aparelho.~~
 
 ---
 

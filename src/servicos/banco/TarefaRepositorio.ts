@@ -19,6 +19,7 @@ export interface ITarefaRepositorio {
   listarPorDisciplina(disciplinaId: string): Promise<Tarefa[]>;
   listarAvulsas(): Promise<Tarefa[]>;
   excluirPorDisciplina(disciplinaId: string): Promise<number>;
+  restaurarEmLote(tarefas: Tarefa[]): Promise<Tarefa[]>;
   limpar(): void;
 }
 
@@ -153,6 +154,13 @@ export class TarefaRepositorioEmMemoria implements ITarefaRepositorio {
       }
     }
     return removidas;
+  }
+
+  async restaurarEmLote(tarefas: Tarefa[]): Promise<Tarefa[]> {
+    for (const t of tarefas) {
+      this.tarefas.set(t.id, { ...t });
+    }
+    return Array.from(this.tarefas.values()).map((t) => ({ ...t }));
   }
 
   limpar(): void {

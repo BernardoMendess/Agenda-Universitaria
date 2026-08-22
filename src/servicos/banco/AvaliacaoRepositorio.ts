@@ -17,6 +17,7 @@ export interface IAvaliacaoRepositorio {
   listarPorDisciplina(disciplinaId: string): Promise<Avaliacao[]>;
   listarTodas(): Promise<Avaliacao[]>;
   excluirPorDisciplina(disciplinaId: string): Promise<number>;
+  restaurarEmLote(avaliacoes: Avaliacao[]): Promise<Avaliacao[]>;
   limpar(): void;
 }
 
@@ -126,6 +127,13 @@ export class AvaliacaoRepositorioEmMemoria implements IAvaliacaoRepositorio {
       }
     }
     return removidos;
+  }
+
+  async restaurarEmLote(avaliacoes: Avaliacao[]): Promise<Avaliacao[]> {
+    for (const a of avaliacoes) {
+      this.avaliacoes.set(a.id, { ...a });
+    }
+    return Array.from(this.avaliacoes.values()).map((a) => ({ ...a }));
   }
 
   limpar(): void {

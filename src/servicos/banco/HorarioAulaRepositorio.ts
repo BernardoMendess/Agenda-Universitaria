@@ -22,6 +22,7 @@ export interface IHorarioAulaRepositorio {
     disciplinaId: string,
     novosHorarios: Omit<CriarHorarioAulaDTO, 'disciplinaId'>[]
   ): Promise<HorarioAula[]>;
+  restaurarEmLote(horarios: HorarioAula[]): Promise<HorarioAula[]>;
   limpar(): void;
 }
 
@@ -116,6 +117,13 @@ export class HorarioAulaRepositorioEmMemoria implements IHorarioAulaRepositorio 
       criados.push(criado);
     }
     return criados;
+  }
+
+  async restaurarEmLote(horarios: HorarioAula[]): Promise<HorarioAula[]> {
+    for (const h of horarios) {
+      this.horarios.set(h.id, { ...h });
+    }
+    return Array.from(this.horarios.values()).map(h => ({ ...h }));
   }
 
   limpar(): void {

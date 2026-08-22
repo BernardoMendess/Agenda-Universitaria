@@ -16,6 +16,7 @@ export interface IEventoAcademicoRepositorio {
   listarTodos(): Promise<EventoAcademico[]>;
   listarPorIntervalo(dataInicioStr: string, dataFimStr: string): Promise<EventoAcademico[]>;
   excluirPorDisciplina(disciplinaId: string): Promise<number>;
+  restaurarEmLote(eventos: EventoAcademico[]): Promise<EventoAcademico[]>;
   limpar(): void;
 }
 
@@ -145,6 +146,13 @@ export class EventoAcademicoRepositorioEmMemoria
       }
     }
     return removidos;
+  }
+
+  async restaurarEmLote(eventos: EventoAcademico[]): Promise<EventoAcademico[]> {
+    for (const e of eventos) {
+      this.eventos.set(e.id, { ...e });
+    }
+    return Array.from(this.eventos.values()).map((e) => ({ ...e }));
   }
 
   limpar(): void {

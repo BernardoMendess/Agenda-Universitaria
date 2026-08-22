@@ -10,7 +10,9 @@ import {
   Alert,
 } from 'react-native';
 import { useNotificacoes } from '../../hooks/useNotificacoes';
+import { useBackup } from '../../hooks/useBackup';
 import { Cabecalho } from '../../componentes/Cabecalho';
+import { ModalBackup } from '../../componentes/ModalBackup';
 import { tema } from '../../estilos/tema';
 
 const OPCOES_ANTECEDENCIA_AULA = [
@@ -36,9 +38,13 @@ export const TelaAjustes: React.FC = () => {
     atualizarConfiguracao,
     restaurarPadrao,
     testarAlerta,
+    carregarConfiguracoes,
   } = useNotificacoes();
 
+  const { resumoLocal, carregarResumo: recarregarBackupResumo } = useBackup();
+
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+  const [modalBackupVisivel, setModalBackupVisivel] = useState<boolean>(false);
 
   const exibirFeedback = (msg: string) => {
     setMensagemSucesso(msg);
@@ -398,14 +404,58 @@ export const TelaAjustes: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Seção 5: Garantia Offline & Privacidade (RNF01, RNF04, RNF05) */}
+        {/* Seção 5: Gerenciamento e Portabilidade de Dados (RF11) */}
+        <View style={estilos.secao}>
+          <View style={estilos.secaoTextos}>
+            <Text style={estilos.secaoTitulo}>Portabilidade & Backup de Dados</Text>
+            <Text style={estilos.secaoDescricao}>
+              Exporte todos os seus dados locais em arquivo JSON estruturado ou restaure um backup salvo no aparelho (RF11).
+            </Text>
+          </View>
+
+          <View style={estilos.cardResumoBackup}>
+            <View style={estilos.linhaResumoBackup}>
+              <Text style={estilos.textoItemResumoBackup}>
+                📚 <Text style={estilos.destaqueNumero}>{resumoLocal.totalDisciplinas}</Text> Disciplinas
+              </Text>
+              <Text style={estilos.textoItemResumoBackup}>
+                ⏱️ <Text style={estilos.destaqueNumero}>{resumoLocal.totalHorarios}</Text> Aulas
+              </Text>
+              <Text style={estilos.textoItemResumoBackup}>
+                ❌ <Text style={estilos.destaqueNumero}>{resumoLocal.totalFaltas}</Text> Faltas
+              </Text>
+            </View>
+            <View style={estilos.linhaResumoBackup}>
+              <Text style={estilos.textoItemResumoBackup}>
+                📝 <Text style={estilos.destaqueNumero}>{resumoLocal.totalAvaliacoes}</Text> Avaliações
+              </Text>
+              <Text style={estilos.textoItemResumoBackup}>
+                ✅ <Text style={estilos.destaqueNumero}>{resumoLocal.totalTarefas}</Text> Tarefas
+              </Text>
+              <Text style={estilos.textoItemResumoBackup}>
+                📅 <Text style={estilos.destaqueNumero}>{resumoLocal.totalEventos}</Text> Eventos
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={estilos.botaoGerenciarBackup}
+            onPress={() => setModalBackupVisivel(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoBotaoGerenciarBackup}>
+              📦 Exportar / Restaurar Backup Manual (.json)
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Seção 6: Garantia Offline & Privacidade (RNF01, RNF04, RNF05) */}
         <View style={estilos.cardPrivacidade}>
           <Text style={estilos.tituloPrivacidade}>🔒 100% Offline & Seguro</Text>
           <Text style={estilos.textoPrivacidade}>
-            Todos os seus lembretes são disparados diretamente pelos agendadores
-            nativos do aparelho (AlarmManager / Local Notifications), sem
-            enviar dados para servidores externos e sem gastar bateria em segundo
-            plano (RNF01 / RNF04 / RNF05).
+            Todos os seus dados acadêmicos e lembretes são mantidos exclusivamente no
+            dispositivo (RNF01 / RNF02 / RNF04 / RNF05), garantindo privacidade total e
+            portabilidade sem dependência de nuvem.
           </Text>
         </View>
 
@@ -420,6 +470,17 @@ export const TelaAjustes: React.FC = () => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal de Backup & Portabilidade */}
+      <ModalBackup
+        visivel={modalBackupVisivel}
+        aoFechar={() => setModalBackupVisivel(false)}
+        aoRestaurarSucesso={async () => {
+          await carregarConfiguracoes();
+          await recarregarBackupResumo();
+          exibirFeedback('Backup restaurado e dados sincronizados com sucesso!');
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -616,5 +677,39 @@ const estilos = StyleSheet.create({
     color: tema.cores.corStatusCritico,
     fontSize: tema.tipografia.pequeno,
     fontWeight: '600',
+  },
+  cardResumoBackup: {
+    backgroundColor: tema.cores.corFundoElevado,
+    borderRadius: tema.raioBorda.padrao,
+    padding: tema.espacamento.sm,
+    marginTop: tema.espacamento.sm,
+    borderWidth: 1,
+    borderColor: '#30363d',
+  },
+  linhaResumoBackup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 4,
+  },
+  textoItemResumoBackup: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+  },
+  destaqueNumero: {
+    color: tema.cores.corTextoPrimario,
+    fontWeight: 'bold',
+  },
+  botaoGerenciarBackup: {
+    backgroundColor: tema.cores.corMarcaPrimaria,
+    borderRadius: tema.raioBorda.padrao,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: tema.espacamento.md,
+  },
+  textoBotaoGerenciarBackup: {
+    color: '#ffffff',
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: 'bold',
   },
 });

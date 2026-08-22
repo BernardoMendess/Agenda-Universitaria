@@ -33,7 +33,7 @@ export class ConfiguracaoNotificacaoRepositorioEmMemoria
     this.config = {
       ...this.config,
       ...dados,
-      dataAtualizacao: new Date().toISOString(),
+      dataAtualizacao: dados.dataAtualizacao || new Date().toISOString(),
     };
     return { ...this.config };
   }

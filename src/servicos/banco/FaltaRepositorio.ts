@@ -9,8 +9,10 @@ export interface IFaltaRepositorio {
   removerUltima(disciplinaId: string): Promise<Falta | null>;
   removerPorId(id: string): Promise<boolean>;
   listarPorDisciplina(disciplinaId: string): Promise<Falta[]>;
+  listarTodas(): Promise<Falta[]>;
   contarPorDisciplina(disciplinaId: string): Promise<number>;
   excluirPorDisciplina(disciplinaId: string): Promise<number>;
+  restaurarEmLote(faltas: Falta[]): Promise<Falta[]>;
   limpar(): void;
 }
 
@@ -95,6 +97,23 @@ export class FaltaRepositorioEmMemoria implements IFaltaRepositorio {
       }
     }
     return removidos;
+  }
+
+  async listarTodas(): Promise<Falta[]> {
+    return Array.from(this.faltas.values())
+      .map((f) => ({ ...f }))
+      .sort((a, b) => {
+        const dataComparacao = b.data.localeCompare(a.data);
+        if (dataComparacao !== 0) return dataComparacao;
+        return b.horario.localeCompare(a.horario);
+      });
+  }
+
+  async restaurarEmLote(faltas: Falta[]): Promise<Falta[]> {
+    for (const f of faltas) {
+      this.faltas.set(f.id, { ...f });
+    }
+    return Array.from(this.faltas.values()).map((f) => ({ ...f }));
   }
 
   limpar(): void {

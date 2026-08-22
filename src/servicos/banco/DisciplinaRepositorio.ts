@@ -10,6 +10,8 @@ export interface IDisciplinaRepositorio {
   listarTodas(): Promise<Disciplina[]>;
   atualizar(id: string, dados: AtualizarDisciplinaDTO): Promise<Disciplina>;
   excluir(id: string): Promise<boolean>;
+  restaurarEmLote(disciplinas: Disciplina[]): Promise<Disciplina[]>;
+  limpar(): void;
 }
 
 /**
@@ -99,8 +101,15 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
     return this.disciplinas.delete(id);
   }
 
+  async restaurarEmLote(disciplinas: Disciplina[]): Promise<Disciplina[]> {
+    for (const d of disciplinas) {
+      this.disciplinas.set(d.id, { ...d });
+    }
+    return Array.from(this.disciplinas.values()).map(d => ({ ...d }));
+  }
+
   /**
-   * Método para limpeza de estado em testes
+   * Método para limpeza de estado em testes ou restauração
    */
   limpar(): void {
     this.disciplinas.clear();
