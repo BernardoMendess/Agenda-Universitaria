@@ -12,9 +12,9 @@
   * Cor de identificação visual (tag colorida para a grade).
   * **Limite Máximo de Faltas Permitidas:** Campo numérico inteiro obrigatório (aceitando valor $\ge 0$).
   * Critério de média para aprovação (aritmética, ponderada ou fórmula customizada).~~
-* **RF02 — Grade Horária Semanal:**
+* ~~**RF02 — Grade Horária Semanal:**
   * Configuração de dias da semana e horários de início/fim de cada aula.
-  * Suporte a múltiplos blocos de horário para a mesma disciplina em dias distintos.
+  * Suporte a múltiplos blocos de horário para a mesma disciplina em dias distintos.~~
 
 ---
 

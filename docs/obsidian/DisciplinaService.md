@@ -16,4 +16,6 @@ O **DisciplinaService** encapsula a lógica de negócio e validação referente 
 ## Wikilinks
 - [[Disciplina]]
 - [[Regra - Limite de Faltas]]
+- [[Regra - Grade Horaria]]
+- [[GradeHorariaService]]
 - [[Stack Tecnológica]]

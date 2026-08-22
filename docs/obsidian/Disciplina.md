@@ -27,5 +27,8 @@ A entidade **Disciplina** representa uma matéria acadêmica matriculada pelo es
 
 ## Regras de Negócio Associadas
 - [[Regra - Limite de Faltas]]
+- [[Regra - Grade Horaria]]
 - [[DisciplinaService]]
+- [[GradeHoraria]]
+- [[GradeHorariaService]]
 - [[Stack Tecnológica]]

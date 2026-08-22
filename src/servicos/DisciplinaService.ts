@@ -1,12 +1,19 @@
 import { Disciplina, CriarDisciplinaDTO, AtualizarDisciplinaDTO } from '../modelos/Disciplina';
 import { IDisciplinaRepositorio, disciplinaRepositorio } from './banco/DisciplinaRepositorio';
+import { IHorarioAulaRepositorio, horarioAulaRepositorio } from './banco/HorarioAulaRepositorio';
 
 export class DisciplinaService {
   private repositorio: IDisciplinaRepositorio;
+  private horarioRepositorio: IHorarioAulaRepositorio;
 
-  constructor(repositorio: IDisciplinaRepositorio = disciplinaRepositorio) {
+  constructor(
+    repositorio: IDisciplinaRepositorio = disciplinaRepositorio,
+    horarioRepositorio: IHorarioAulaRepositorio = horarioAulaRepositorio
+  ) {
     this.repositorio = repositorio;
+    this.horarioRepositorio = horarioRepositorio;
   }
+
 
   /**
    * Valida e cadastra uma nova disciplina localmente.
@@ -57,7 +64,7 @@ export class DisciplinaService {
   }
 
   /**
-   * Remove uma disciplina por ID.
+   * Remove uma disciplina por ID e limpa seus horários vinculados (cascata).
    */
   async excluirDisciplina(id: string): Promise<boolean> {
     if (!id || id.trim() === '') {
@@ -68,6 +75,9 @@ export class DisciplinaService {
     if (!existe) {
       throw new Error('Disciplina não encontrada para exclusão.');
     }
+
+    // Exclui horários vinculados
+    await this.horarioRepositorio.excluirPorDisciplina(id);
 
     return await this.repositorio.excluir(id);
   }

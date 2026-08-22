@@ -1,26 +1,44 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { useDisciplinas } from '../../hooks/useDisciplinas';
+import { useGradeHoraria } from '../../hooks/useGradeHoraria';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
+import { CardHorarioAula } from '../../componentes/CardHorarioAula';
 import { Disciplina } from '../../modelos/Disciplina';
+import { DIAS_SEMANA_LABELS } from '../../modelos/HorarioAula';
+import { gradeHorariaService } from '../../servicos/GradeHorariaService';
 import { tema } from '../../estilos/tema';
 
 interface TelaHomeProps {
   aoIrParaDisciplinas: () => void;
+  aoIrParaGrade: () => void;
   aoCriarDisciplina: () => void;
   aoEditarDisciplina: (disciplina: Disciplina) => void;
 }
 
 export const TelaHome: React.FC<TelaHomeProps> = ({
   aoIrParaDisciplinas,
+  aoIrParaGrade,
   aoCriarDisciplina,
   aoEditarDisciplina,
 }) => {
   const { disciplinas } = useDisciplinas();
+  const { aulasDeHoje } = useGradeHoraria();
+  const diaHoje = gradeHorariaService.converterDateParaDiaSemana();
 
   return (
     <SafeAreaView style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.conteudo} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={estilos.conteudo}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Boas-vindas */}
         <View style={estilos.cabecalho}>
           <Text style={estilos.saudacao}>CampusFlow</Text>
@@ -36,14 +54,52 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             </View>
             <View style={estilos.separador} />
             <View style={estilos.itemEstatistica}>
-              <Text style={[estilos.numeroEstatistica, { color: tema.cores.corStatusSeguro }]}>100%</Text>
+              <Text style={estilos.numeroEstatistica}>{aulasDeHoje.length}</Text>
+              <Text style={estilos.rotuloEstatistica}>Aulas Hoje</Text>
+            </View>
+            <View style={estilos.separador} />
+            <View style={estilos.itemEstatistica}>
+              <Text
+                style={[
+                  estilos.numeroEstatistica,
+                  { color: tema.cores.corStatusSeguro },
+                ]}
+              >
+                100%
+              </Text>
               <Text style={estilos.rotuloEstatistica}>Offline</Text>
             </View>
           </View>
         </View>
 
-        {/* Seção Minhas Disciplinas */}
+        {/* Seção Aulas de Hoje */}
         <View style={estilos.secaoCabecalho}>
+          <View>
+            <Text style={estilos.secaoTitulo}>Aulas de Hoje</Text>
+            <Text style={estilos.secaoSubtitulo}>
+              {DIAS_SEMANA_LABELS[diaHoje]}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={aoIrParaGrade}>
+            <Text style={estilos.linkVerTodas}>Ver grade →</Text>
+          </TouchableOpacity>
+        </View>
+
+        {aulasDeHoje.length === 0 ? (
+          <View style={estilos.cardAulasVazio}>
+            <Text style={estilos.iconeAulasVazio}>🏖️</Text>
+            <Text style={estilos.textoAulasVazio}>
+              Nenhuma aula programada para hoje ({DIAS_SEMANA_LABELS[diaHoje].toLowerCase()}).
+            </Text>
+          </View>
+        ) : (
+          aulasDeHoje.map((aula) => (
+            <CardHorarioAula key={aula.id} aula={aula} />
+          ))
+        )}
+
+        {/* Seção Minhas Disciplinas */}
+        <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
           <Text style={estilos.secaoTitulo}>Minhas Matérias</Text>
           <TouchableOpacity onPress={aoIrParaDisciplinas}>
             <Text style={estilos.linkVerTodas}>Ver todas →</Text>
@@ -53,7 +109,10 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         {disciplinas.length === 0 ? (
           <View style={estilos.cardVazio}>
             <Text style={estilos.textoVazio}>Nenhuma matéria cadastrada ainda.</Text>
-            <TouchableOpacity style={estilos.botaoAdicionar} onPress={aoCriarDisciplina}>
+            <TouchableOpacity
+              style={estilos.botaoAdicionar}
+              onPress={aoCriarDisciplina}
+            >
               <Text style={estilos.textoBotaoAdicionar}>+ Cadastrar Disciplina</Text>
             </TouchableOpacity>
           </View>
@@ -80,6 +139,7 @@ const estilos = StyleSheet.create({
   },
   conteudo: {
     padding: tema.espacamento.md,
+    paddingBottom: tema.espacamento.xl + 20,
   },
   cabecalho: {
     marginTop: tema.espacamento.lg,
@@ -131,17 +191,40 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: tema.espacamento.md,
+    marginBottom: tema.espacamento.sm,
   },
   secaoTitulo: {
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.subtitulo,
     fontWeight: 'bold',
   },
+  secaoSubtitulo: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+    marginTop: 1,
+  },
   linkVerTodas: {
     color: tema.cores.corMarcaPrimaria,
     fontSize: tema.tipografia.pequeno,
     fontWeight: '600',
+  },
+  cardAulasVazio: {
+    backgroundColor: tema.cores.corFundoCard,
+    borderRadius: tema.raioBorda.card,
+    padding: tema.espacamento.md,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#21262d',
+    gap: 12,
+  },
+  iconeAulasVazio: {
+    fontSize: 24,
+  },
+  textoAulasVazio: {
+    flex: 1,
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
   },
   cardVazio: {
     backgroundColor: tema.cores.corFundoCard,

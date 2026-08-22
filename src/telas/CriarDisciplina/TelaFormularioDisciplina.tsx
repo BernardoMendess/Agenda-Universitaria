@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,11 @@ import { Cabecalho } from '../../componentes/Cabecalho';
 import { CampoTexto } from '../../componentes/CampoTexto';
 import { Botao } from '../../componentes/Botao';
 import { SeletorCor } from '../../componentes/SeletorCor';
+import { SeletorHorarioModal } from '../../componentes/SeletorHorarioModal';
 import { Disciplina, CriarDisciplinaDTO, CriterioAprovacao } from '../../modelos/Disciplina';
+import { CriarHorarioAulaDTO, DIAS_SEMANA_ABREV } from '../../modelos/HorarioAula';
 import { useDisciplinas } from '../../hooks/useDisciplinas';
+import { useGradeHoraria } from '../../hooks/useGradeHoraria';
 import { tema } from '../../estilos/tema';
 
 interface TelaFormularioDisciplinaProps {
@@ -22,12 +25,15 @@ interface TelaFormularioDisciplinaProps {
   aoSalvarSucesso: () => void;
 }
 
+type BlocoHorarioItem = Omit<CriarHorarioAulaDTO, 'disciplinaId'>;
+
 export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> = ({
   disciplinaParaEditar,
   aoVoltar,
   aoSalvarSucesso,
 }) => {
   const { criarDisciplina, atualizarDisciplina } = useDisciplinas();
+  const { obterHorariosDisciplina, definirHorariosDisciplina } = useGradeHoraria();
 
   // Estados dos campos
   const [nome, setNome] = useState(disciplinaParaEditar?.nome || '');
@@ -48,9 +54,53 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
     disciplinaParaEditar?.criterioAprovacao || 'ARITMETICA'
   );
 
+  // Estados de Grade Horária
+  const [horarios, setHorarios] = useState<BlocoHorarioItem[]>([]);
+  const [modalHorarioVisivel, setModalHorarioVisivel] = useState(false);
+  const [indiceEdicaoHorario, setIndiceEdicaoHorario] = useState<number | null>(null);
+
   // Estados de controle e validação
   const [salvando, setSalvando] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (disciplinaParaEditar) {
+      obterHorariosDisciplina(disciplinaParaEditar.id).then((lista) => {
+        setHorarios(
+          lista.map((h) => ({
+            diaSemana: h.diaSemana,
+            horarioInicio: h.horarioInicio,
+            horarioFim: h.horarioFim,
+            localSala: h.localSala,
+          }))
+        );
+      });
+    }
+  }, [disciplinaParaEditar, obterHorariosDisciplina]);
+
+  const abrirModalNovoHorario = () => {
+    setIndiceEdicaoHorario(null);
+    setModalHorarioVisivel(true);
+  };
+
+  const abrirModalEditarHorario = (indice: number) => {
+    setIndiceEdicaoHorario(indice);
+    setModalHorarioVisivel(true);
+  };
+
+  const salvarHorarioModal = (horario: BlocoHorarioItem) => {
+    if (indiceEdicaoHorario !== null) {
+      const atualizados = [...horarios];
+      atualizados[indiceEdicaoHorario] = horario;
+      setHorarios(atualizados);
+    } else {
+      setHorarios([...horarios, horario]);
+    }
+  };
+
+  const removerHorario = (indice: number) => {
+    setHorarios(horarios.filter((_, i) => i !== indice));
+  };
 
   const validarFormulario = (): boolean => {
     const novosErros: Record<string, string> = {};
@@ -88,10 +138,18 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
         criterioAprovacao,
       };
 
+      let idDisciplina = disciplinaParaEditar?.id;
+
       if (disciplinaParaEditar) {
         await atualizarDisciplina(disciplinaParaEditar.id, dados);
       } else {
-        await criarDisciplina(dados);
+        const nova = await criarDisciplina(dados);
+        idDisciplina = nova.id;
+      }
+
+      // Salva os blocos de horário vinculados
+      if (idDisciplina) {
+        await definirHorariosDisciplina(idDisciplina, horarios);
       }
 
       aoSalvarSucesso();
@@ -117,7 +175,7 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
       >
         {/* Identificação Principal */}
         <Text style={estilos.secaoTitulo}>Identificação</Text>
-        
+
         <CampoTexto
           rotulo="Nome da Disciplina"
           obrigatorio
@@ -160,11 +218,60 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
         />
 
         <CampoTexto
-          rotulo="Local / Sala de Aula"
+          rotulo="Local Padrão / Sala de Aula"
           placeholder="Ex: Bloco B, Sala 304"
           value={localSala}
           onChangeText={setLocalSala}
         />
+
+        {/* Grade Horária Semanal */}
+        <View style={estilos.secaoGradeCabecalho}>
+          <Text style={estilos.secaoTitulo}>Grade Horária Semanal</Text>
+          <TouchableOpacity
+            style={estilos.botaoAdicionarHorario}
+            onPress={abrirModalNovoHorario}
+          >
+            <Text style={estilos.textoBotaoAdicionarHorario}>+ Adicionar Aula</Text>
+          </TouchableOpacity>
+        </View>
+
+        {horarios.length === 0 ? (
+          <View style={estilos.cardSemHorario}>
+            <Text style={estilos.textoSemHorario}>
+              Nenhum horário de aula adicionado ainda. Adicione dias e horários para compor a grade semanal.
+            </Text>
+          </View>
+        ) : (
+          horarios.map((h, index) => (
+            <View key={index} style={estilos.cardHorarioLinha}>
+              <View style={estilos.badgeDia}>
+                <Text style={estilos.textoBadgeDia}>{DIAS_SEMANA_ABREV[h.diaSemana]}</Text>
+              </View>
+              <View style={estilos.infoHorarioBloco}>
+                <Text style={estilos.textoHorarioPeriodo}>
+                  {h.horarioInicio} às {h.horarioFim}
+                </Text>
+                {h.localSala ? (
+                  <Text style={estilos.textoSalaBloco}>📍 {h.localSala}</Text>
+                ) : null}
+              </View>
+              <View style={estilos.acoesHorario}>
+                <TouchableOpacity
+                  style={estilos.botaoAcaoHorario}
+                  onPress={() => abrirModalEditarHorario(index)}
+                >
+                  <Text style={estilos.iconeAcao}>✏️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={estilos.botaoAcaoHorario}
+                  onPress={() => removerHorario(index)}
+                >
+                  <Text style={estilos.iconeAcao}>🗑️</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        )}
 
         {/* Gestão de Frequência e Critérios */}
         <Text style={estilos.secaoTitulo}>Frequência e Avaliação</Text>
@@ -239,6 +346,14 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
           />
         </View>
       </ScrollView>
+
+      {/* Modal de Horário */}
+      <SeletorHorarioModal
+        visivel={modalHorarioVisivel}
+        horarioEdicao={indiceEdicaoHorario !== null ? horarios[indiceEdicaoHorario] : null}
+        aoFechar={() => setModalHorarioVisivel(false)}
+        aoSalvar={salvarHorarioModal}
+      />
     </SafeAreaView>
   );
 };
@@ -260,6 +375,87 @@ const estilos = StyleSheet.create({
     marginBottom: tema.espacamento.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
+  },
+  secaoGradeCabecalho: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: tema.espacamento.sm,
+  },
+  botaoAdicionarHorario: {
+    backgroundColor: tema.cores.corFundoElevado,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: tema.raioBorda.pequeno,
+    borderWidth: 1,
+    borderColor: '#30363d',
+  },
+  textoBotaoAdicionarHorario: {
+    color: tema.cores.corMarcaPrimaria,
+    fontSize: tema.tipografia.micro,
+    fontWeight: '700',
+  },
+  cardSemHorario: {
+    backgroundColor: tema.cores.corFundoCard,
+    borderRadius: tema.raioBorda.padrao,
+    padding: tema.espacamento.md,
+    marginBottom: tema.espacamento.md,
+    borderWidth: 1,
+    borderColor: '#21262d',
+    borderStyle: 'dashed',
+  },
+  textoSemHorario: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  cardHorarioLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: tema.cores.corFundoCard,
+    borderRadius: tema.raioBorda.padrao,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#21262d',
+  },
+  badgeDia: {
+    backgroundColor: tema.cores.corMarcaPrimaria,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  textoBadgeDia: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: tema.tipografia.micro,
+    fontWeight: 'bold',
+  },
+  infoHorarioBloco: {
+    flex: 1,
+  },
+  textoHorarioPeriodo: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: '600',
+  },
+  textoSalaBloco: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+    marginTop: 2,
+  },
+  acoesHorario: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  botaoAcaoHorario: {
+    padding: 6,
+    backgroundColor: tema.cores.corFundoElevado,
+    borderRadius: 6,
+  },
+  iconeAcao: {
+    fontSize: 12,
   },
   campoContainer: {
     marginBottom: tema.espacamento.md,

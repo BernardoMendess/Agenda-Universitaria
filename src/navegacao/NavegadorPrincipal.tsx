@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-native';
 import { TelaHome } from '../telas/Home/TelaHome';
 import { TelaDisciplinas } from '../telas/Disciplinas/TelaDisciplinas';
+import { TelaGradeHoraria } from '../telas/GradeHoraria/TelaGradeHoraria';
 import { TelaFormularioDisciplina } from '../telas/CriarDisciplina/TelaFormularioDisciplina';
 import { Disciplina } from '../modelos/Disciplina';
 import { tema } from '../estilos/tema';
 
-type AbaAtiva = 'home' | 'disciplinas' | 'formulario';
+type AbaAtiva = 'home' | 'disciplinas' | 'grade' | 'formulario';
 
 export const NavegadorPrincipal: React.FC = () => {
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('disciplinas');
@@ -27,6 +28,11 @@ export const NavegadorPrincipal: React.FC = () => {
     setAbaAtiva('disciplinas');
   };
 
+  const irParaGrade = () => {
+    setDisciplinaEdicao(null);
+    setAbaAtiva('grade');
+  };
+
   const irParaHome = () => {
     setDisciplinaEdicao(null);
     setAbaAtiva('home');
@@ -38,6 +44,7 @@ export const NavegadorPrincipal: React.FC = () => {
         {abaAtiva === 'home' && (
           <TelaHome
             aoIrParaDisciplinas={irParaDisciplinas}
+            aoIrParaGrade={irParaGrade}
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
           />
@@ -47,6 +54,11 @@ export const NavegadorPrincipal: React.FC = () => {
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
             aoSelecionarDisciplina={irParaEditarDisciplina}
+          />
+        )}
+        {abaAtiva === 'grade' && (
+          <TelaGradeHoraria
+            aoCriarDisciplina={irParaCriarDisciplina}
           />
         )}
         {abaAtiva === 'formulario' && (
@@ -70,6 +82,31 @@ export const NavegadorPrincipal: React.FC = () => {
             </Text>
             <Text style={[estilos.textoAba, abaAtiva === 'home' ? estilos.textoAbaAtiva : null]}>
               Início
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              estilos.itemAba,
+              abaAtiva === 'grade' ? estilos.itemAbaAtiva : null,
+            ]}
+            onPress={irParaGrade}
+          >
+            <Text
+              style={[
+                estilos.iconeAba,
+                abaAtiva === 'grade' ? estilos.iconeAbaAtiva : null,
+              ]}
+            >
+              📅
+            </Text>
+            <Text
+              style={[
+                estilos.textoAba,
+                abaAtiva === 'grade' ? estilos.textoAbaAtiva : null,
+              ]}
+            >
+              Grade
             </Text>
           </TouchableOpacity>
 
