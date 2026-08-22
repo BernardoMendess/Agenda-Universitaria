@@ -13,6 +13,7 @@ import { useNotificacoes } from '../../hooks/useNotificacoes';
 import { useBackup } from '../../hooks/useBackup';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { ModalBackup } from '../../componentes/ModalBackup';
+import { BadgeStatusOffline } from '../../componentes/BadgeStatusOffline';
 import { tema } from '../../estilos/tema';
 
 const OPCOES_ANTECEDENCIA_AULA = [
@@ -451,11 +452,12 @@ export const TelaAjustes: React.FC = () => {
 
         {/* Seção 6: Garantia Offline & Privacidade (RNF01, RNF04, RNF05) */}
         <View style={estilos.cardPrivacidade}>
-          <Text style={estilos.tituloPrivacidade}>🔒 100% Offline & Seguro</Text>
+          <View style={estilos.linhaTopoPrivacidade}>
+            <Text style={estilos.tituloPrivacidade}>Zero Conectividade & Privacidade Total</Text>
+            <BadgeStatusOffline tamanho="pequeno" />
+          </View>
           <Text style={estilos.textoPrivacidade}>
-            Todos os seus dados acadêmicos e lembretes são mantidos exclusivamente no
-            dispositivo (RNF01 / RNF02 / RNF04 / RNF05), garantindo privacidade total e
-            portabilidade sem dependência de nuvem.
+            O CampusFlow opera 100% isolado (RNF01), sem qualquer chamada para servidores externos, APIs ou serviços de nuvem. Todos os seus dados acadêmicos, notas, faltas e alarmes são mantidos de forma estritamente local no aparelho (RNF02 e RNF05).
           </Text>
         </View>
 
@@ -652,6 +654,12 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.25)',
     marginBottom: tema.espacamento.md,
+  },
+  linhaTopoPrivacidade: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: tema.espacamento.xs + 2,
   },
   tituloPrivacidade: {
     color: tema.cores.corTextoPrimario,

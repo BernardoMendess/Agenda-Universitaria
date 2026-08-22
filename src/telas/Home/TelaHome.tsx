@@ -16,6 +16,7 @@ import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
 import { Disciplina } from '../../modelos/Disciplina';
 import { TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../../modelos/Avaliacao';
+import { BadgeStatusOffline } from '../../componentes/BadgeStatusOffline';
 import { tema } from '../../estilos/tema';
 
 interface TelaHomeProps {
@@ -76,7 +77,10 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
       >
         {/* Cabeçalho do Dashboard */}
         <View style={estilos.cabecalho}>
-          <Text style={estilos.saudacao}>CampusFlow</Text>
+          <View style={estilos.linhaCabecalho}>
+            <Text style={estilos.saudacao}>CampusFlow</Text>
+            <BadgeStatusOffline tamanho="pequeno" />
+          </View>
           <Text style={estilos.dataSubtitulo}>{dataExtenso}</Text>
         </View>
 
@@ -426,6 +430,11 @@ const estilos = StyleSheet.create({
   cabecalho: {
     marginTop: tema.espacamento.lg,
     marginBottom: tema.espacamento.md,
+  },
+  linhaCabecalho: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   saudacao: {
     color: tema.cores.corTextoPrimario,
