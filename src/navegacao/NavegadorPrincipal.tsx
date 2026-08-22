@@ -3,15 +3,16 @@ import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-na
 import { TelaHome } from '../telas/Home/TelaHome';
 import { TelaDisciplinas } from '../telas/Disciplinas/TelaDisciplinas';
 import { TelaGradeHoraria } from '../telas/GradeHoraria/TelaGradeHoraria';
+import { TelaTarefas } from '../telas/Tarefas/TelaTarefas';
 import { TelaFormularioDisciplina } from '../telas/CriarDisciplina/TelaFormularioDisciplina';
 import { TelaDetalhesDisciplina } from '../telas/DetalhesDisciplina/TelaDetalhesDisciplina';
 import { Disciplina } from '../modelos/Disciplina';
 import { tema } from '../estilos/tema';
 
-type AbaAtiva = 'home' | 'disciplinas' | 'grade' | 'formulario' | 'detalhes';
+type AbaAtiva = 'home' | 'tarefas' | 'disciplinas' | 'grade' | 'formulario' | 'detalhes';
 
 export const NavegadorPrincipal: React.FC = () => {
-  const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('disciplinas');
+  const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('home');
   const [disciplinaEdicao, setDisciplinaEdicao] = useState<Disciplina | null>(null);
   const [disciplinaDetalhes, setDisciplinaDetalhes] = useState<Disciplina | null>(null);
 
@@ -37,6 +38,12 @@ export const NavegadorPrincipal: React.FC = () => {
     setAbaAtiva('grade');
   };
 
+  const irParaTarefas = () => {
+    setDisciplinaEdicao(null);
+    setDisciplinaDetalhes(null);
+    setAbaAtiva('tarefas');
+  };
+
   const irParaHome = () => {
     setDisciplinaEdicao(null);
     setDisciplinaDetalhes(null);
@@ -57,10 +64,14 @@ export const NavegadorPrincipal: React.FC = () => {
           <TelaHome
             aoIrParaDisciplinas={irParaDisciplinas}
             aoIrParaGrade={irParaGrade}
+            aoIrParaTarefas={irParaTarefas}
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
             aoVerDetalhesDisciplina={irParaDetalhesDisciplina}
           />
+        )}
+        {abaAtiva === 'tarefas' && (
+          <TelaTarefas />
         )}
         {abaAtiva === 'disciplinas' && (
           <TelaDisciplinas
@@ -105,6 +116,23 @@ export const NavegadorPrincipal: React.FC = () => {
           <TouchableOpacity
             style={[
               estilos.itemAba,
+              abaAtiva === 'tarefas' ? estilos.itemAbaAtiva : null,
+            ]}
+            onPress={irParaTarefas}
+          >
+            <Text
+              style={[
+                estilos.textoAba,
+                abaAtiva === 'tarefas' ? estilos.textoAbaAtiva : null,
+              ]}
+            >
+              Tarefas
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              estilos.itemAba,
               abaAtiva === 'grade' ? estilos.itemAbaAtiva : null,
             ]}
             onPress={irParaGrade}
@@ -115,7 +143,7 @@ export const NavegadorPrincipal: React.FC = () => {
                 abaAtiva === 'grade' ? estilos.textoAbaAtiva : null,
               ]}
             >
-              Grade Horária
+              Grade
             </Text>
           </TouchableOpacity>
 

@@ -10,16 +10,20 @@ import {
 } from 'react-native';
 import { Disciplina } from '../../modelos/Disciplina';
 import { Avaliacao, CriarAvaliacaoDTO, AtualizarAvaliacaoDTO } from '../../modelos/Avaliacao';
+import { TarefaComDisciplina, CriarTarefaDTO, AtualizarTarefaDTO } from '../../modelos/Tarefa';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { CardAvaliacao } from '../../componentes/CardAvaliacao';
+import { CardTarefa } from '../../componentes/CardTarefa';
 import { PainelDesempenhoNotas } from '../../componentes/PainelDesempenhoNotas';
 import { ModalFormularioAvaliacao } from '../../componentes/ModalFormularioAvaliacao';
+import { ModalFormularioTarefa } from '../../componentes/ModalFormularioTarefa';
 import { ModalLancamentoNota } from '../../componentes/ModalLancamentoNota';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
 import { ControleFrequencia } from '../../componentes/ControleFrequencia';
 import { useAvaliacoes } from '../../hooks/useAvaliacoes';
 import { useFrequencia } from '../../hooks/useFrequencia';
 import { useGradeHoraria } from '../../hooks/useGradeHoraria';
+import { useTarefas } from '../../hooks/useTarefas';
 import { DIAS_SEMANA_LABELS } from '../../modelos/HorarioAula';
 import { tema } from '../../estilos/tema';
 
@@ -29,7 +33,7 @@ interface TelaDetalhesDisciplinaProps {
   aoEditar: (disciplina: Disciplina) => void;
 }
 
-type AbaAtiva = 'notas' | 'frequencia' | 'horarios';
+type AbaAtiva = 'notas' | 'frequencia' | 'tarefas' | 'horarios';
 
 type FiltroAvaliacao = 'todas' | 'pendentes' | 'lancadas';
 
@@ -41,6 +45,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
   const { avaliacoes, resumosDesempenho, carregarAvaliacoes, carregarDesempenhos, criarAvaliacao, atualizarAvaliacao, lancarNota, excluirAvaliacao } = useAvaliacoes();
   const { resumos, carregarResumos, incrementar, decrementar, registrarFaltaDetalhada, removerFalta, obterHistorico } = useFrequencia();
   const { obterHorariosDisciplina } = useGradeHoraria();
+  const { tarefas, carregarTarefas, criarTarefa, atualizarTarefa, alternarConclusao, excluirTarefa } = useTarefas();
 
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('notas');
   const [filtroAvaliacao, setFiltroAvaliacao] = useState<FiltroAvaliacao>('todas');
@@ -49,6 +54,11 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
   const [avaliacaoEmEdicao, setAvaliacaoEmEdicao] = useState<Avaliacao | null>(null);
   const [avaliacaoLancamentoNota, setAvaliacaoLancamentoNota] = useState<Avaliacao | null>(null);
   const [avaliacaoParaExcluir, setAvaliacaoParaExcluir] = useState<Avaliacao | null>(null);
+
+  const [modalTarefaVisivel, setModalTarefaVisivel] = useState(false);
+  const [tarefaEmEdicao, setTarefaEmEdicao] = useState<TarefaComDisciplina | null>(null);
+  const [tarefaParaExcluir, setTarefaParaExcluir] = useState<TarefaComDisciplina | null>(null);
+
   const [excluindo, setExcluindo] = useState(false);
 
   const carregarDados = useCallback(async () => {
@@ -56,10 +66,11 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
       carregarAvaliacoes(disciplina.id),
       carregarDesempenhos([disciplina]),
       carregarResumos([disciplina]),
+      carregarTarefas({ disciplinaId: disciplina.id }),
     ]);
     const horariosLista = await obterHorariosDisciplina(disciplina.id);
     setHorarios(horariosLista);
-  }, [disciplina, carregarAvaliacoes, carregarDesempenhos, carregarResumos, obterHorariosDisciplina]);
+  }, [disciplina, carregarAvaliacoes, carregarDesempenhos, carregarResumos, carregarTarefas, obterHorariosDisciplina]);
 
   useEffect(() => {
     carregarDados();
@@ -95,6 +106,29 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
     }
   };
 
+  const salvarTarefa = async (dados: CriarTarefaDTO | AtualizarTarefaDTO) => {
+    if (tarefaEmEdicao) {
+      await atualizarTarefa(tarefaEmEdicao.id, dados as AtualizarTarefaDTO);
+    } else {
+      await criarTarefa({ ...dados, disciplinaId: disciplina.id } as CriarTarefaDTO);
+    }
+    await carregarTarefas({ disciplinaId: disciplina.id });
+  };
+
+  const confirmarExclusaoTarefa = async () => {
+    if (!tarefaParaExcluir) return;
+    try {
+      setExcluindo(true);
+      await excluirTarefa(tarefaParaExcluir.id);
+      setTarefaParaExcluir(null);
+      await carregarTarefas({ disciplinaId: disciplina.id });
+    } catch (e: any) {
+      Alert.alert('Erro', e.message || 'Erro ao excluir tarefa.');
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
   const resumoFrequencia = resumos[disciplina.id];
   const resumoDesempenho = resumosDesempenho[disciplina.id];
 
@@ -115,6 +149,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
         {([
           { id: 'notas', label: 'Notas' },
           { id: 'frequencia', label: 'Frequência' },
+          { id: 'tarefas', label: `Tarefas (${tarefas.length})` },
           { id: 'horarios', label: 'Horários' },
         ] as { id: AbaAtiva; label: string }[]).map((aba) => (
           <TouchableOpacity
@@ -210,6 +245,47 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
           </>
         )}
 
+        {/* === ABA TAREFAS === */}
+        {abaAtiva === 'tarefas' && (
+          <>
+            <View style={estilos.barraAcoes}>
+              <Text style={estilos.rotuloSecao}>Tarefas da Matéria</Text>
+              <TouchableOpacity
+                style={estilos.botaoNovaAvaliacao}
+                onPress={() => {
+                  setTarefaEmEdicao(null);
+                  setModalTarefaVisivel(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={estilos.botaoNovaAvaliacaoTexto}>+ Nova Tarefa</Text>
+              </TouchableOpacity>
+            </View>
+
+            {tarefas.length === 0 ? (
+              <View style={estilos.emptyState}>
+                <Text style={estilos.emptyTitulo}>Nenhuma tarefa cadastrada</Text>
+                <Text style={estilos.emptyDescricao}>
+                  Adicione listas de exercícios, leituras e pendências vinculadas a {disciplina.nome}.
+                </Text>
+              </View>
+            ) : (
+              tarefas.map((t) => (
+                <CardTarefa
+                  key={t.id}
+                  tarefa={t}
+                  aoAlternarConclusao={alternarConclusao}
+                  aoEditar={(tarefa) => {
+                    setTarefaEmEdicao(tarefa);
+                    setModalTarefaVisivel(true);
+                  }}
+                  aoExcluir={(tarefa) => setTarefaParaExcluir(tarefa)}
+                />
+              ))
+            )}
+          </>
+        )}
+
         {/* === ABA HORÁRIOS === */}
         {abaAtiva === 'horarios' && (
           <>
@@ -249,6 +325,16 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
         aoSalvar={salvarFormulario}
       />
 
+      {/* Modal de Formulário de Tarefa */}
+      <ModalFormularioTarefa
+        visivel={modalTarefaVisivel}
+        disciplinas={[disciplina]}
+        disciplinaIdPreSelecionada={disciplina.id}
+        tarefaParaEditar={tarefaEmEdicao}
+        aoFechar={() => setModalTarefaVisivel(false)}
+        aoSalvar={salvarTarefa}
+      />
+
       {/* Modal de Lançamento de Nota */}
       <ModalLancamentoNota
         visivel={!!avaliacaoLancamentoNota}
@@ -260,7 +346,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
         }}
       />
 
-      {/* Modal de Confirmação de Exclusão */}
+      {/* Modal de Confirmação de Exclusão de Avaliação */}
       <ModalConfirmacao
         visivel={!!avaliacaoParaExcluir}
         titulo="Excluir Avaliação"
@@ -269,6 +355,18 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
         textoCancelar="Cancelar"
         aoConfirmar={confirmarExclusao}
         aoCancelar={() => setAvaliacaoParaExcluir(null)}
+        carregando={excluindo}
+      />
+
+      {/* Modal de Confirmação de Exclusão de Tarefa */}
+      <ModalConfirmacao
+        visivel={!!tarefaParaExcluir}
+        titulo="Excluir Tarefa"
+        mensagem={`Tem certeza que deseja excluir "${tarefaParaExcluir?.titulo}"?`}
+        textoConfirmar="Excluir"
+        textoCancelar="Cancelar"
+        aoConfirmar={confirmarExclusaoTarefa}
+        aoCancelar={() => setTarefaParaExcluir(null)}
         carregando={excluindo}
       />
     </SafeAreaView>

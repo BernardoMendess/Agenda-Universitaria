@@ -11,8 +11,10 @@ import { useDisciplinas } from '../../hooks/useDisciplinas';
 import { useGradeHoraria } from '../../hooks/useGradeHoraria';
 import { useFrequencia } from '../../hooks/useFrequencia';
 import { useAvaliacoes } from '../../hooks/useAvaliacoes';
+import { useTarefas } from '../../hooks/useTarefas';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
 import { CardHorarioAula } from '../../componentes/CardHorarioAula';
+import { CardTarefa } from '../../componentes/CardTarefa';
 import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
 import { Disciplina } from '../../modelos/Disciplina';
@@ -24,6 +26,7 @@ import { tema } from '../../estilos/tema';
 interface TelaHomeProps {
   aoIrParaDisciplinas: () => void;
   aoIrParaGrade: () => void;
+  aoIrParaTarefas: () => void;
   aoCriarDisciplina: () => void;
   aoEditarDisciplina: (disciplina: Disciplina) => void;
   aoVerDetalhesDisciplina: (disciplina: Disciplina) => void;
@@ -32,6 +35,7 @@ interface TelaHomeProps {
 export const TelaHome: React.FC<TelaHomeProps> = ({
   aoIrParaDisciplinas,
   aoIrParaGrade,
+  aoIrParaTarefas,
   aoCriarDisciplina,
   aoEditarDisciplina,
   aoVerDetalhesDisciplina,
@@ -48,6 +52,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
     obterHistorico,
   } = useFrequencia();
   const { proximasAvaliacoes, carregarProximasAvaliacoes } = useAvaliacoes();
+  const { tarefasHome, estatisticas, carregarTarefasHome, alternarConclusao } = useTarefas();
 
   const [disciplinaHistorico, setDisciplinaHistorico] = useState<Disciplina | null>(null);
   const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<Disciplina | null>(null);
@@ -60,7 +65,8 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
       carregarResumos(disciplinas);
     }
     carregarProximasAvaliacoes(5);
-  }, [disciplinas, carregarResumos, carregarProximasAvaliacoes]);
+    carregarTarefasHome(4);
+  }, [disciplinas, carregarResumos, carregarProximasAvaliacoes, carregarTarefasHome]);
 
   const totalFaltasGeral = Object.values(resumos).reduce(
     (acc, r) => acc + (r?.totalFaltas || 0),
@@ -96,7 +102,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           <Text style={estilos.subtitulo}>Gestão Acadêmica Offline</Text>
         </View>
 
-        {/* Resumo Rápido com Frequência */}
+        {/* Resumo Rápido com Frequência e Tarefas */}
         <View style={estilos.cardResumo}>
           <View style={estilos.linhaResumo}>
             <View style={estilos.itemEstatistica}>
@@ -107,6 +113,23 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             <View style={estilos.itemEstatistica}>
               <Text style={estilos.numeroEstatistica}>{aulasDeHoje.length}</Text>
               <Text style={estilos.rotuloEstatistica}>Aulas Hoje</Text>
+            </View>
+            <View style={estilos.separador} />
+            <View style={estilos.itemEstatistica}>
+              <Text
+                style={[
+                  estilos.numeroEstatistica,
+                  {
+                    color:
+                      estatisticas.pendentes > 0
+                        ? tema.cores.corMarcaPrimaria
+                        : tema.cores.corTextoPrimario,
+                  },
+                ]}
+              >
+                {estatisticas.pendentes}
+              </Text>
+              <Text style={estilos.rotuloEstatistica}>Tarefas</Text>
             </View>
             <View style={estilos.separador} />
             <View style={estilos.itemEstatistica}>
@@ -138,6 +161,24 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
                 {materiasEmAlertaOuCritico === 1
                   ? 'matéria em estado de alerta ou limite crítico'
                   : 'matérias em estado de alerta ou limite crítico'}
+                .
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Alerta de Tarefas Atrasadas */}
+        {estatisticas.atrasadas > 0 && (
+          <View style={[estilos.cardAtencao, estilos.cardAtencaoCritico]}>
+            <View style={estilos.infoAtencao}>
+              <Text style={[estilos.tituloAtencao, { color: tema.cores.corStatusCritico }]}>
+                Tarefas Atrasadas
+              </Text>
+              <Text style={estilos.textoAtencao}>
+                Você tem {estatisticas.atrasadas}{' '}
+                {estatisticas.atrasadas === 1
+                  ? 'tarefa com prazo vencido pendente de entrega'
+                  : 'tarefas com prazo vencido pendentes de entrega'}
                 .
               </Text>
             </View>
@@ -199,6 +240,36 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
               aoIncrementarFalta={incrementar}
               aoDecrementarFalta={decrementar}
               aoAbrirHistoricoFaltas={(d) => setDisciplinaHistorico(d)}
+            />
+          ))
+        )}
+
+        {/* Seção Tarefas Pendentes (Ação em 1 Toque - RNF03) */}
+        <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
+          <View>
+            <Text style={estilos.secaoTitulo}>Tarefas Pendentes</Text>
+            <Text style={estilos.secaoSubtitulo}>
+              {estatisticas.pendentes} {estatisticas.pendentes === 1 ? 'pendência restante' : 'pendências restantes'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={aoIrParaTarefas}>
+            <Text style={estilos.linkVerTodas}>Ver To-Do →</Text>
+          </TouchableOpacity>
+        </View>
+
+        {tarefasHome.length === 0 ? (
+          <View style={estilos.cardAulasVazio}>
+            <Text style={estilos.textoAulasVazio}>
+              Tudo em dia! Nenhuma tarefa pendente no momento.
+            </Text>
+          </View>
+        ) : (
+          tarefasHome.map((tarefa) => (
+            <CardTarefa
+              key={tarefa.id}
+              tarefa={tarefa}
+              aoAlternarConclusao={alternarConclusao}
+              modoCompacto={true}
             />
           ))
         )}
@@ -329,6 +400,10 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(210, 153, 34, 0.3)',
     gap: 10,
+  },
+  cardAtencaoCritico: {
+    backgroundColor: 'rgba(248, 81, 73, 0.1)',
+    borderColor: 'rgba(248, 81, 73, 0.3)',
   },
   iconeAtencao: {
     fontSize: 20,

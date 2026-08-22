@@ -3,23 +3,27 @@ import { IDisciplinaRepositorio, disciplinaRepositorio } from './banco/Disciplin
 import { IHorarioAulaRepositorio, horarioAulaRepositorio } from './banco/HorarioAulaRepositorio';
 import { IFaltaRepositorio, faltaRepositorio } from './banco/FaltaRepositorio';
 import { IAvaliacaoRepositorio, avaliacaoRepositorio } from './banco/AvaliacaoRepositorio';
+import { ITarefaRepositorio, tarefaRepositorio } from './banco/TarefaRepositorio';
 
 export class DisciplinaService {
   private repositorio: IDisciplinaRepositorio;
   private horarioRepositorio: IHorarioAulaRepositorio;
   private faltaRepositorio: IFaltaRepositorio;
   private avaliacaoRepositorio: IAvaliacaoRepositorio;
+  private tarefaRepositorio: ITarefaRepositorio;
 
   constructor(
     repositorio: IDisciplinaRepositorio = disciplinaRepositorio,
     horarioRepositorio: IHorarioAulaRepositorio = horarioAulaRepositorio,
     faltaRepositorioInstancia: IFaltaRepositorio = faltaRepositorio,
-    avaliacaoRepositorioInstancia: IAvaliacaoRepositorio = avaliacaoRepositorio
+    avaliacaoRepositorioInstancia: IAvaliacaoRepositorio = avaliacaoRepositorio,
+    tarefaRepositorioInstancia: ITarefaRepositorio = tarefaRepositorio
   ) {
     this.repositorio = repositorio;
     this.horarioRepositorio = horarioRepositorio;
     this.faltaRepositorio = faltaRepositorioInstancia;
     this.avaliacaoRepositorio = avaliacaoRepositorioInstancia;
+    this.tarefaRepositorio = tarefaRepositorioInstancia;
   }
 
 
@@ -84,10 +88,11 @@ export class DisciplinaService {
       throw new Error('Disciplina não encontrada para exclusão.');
     }
 
-    // Exclui horários, faltas e avaliações vinculados (cascata)
+    // Exclui horários, faltas, avaliações e tarefas vinculados (cascata)
     await this.horarioRepositorio.excluirPorDisciplina(id);
     await this.faltaRepositorio.excluirPorDisciplina(id);
     await this.avaliacaoRepositorio.excluirPorDisciplina(id);
+    await this.tarefaRepositorio.excluirPorDisciplina(id);
 
     return await this.repositorio.excluir(id);
   }
