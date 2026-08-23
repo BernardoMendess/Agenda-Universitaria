@@ -67,10 +67,6 @@ export const CampoData: React.FC<CampoDataProps> = ({
         <Text style={[estilos.textoValor, !textoExibicao ? estilos.textoPlaceholder : null]}>
           {textoExibicao || placeholder}
         </Text>
-
-        <View style={estilos.botaoIcone}>
-          <Text style={estilos.iconeTexto}>📅</Text>
-        </View>
       </TouchableOpacity>
 
       {erro ? (
