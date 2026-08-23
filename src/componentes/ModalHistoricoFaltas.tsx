@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Disciplina } from '../modelos/Disciplina';
 import { Falta, ResumoFrequencia } from '../modelos/Falta';
+import { CampoData } from './CampoData';
 import { tema } from '../estilos/tema';
 
 interface ModalHistoricoFaltasProps {
@@ -229,18 +230,16 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
               {erroForm && <Text style={estilos.textoErroForm}>{erroForm}</Text>}
 
               <View style={estilos.linhaInputs}>
-                <View style={[estilos.grupoInput, { flex: 1 }]}>
-                  <Text style={estilos.labelInput}>Data (AAAA-MM-DD)</Text>
-                  <TextInput
-                    style={estilos.inputTexto}
-                    value={dataInput}
-                    onChangeText={setDataInput}
-                    placeholder="2026-08-22"
-                    placeholderTextColor={tema.cores.corTextoSecundario}
+                <View style={{ flex: 1 }}>
+                  <CampoData
+                    rotulo="Data da Falta"
+                    valor={dataInput}
+                    aoSelecionarData={setDataInput}
+                    placeholder="Selecione a data..."
                   />
                 </View>
 
-                <View style={[estilos.grupoInput, { width: 100 }]}>
+                <View style={[estilos.grupoInput, { width: 100, marginBottom: tema.espacamento.md }]}>
                   <Text style={estilos.labelInput}>Horário</Text>
                   <TextInput
                     style={estilos.inputTexto}

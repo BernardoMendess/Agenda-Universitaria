@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { CampoTexto } from './CampoTexto';
+import { CampoData } from './CampoData';
 import { Botao } from './Botao';
 import { Disciplina } from '../modelos/Disciplina';
 import {
@@ -163,12 +164,13 @@ export const ModalFormularioEvento: React.FC<ModalFormularioEventoProps> = ({
               placeholder="Ex: Semana de Engenharia, Palestra..."
             />
 
-            {/* Data do Evento */}
-            <CampoTexto
-              rotulo="Data (AAAA-MM-DD) *"
+            {/* Data do Evento com Calendário */}
+            <CampoData
+              rotulo="Data do Evento"
+              obrigatorio
               valor={data}
-              aoMudarTexto={setData}
-              placeholder="Ex: 2026-08-22"
+              aoSelecionarData={setData}
+              placeholder="Selecione a data no calendário..."
             />
 
             {/* Horários Início e Término */}

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Avaliacao, CriarAvaliacaoDTO, AtualizarAvaliacaoDTO, TipoAvaliacao, TIPO_AVALIACAO_LABELS } from '../modelos/Avaliacao';
 import { CriterioAprovacao } from '../modelos/Disciplina';
+import { CampoData } from './CampoData';
 import { tema } from '../estilos/tema';
 
 interface ModalFormularioAvaliacaoProps {
@@ -186,17 +187,22 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
             ))}
           </View>
 
-          {/* Data */}
-          <Text style={[estilos.rotulo, { marginTop: tema.espacamento.md }]}>Data *</Text>
-          <TextInput
-            style={[estilos.input, erros.data ? estilos.inputErro : null]}
-            placeholder="AAAA-MM-DD (ex: 2026-09-15)"
-            placeholderTextColor={tema.cores.corTextoSecundario}
-            value={data}
-            onChangeText={setData}
-            keyboardType="numeric"
-          />
-          {erros.data ? <Text style={estilos.textoErro}>{erros.data}</Text> : null}
+          {/* Data com Calendário */}
+          <View style={{ marginTop: tema.espacamento.md }}>
+            <CampoData
+              rotulo="Data da Avaliação"
+              obrigatorio
+              valor={data}
+              aoSelecionarData={(novaData) => {
+                setData(novaData);
+                if (erros.data) {
+                  setErros((e) => ({ ...e, data: '' }));
+                }
+              }}
+              erro={erros.data}
+              dica="Toque no campo para abrir o calendário"
+            />
+          </View>
 
           {/* Horário */}
           <Text style={[estilos.rotulo, { marginTop: tema.espacamento.md }]}>Horário (opcional)</Text>

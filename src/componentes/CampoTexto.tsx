@@ -7,6 +7,9 @@ interface CampoTextoProps extends TextInputProps {
   obrigatorio?: boolean;
   erro?: string;
   dica?: string;
+  valor?: string;
+  aoMudarTexto?: (texto: string) => void;
+  type?: string;
 }
 
 export const CampoTexto: React.FC<CampoTextoProps> = ({
@@ -15,6 +18,11 @@ export const CampoTexto: React.FC<CampoTextoProps> = ({
   erro,
   dica,
   style,
+  valor,
+  value,
+  aoMudarTexto,
+  onChangeText,
+  type,
   ...outrasProps
 }) => {
   return (
@@ -34,6 +42,9 @@ export const CampoTexto: React.FC<CampoTextoProps> = ({
         ]}
         placeholderTextColor={tema.cores.corTextoSecundario}
         selectionColor={tema.cores.corMarcaPrimaria}
+        value={valor !== undefined ? valor : value}
+        onChangeText={aoMudarTexto || onChangeText}
+        {...(type ? ({ type } as any) : {})}
         {...outrasProps}
       />
 

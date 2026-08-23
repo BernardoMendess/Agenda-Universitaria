@@ -19,6 +19,7 @@ import {
   PRIORIDADE_CORES,
 } from '../modelos/Tarefa';
 import { Disciplina } from '../modelos/Disciplina';
+import { CampoData } from './CampoData';
 import { tema } from '../estilos/tema';
 
 interface ModalFormularioTarefaProps {
@@ -291,53 +292,21 @@ export const ModalFormularioTarefa: React.FC<ModalFormularioTarefaProps> = ({
               </View>
             </View>
 
-            {/* Data Limite */}
-            <View style={estilos.campo}>
-              <Text style={estilos.rotulo}>Data Limite (AAAA-MM-DD)</Text>
-              <View style={estilos.linhaAtalhos}>
-                <TouchableOpacity
-                  style={[
-                    estilos.botaoAtalho,
-                    dataLimite === obterDataHoje() && estilos.botaoAtalhoAtivo,
-                  ]}
-                  onPress={() => setDataLimite(obterDataHoje())}
-                >
-                  <Text style={estilos.textoBotaoAtalho}>Hoje</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    estilos.botaoAtalho,
-                    dataLimite === obterDataAmanha() && estilos.botaoAtalhoAtivo,
-                  ]}
-                  onPress={() => setDataLimite(obterDataAmanha())}
-                >
-                  <Text style={estilos.textoBotaoAtalho}>Amanhã</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    estilos.botaoAtalho,
-                    !dataLimite && estilos.botaoAtalhoAtivo,
-                  ]}
-                  onPress={() => setDataLimite('')}
-                >
-                  <Text style={estilos.textoBotaoAtalho}>Sem Prazo</Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                style={[
-                  estilos.input,
-                  erros.dataLimite ? estilos.inputErro : null,
-                ]}
-                placeholder="AAAA-MM-DD (ex: 2026-09-20)"
-                placeholderTextColor={tema.cores.corTextoSecundario}
-                value={dataLimite}
-                onChangeText={setDataLimite}
-                maxLength={10}
-              />
-              {erros.dataLimite && (
-                <Text style={estilos.textoErro}>{erros.dataLimite}</Text>
-              )}
-            </View>
+            {/* Data Limite com Calendário */}
+            <CampoData
+              rotulo="Data Limite"
+              valor={dataLimite}
+              aoSelecionarData={(novaData) => {
+                setDataLimite(novaData);
+                if (erros.dataLimite) {
+                  setErros((e) => ({ ...e, dataLimite: '' }));
+                }
+              }}
+              placeholder="Toque para escolher no calendário..."
+              permiteLimpar
+              erro={erros.dataLimite}
+              dica="Opcional: selecione a data de entrega no calendário"
+            />
 
             {/* Horário Limite */}
             <View style={estilos.campo}>
