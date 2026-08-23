@@ -131,4 +131,9 @@ export class HorarioAulaRepositorioEmMemoria implements IHorarioAulaRepositorio 
   }
 }
 
-export const horarioAulaRepositorio = new HorarioAulaRepositorioEmMemoria();
+import { HorarioAulaRepositorioSQLite } from './sqlite/HorarioAulaRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const horarioAulaRepositorio: IHorarioAulaRepositorio =
+  new HorarioAulaRepositorioSQLite();
+

@@ -6,6 +6,13 @@ import {
   VERSAO_SCHEMA_SQLITE,
 } from './EsquemaBanco';
 
+export interface BancoSQLiteLocal {
+  execSync(sql: string): void;
+  runSync(sql: string, params?: any[]): { changes: number; lastInsertRowId: number };
+  getFirstSync<T = any>(sql: string, params?: any[]): T | null;
+  getAllSync<T = any>(sql: string, params?: any[]): T[];
+}
+
 export interface RelatorioStatusBanco {
   nomeBanco: string;
   versaoSchema: number;
@@ -18,13 +25,23 @@ export interface RelatorioStatusBanco {
   timestampVerificacao: string;
 }
 
+function obterModuloSQLite(): any {
+  try {
+    // Carregamento dinâmico para compatibilidade multiplataforma e com Jest
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require('expo-sqlite');
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Gerenciador central de inicialização, migração e integridade do banco SQLite local (RNF02).
  */
 export class GerenciadorBancoDados {
   private static instancia: GerenciadorBancoDados;
   private inicializado: boolean = false;
-  private bancoInstancia: any = null;
+  private bancoInstancia: BancoSQLiteLocal | null = null;
 
   private constructor() {}
 
@@ -36,31 +53,50 @@ export class GerenciadorBancoDados {
   }
 
   /**
+   * Retorna a instância ativa do banco de dados SQLite.
+   */
+  public obterBanco(): BancoSQLiteLocal | null {
+    if (!this.bancoInstancia) {
+      try {
+        const SQLite = obterModuloSQLite();
+        if (SQLite && SQLite.openDatabaseSync) {
+          this.bancoInstancia = SQLite.openDatabaseSync(NOME_BANCO_SQLITE);
+        }
+      } catch (erro) {
+        // Fallback silencioso em ambientes sem engine SQLite nativa (como Jest)
+      }
+    }
+    return this.bancoInstancia;
+  }
+
+  /**
    * Inicializa o banco de dados SQLite local, criando as tabelas e índices se não existirem.
    */
   public async inicializar(): Promise<boolean> {
     try {
-      // Tentativa de carregar expo-sqlite dinamicamente caso disponível no ambiente mobile
-      let SQLiteModule: any = null;
-      try {
-        SQLiteModule = require('expo-sqlite');
-      } catch {
-        // Fallback em ambientes Node / Jest
-        SQLiteModule = null;
+      if (!this.bancoInstancia) {
+        const SQLite = obterModuloSQLite();
+        if (SQLite && SQLite.openDatabaseSync) {
+          this.bancoInstancia = SQLite.openDatabaseSync(NOME_BANCO_SQLITE);
+        } else if (SQLite && SQLite.openDatabaseAsync) {
+          this.bancoInstancia = await SQLite.openDatabaseAsync(NOME_BANCO_SQLITE);
+        }
       }
 
-      if (SQLiteModule && (SQLiteModule.openDatabaseSync || SQLiteModule.openDatabaseAsync)) {
-        if (SQLiteModule.openDatabaseSync) {
-          this.bancoInstancia = SQLiteModule.openDatabaseSync(NOME_BANCO_SQLITE);
-          this.bancoInstancia.execSync('PRAGMA foreign_keys = ON;');
-          this.bancoInstancia.execSync('PRAGMA journal_mode = WAL;');
 
-          for (const ddl of Object.values(SCRIPTS_DDL_TABELAS)) {
-            this.bancoInstancia.execSync(ddl);
-          }
+      if (this.bancoInstancia) {
+        this.bancoInstancia.execSync('PRAGMA foreign_keys = ON;');
+        this.bancoInstancia.execSync('PRAGMA journal_mode = WAL;');
 
-          for (const indiceSql of SCRIPTS_INDICES_SQLITE) {
+        for (const ddl of Object.values(SCRIPTS_DDL_TABELAS)) {
+          this.bancoInstancia.execSync(ddl);
+        }
+
+        for (const indiceSql of SCRIPTS_INDICES_SQLITE) {
+          try {
             this.bancoInstancia.execSync(indiceSql);
+          } catch (e) {
+            // Ignora erro se índice já existir
           }
         }
       }
@@ -68,9 +104,9 @@ export class GerenciadorBancoDados {
       this.inicializado = true;
       return true;
     } catch (erro) {
-      // Mesmo se houver limitação no ambiente de execução, registra inicializado para não bloquear
+      console.error('Erro ao inicializar banco de dados SQLite:', erro);
       this.inicializado = true;
-      return true;
+      return false;
     }
   }
 
@@ -93,6 +129,7 @@ export class GerenciadorBancoDados {
     };
   }
 
+
   /**
    * Verifica se o banco já foi inicializado.
    */
@@ -102,3 +139,4 @@ export class GerenciadorBancoDados {
 }
 
 export const gerenciadorBancoDados = GerenciadorBancoDados.obterInstancia();
+

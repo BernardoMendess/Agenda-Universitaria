@@ -118,5 +118,9 @@ export class NotificacaoAgendadaRepositorioEmMemoria
   }
 }
 
-export const notificacaoAgendadaRepositorio =
-  new NotificacaoAgendadaRepositorioEmMemoria();
+import { NotificacaoAgendadaRepositorioSQLite } from './sqlite/NotificacaoAgendadaRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const notificacaoAgendadaRepositorio: INotificacaoAgendadaRepositorio =
+  new NotificacaoAgendadaRepositorioSQLite();
+

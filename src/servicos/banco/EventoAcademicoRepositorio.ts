@@ -160,6 +160,9 @@ export class EventoAcademicoRepositorioEmMemoria
   }
 }
 
-// Instância singleton do repositório
-export const eventoAcademicoRepositorio =
-  new EventoAcademicoRepositorioEmMemoria();
+import { EventoAcademicoRepositorioSQLite } from './sqlite/EventoAcademicoRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const eventoAcademicoRepositorio: IEventoAcademicoRepositorio =
+  new EventoAcademicoRepositorioSQLite();
+

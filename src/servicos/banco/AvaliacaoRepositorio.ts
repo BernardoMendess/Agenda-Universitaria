@@ -141,5 +141,9 @@ export class AvaliacaoRepositorioEmMemoria implements IAvaliacaoRepositorio {
   }
 }
 
-// Instância singleton do repositório
-export const avaliacaoRepositorio = new AvaliacaoRepositorioEmMemoria();
+import { AvaliacaoRepositorioSQLite } from './sqlite/AvaliacaoRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const avaliacaoRepositorio: IAvaliacaoRepositorio =
+  new AvaliacaoRepositorioSQLite();
+

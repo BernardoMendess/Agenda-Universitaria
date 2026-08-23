@@ -27,7 +27,7 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
     const limiteNormalizado =
       dados.limiteMaximoFaltas !== undefined &&
       dados.limiteMaximoFaltas !== null &&
-      Number(dados.limiteMaximoFaltas) > 0
+      Number(dados.limiteMaximoFaltas) >= 0
         ? Math.floor(Number(dados.limiteMaximoFaltas))
         : null;
     
@@ -70,12 +70,13 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
 
     let novoLimite = existente.limiteMaximoFaltas;
     if (dados.limiteMaximoFaltas !== undefined) {
-      if (dados.limiteMaximoFaltas === null || Number(dados.limiteMaximoFaltas) <= 0) {
+      if (dados.limiteMaximoFaltas === null || Number(dados.limiteMaximoFaltas) < 0) {
         novoLimite = null;
       } else {
         novoLimite = Math.floor(Number(dados.limiteMaximoFaltas));
       }
     }
+
 
     const agora = new Date().toISOString();
     const atualizada: Disciplina = {
@@ -116,5 +117,9 @@ export class DisciplinaRepositorioEmMemoria implements IDisciplinaRepositorio {
   }
 }
 
-// Instância singleton do repositório
-export const disciplinaRepositorio = new DisciplinaRepositorioEmMemoria();
+import { DisciplinaRepositorioSQLite } from './sqlite/DisciplinaRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const disciplinaRepositorio: IDisciplinaRepositorio =
+  new DisciplinaRepositorioSQLite();
+

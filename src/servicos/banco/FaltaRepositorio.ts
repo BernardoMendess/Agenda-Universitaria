@@ -121,4 +121,8 @@ export class FaltaRepositorioEmMemoria implements IFaltaRepositorio {
   }
 }
 
-export const faltaRepositorio = new FaltaRepositorioEmMemoria();
+import { FaltaRepositorioSQLite } from './sqlite/FaltaRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const faltaRepositorio: IFaltaRepositorio = new FaltaRepositorioSQLite();
+

@@ -207,12 +207,13 @@ describe('BackupService (RF11 — Exportação/Importação Manual de Dados & Po
         (d: Disciplina) => d.nome === 'Cálculo Numérico'
       );
       expect(discLimiteZero).toBeDefined();
-      expect(discLimiteZero.limiteMaximoFaltas).toBeNull(); // Presença facultativa / limite 0 tratado
+      expect(discLimiteZero.limiteMaximoFaltas).toBe(0); // Disciplina com limite 0 preservado
 
       const faltaJustificada = backup.dados.faltas[0];
       expect(faltaJustificada.justificativa).toBe('Consulta médica');
     });
   });
+
 
   describe('Validação de Backup JSON', () => {
     it('deve validar com sucesso um backup oficial do CampusFlow', async () => {

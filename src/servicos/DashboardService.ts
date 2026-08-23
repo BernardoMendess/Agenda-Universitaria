@@ -136,12 +136,12 @@ export class DashboardService {
 
       // 1. Análise de Frequência (RF04 / RF05)
       if (freq && freq.presencaObrigatoria && typeof freq.limiteMaximoFaltas === 'number') {
-        if (freq.reprovadoPorFalta) {
+        if (freq.totalFaltas > freq.limiteMaximoFaltas) {
           ehCriticoFalta = true;
           motivosFalta.push(
             `Limite de faltas ultrapassado: ${freq.totalFaltas}/${freq.limiteMaximoFaltas} faltas registradas.`
           );
-        } else if (freq.faltasRestantes === 0 || freq.totalFaltas >= freq.limiteMaximoFaltas) {
+        } else if (freq.reprovadoPorFalta || freq.faltasRestantes === 0 || freq.totalFaltas >= freq.limiteMaximoFaltas) {
           ehCriticoFalta = true;
           motivosFalta.push(
             `Limite de faltas atingido: ${freq.totalFaltas}/${freq.limiteMaximoFaltas} faltas. Próxima falta causará reprovação.`
@@ -152,6 +152,7 @@ export class DashboardService {
           );
         }
       }
+
 
       // 2. Análise de Desempenho de Notas (RF06)
       if (nota) {

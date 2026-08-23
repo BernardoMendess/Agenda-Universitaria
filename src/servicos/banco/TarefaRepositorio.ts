@@ -168,5 +168,9 @@ export class TarefaRepositorioEmMemoria implements ITarefaRepositorio {
   }
 }
 
-// Instância singleton do repositório
-export const tarefaRepositorio = new TarefaRepositorioEmMemoria();
+import { TarefaRepositorioSQLite } from './sqlite/TarefaRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const tarefaRepositorio: ITarefaRepositorio =
+  new TarefaRepositorioSQLite();
+

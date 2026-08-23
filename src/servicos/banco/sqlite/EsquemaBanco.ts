@@ -41,12 +41,10 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
     CREATE TABLE IF NOT EXISTS ${TABELAS_SQLITE.HORARIOS_AULA} (
       id TEXT PRIMARY KEY NOT NULL,
       disciplina_id TEXT NOT NULL,
-      dia_semana INTEGER NOT NULL,
+      dia_semana TEXT NOT NULL,
       horario_inicio TEXT NOT NULL,
       horario_fim TEXT NOT NULL,
       local_sala TEXT,
-      data_criacao TEXT NOT NULL,
-      data_atualizacao TEXT NOT NULL,
       FOREIGN KEY (disciplina_id) REFERENCES ${TABELAS_SQLITE.DISCIPLINAS}(id) ON DELETE CASCADE
     );
   `,
@@ -56,7 +54,7 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
       id TEXT PRIMARY KEY NOT NULL,
       disciplina_id TEXT NOT NULL,
       data TEXT NOT NULL,
-      horario TEXT,
+      horario TEXT NOT NULL,
       justificativa TEXT,
       data_criacao TEXT NOT NULL,
       FOREIGN KEY (disciplina_id) REFERENCES ${TABELAS_SQLITE.DISCIPLINAS}(id) ON DELETE CASCADE
@@ -87,10 +85,11 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
       disciplina_id TEXT,
       titulo TEXT NOT NULL,
       descricao TEXT,
-      data_limite TEXT NOT NULL,
-      horario_limite TEXT,
       concluida INTEGER NOT NULL DEFAULT 0,
-      prioridade TEXT NOT NULL,
+      data_limite TEXT,
+      horario_limite TEXT,
+      prioridade TEXT NOT NULL DEFAULT 'MEDIA',
+      data_conclusao TEXT,
       data_criacao TEXT NOT NULL,
       data_atualizacao TEXT NOT NULL,
       FOREIGN KEY (disciplina_id) REFERENCES ${TABELAS_SQLITE.DISCIPLINAS}(id) ON DELETE SET NULL
@@ -100,15 +99,14 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
   [TABELAS_SQLITE.EVENTOS_ACADEMICOS]: `
     CREATE TABLE IF NOT EXISTS ${TABELAS_SQLITE.EVENTOS_ACADEMICOS} (
       id TEXT PRIMARY KEY NOT NULL,
-      disciplina_id TEXT,
       titulo TEXT NOT NULL,
       descricao TEXT,
-      data_inicio TEXT NOT NULL,
-      data_fim TEXT NOT NULL,
+      data TEXT NOT NULL,
       horario_inicio TEXT,
       horario_fim TEXT,
-      tipo TEXT NOT NULL,
-      cor_identificacao TEXT,
+      disciplina_id TEXT,
+      local TEXT,
+      cor TEXT,
       data_criacao TEXT NOT NULL,
       data_atualizacao TEXT NOT NULL,
       FOREIGN KEY (disciplina_id) REFERENCES ${TABELAS_SQLITE.DISCIPLINAS}(id) ON DELETE SET NULL
@@ -125,6 +123,7 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
       tarefas_ativas INTEGER NOT NULL DEFAULT 1,
       antecedencia_tarefas_horas TEXT NOT NULL,
       alerta_faltas_ativo INTEGER NOT NULL DEFAULT 1,
+      som_habilitado INTEGER NOT NULL DEFAULT 1,
       vibracao_habilitada INTEGER NOT NULL DEFAULT 1,
       data_atualizacao TEXT NOT NULL
     );
@@ -133,14 +132,20 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
   [TABELAS_SQLITE.NOTIFICACOES_AGENDADAS]: `
     CREATE TABLE IF NOT EXISTS ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS} (
       id TEXT PRIMARY KEY NOT NULL,
-      tipo_referencia TEXT NOT NULL,
-      referencia_id TEXT NOT NULL,
+      tipo TEXT NOT NULL,
       titulo TEXT NOT NULL,
-      corpo TEXT NOT NULL,
-      data_hora_disparo TEXT NOT NULL,
-      disparada INTEGER NOT NULL DEFAULT 0,
-      cancelada INTEGER NOT NULL DEFAULT 0,
-      metadados TEXT,
+      mensagem TEXT NOT NULL,
+      referencia_id TEXT NOT NULL,
+      disciplina_id TEXT,
+      disciplina_nome TEXT,
+      disciplina_cor TEXT,
+      data_hora_disparo TEXT,
+      dia_semana TEXT,
+      horario_inicio TEXT,
+      antecedencia_minutos INTEGER,
+      antecedencia_horas INTEGER,
+      prioridade TEXT NOT NULL DEFAULT 'MEDIA',
+      ativa INTEGER NOT NULL DEFAULT 1,
       data_criacao TEXT NOT NULL
     );
   `,
@@ -158,8 +163,10 @@ export const SCRIPTS_INDICES_SQLITE: string[] = [
   `CREATE INDEX IF NOT EXISTS idx_avaliacoes_data ON ${TABELAS_SQLITE.AVALIACOES}(data);`,
   `CREATE INDEX IF NOT EXISTS idx_tarefas_disciplina ON ${TABELAS_SQLITE.TAREFAS}(disciplina_id);`,
   `CREATE INDEX IF NOT EXISTS idx_tarefas_data_limite ON ${TABELAS_SQLITE.TAREFAS}(data_limite);`,
-  `CREATE INDEX IF NOT EXISTS idx_eventos_data_inicio ON ${TABELAS_SQLITE.EVENTOS_ACADEMICOS}(data_inicio);`,
-  `CREATE INDEX IF NOT EXISTS idx_notificacoes_disparo ON ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS}(data_hora_disparo);`,
+  `CREATE INDEX IF NOT EXISTS idx_eventos_data ON ${TABELAS_SQLITE.EVENTOS_ACADEMICOS}(data);`,
+  `CREATE INDEX IF NOT EXISTS idx_eventos_disciplina ON ${TABELAS_SQLITE.EVENTOS_ACADEMICOS}(disciplina_id);`,
+  `CREATE INDEX IF NOT EXISTS idx_notificacoes_ref ON ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS}(referencia_id);`,
+  `CREATE INDEX IF NOT EXISTS idx_notificacoes_tipo ON ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS}(tipo);`,
 ];
 
 /**
@@ -167,3 +174,4 @@ export const SCRIPTS_INDICES_SQLITE: string[] = [
  */
 export const NOME_BANCO_SQLITE = 'campusflow.db';
 export const VERSAO_SCHEMA_SQLITE = 1;
+

@@ -51,5 +51,9 @@ export class ConfiguracaoNotificacaoRepositorioEmMemoria
   }
 }
 
-export const configuracaoNotificacaoRepositorio =
-  new ConfiguracaoNotificacaoRepositorioEmMemoria();
+import { ConfiguracaoNotificacaoRepositorioSQLite } from './sqlite/ConfiguracaoNotificacaoRepositorioSQLite';
+
+// Instância singleton do repositório (SQLite com persistência real)
+export const configuracaoNotificacaoRepositorio: IConfiguracaoNotificacaoRepositorio =
+  new ConfiguracaoNotificacaoRepositorioSQLite();
+
