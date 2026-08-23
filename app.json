@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "CampusFlow",
-    "slug": "campusflow",
+    "name": "Agenda do Estudante",
+    "slug": "agenda-do-estudante",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",

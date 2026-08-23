@@ -1,5 +1,5 @@
 {
-  "name": "campusflow",
+  "name": "agenda-do-estudante",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",

@@ -82,7 +82,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
       >
         {/* Cabeçalho do Dashboard */}
         <View style={estilos.cabecalho}>
-          <Text style={estilos.saudacao}>CampusFlow</Text>
+          <Text style={estilos.saudacao}>Agenda do Estudante</Text>
           <Text style={estilos.dataSubtitulo}>{dataExtenso}</Text>
         </View>
 

@@ -323,7 +323,7 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                 {abaAtiva === 'restaurar' && (
                   <View style={estilos.secaoAba}>
                     <Text style={estilos.descricaoAjuda}>
-                      Cole o conteúdo do arquivo JSON de backup do CampusFlow abaixo para restaurar
+                      Cole o conteúdo do arquivo JSON de backup da Agenda do Estudante abaixo para restaurar
                       seus dados acadêmicos:
                     </Text>
 

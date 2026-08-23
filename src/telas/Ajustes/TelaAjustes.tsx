@@ -393,7 +393,7 @@ export const TelaAjustes: React.FC = () => {
               await testarAlerta();
               Alert.alert(
                 'Teste de Alerta',
-                'O padrão sonoro e tátil de alerta do CampusFlow foi executado no dispositivo.'
+                'O padrão sonoro e tátil de alerta da Agenda do Estudante foi executado no dispositivo.'
               );
             }}
             activeOpacity={0.7}
