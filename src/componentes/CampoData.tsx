@@ -15,21 +15,6 @@ interface CampoDataProps {
   tituloModal?: string;
 }
 
-const MESES_ABREV = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
-];
-
 export const CampoData: React.FC<CampoDataProps> = ({
   rotulo,
   valor,
@@ -43,11 +28,11 @@ export const CampoData: React.FC<CampoDataProps> = ({
 }) => {
   const [modalAberto, setModalAberto] = useState(false);
 
-  // Formatação amigável para exibição
+  // Formatação para exibição: DD/MM/AAAA
   const textoExibicao = useMemo(() => {
     if (!valor || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return '';
     const [ano, mes, dia] = valor.split('-').map(Number);
-    return `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano} (${dia} de ${MESES_ABREV[mes - 1]})`;
+    return `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}`;
   }, [valor]);
 
   return (
