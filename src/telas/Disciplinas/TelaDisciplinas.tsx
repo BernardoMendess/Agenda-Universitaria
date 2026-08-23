@@ -215,7 +215,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: tema.espacamento.md,
-    paddingTop: tema.espacamento.lg,
+    paddingTop: tema.espacamento.xxl,
     paddingBottom: tema.espacamento.sm,
   },
   titulo: {
@@ -254,6 +254,7 @@ const estilos = StyleSheet.create({
   },
   lista: {
     padding: tema.espacamento.md,
+    paddingBottom: 100,
   },
   centralizado: {
     flex: 1,

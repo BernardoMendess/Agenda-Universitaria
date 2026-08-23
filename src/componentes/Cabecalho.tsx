@@ -54,8 +54,8 @@ export const Cabecalho: React.FC<CabecalhoProps> = ({
 const estilos = StyleSheet.create({
   container: {
     paddingHorizontal: tema.espacamento.md,
-    paddingTop: tema.espacamento.lg,
-    paddingBottom: tema.espacamento.md,
+    paddingTop: tema.espacamento.xxl,
+    paddingBottom: tema.espacamento.md + 4,
     backgroundColor: tema.cores.corFundoPrincipal,
   },
   linhaSuperior: {
@@ -65,7 +65,7 @@ const estilos = StyleSheet.create({
   },
   botaoVoltar: {
     paddingRight: tema.espacamento.md,
-    paddingVertical: tema.espacamento.xs,
+    paddingVertical: tema.espacamento.sm,
   },
   textoVoltar: {
     color: tema.cores.corTextoPrimario,
@@ -88,7 +88,7 @@ const estilos = StyleSheet.create({
   },
   botaoAcaoDireita: {
     backgroundColor: tema.cores.corMarcaPrimaria,
-    paddingVertical: tema.espacamento.xs,
+    paddingVertical: tema.espacamento.sm,
     paddingHorizontal: tema.espacamento.md,
     borderRadius: tema.raioBorda.padrao,
   },

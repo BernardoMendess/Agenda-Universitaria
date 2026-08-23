@@ -21,6 +21,13 @@ type AbaAtiva =
   | 'formulario'
   | 'detalhes';
 
+const ITENS_BARRA: { id: AbaAtiva; rotulo: string }[] = [
+  { id: 'home', rotulo: 'Início' },
+  { id: 'calendario', rotulo: 'Calendário' },
+  { id: 'tarefas', rotulo: 'Tarefas' },
+  { id: 'ajustes', rotulo: 'Ajustes' },
+];
+
 export const NavegadorPrincipal: React.FC = () => {
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('home');
   const [disciplinaEdicao, setDisciplinaEdicao] = useState<Disciplina | null>(null);
@@ -133,99 +140,28 @@ export const NavegadorPrincipal: React.FC = () => {
       {/* Barra de Abas Inferior */}
       {mostrarBarraAbas && (
         <SafeAreaView style={estilos.barraAbas}>
-          <TouchableOpacity
-            style={[estilos.itemAba, abaAtiva === 'home' ? estilos.itemAbaAtiva : null]}
-            onPress={irParaHome}
-          >
-            <Text style={[estilos.textoAba, abaAtiva === 'home' ? estilos.textoAbaAtiva : null]}>
-              Início
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              estilos.itemAba,
-              abaAtiva === 'calendario' ? estilos.itemAbaAtiva : null,
-            ]}
-            onPress={irParaCalendario}
-          >
-            <Text
-              style={[
-                estilos.textoAba,
-                abaAtiva === 'calendario' ? estilos.textoAbaAtiva : null,
-              ]}
-            >
-              Calendário
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              estilos.itemAba,
-              abaAtiva === 'tarefas' ? estilos.itemAbaAtiva : null,
-            ]}
-            onPress={irParaTarefas}
-          >
-            <Text
-              style={[
-                estilos.textoAba,
-                abaAtiva === 'tarefas' ? estilos.textoAbaAtiva : null,
-              ]}
-            >
-              Tarefas
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              estilos.itemAba,
-              abaAtiva === 'grade' ? estilos.itemAbaAtiva : null,
-            ]}
-            onPress={irParaGrade}
-          >
-            <Text
-              style={[
-                estilos.textoAba,
-                abaAtiva === 'grade' ? estilos.textoAbaAtiva : null,
-              ]}
-            >
-              Grade
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              estilos.itemAba,
-              abaAtiva === 'disciplinas' ? estilos.itemAbaAtiva : null,
-            ]}
-            onPress={irParaDisciplinas}
-          >
-            <Text
-              style={[
-                estilos.textoAba,
-                abaAtiva === 'disciplinas' ? estilos.textoAbaAtiva : null,
-              ]}
-            >
-              Disciplinas
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              estilos.itemAba,
-              abaAtiva === 'ajustes' ? estilos.itemAbaAtiva : null,
-            ]}
-            onPress={irParaAjustes}
-          >
-            <Text
-              style={[
-                estilos.textoAba,
-                abaAtiva === 'ajustes' ? estilos.textoAbaAtiva : null,
-              ]}
-            >
-              Ajustes
-            </Text>
-          </TouchableOpacity>
+          {ITENS_BARRA.map((item) => {
+            const ativa = abaAtiva === item.id;
+            const acaoMap: Record<string, () => void> = {
+              home: irParaHome,
+              calendario: irParaCalendario,
+              tarefas: irParaTarefas,
+              ajustes: irParaAjustes,
+            };
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={estilos.itemAba}
+                onPress={acaoMap[item.id]}
+                activeOpacity={0.7}
+              >
+                <Text style={[estilos.textoAba, ativa && estilos.textoAbaAtiva]}>
+                  {item.rotulo}
+                </Text>
+                {ativa && <View style={estilos.indicadorAtivo} />}
+              </TouchableOpacity>
+            );
+          })}
         </SafeAreaView>
       )}
     </View>
@@ -245,17 +181,16 @@ const estilos = StyleSheet.create({
     backgroundColor: tema.cores.corFundoCard,
     borderTopWidth: 1,
     borderTopColor: '#21262d',
-    paddingVertical: tema.espacamento.xs,
+    paddingTop: tema.espacamento.xs,
+    paddingBottom: tema.espacamento.xs,
   },
   itemAba: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-  },
-  itemAbaAtiva: {
-    borderTopWidth: 2,
-    borderTopColor: tema.cores.corMarcaPrimaria,
+    paddingVertical: 14,
+    minHeight: 48,
+    position: 'relative',
   },
   textoAba: {
     color: tema.cores.corTextoSecundario,
@@ -265,5 +200,13 @@ const estilos = StyleSheet.create({
   textoAbaAtiva: {
     color: tema.cores.corMarcaPrimaria,
     fontWeight: '700',
+  },
+  indicadorAtivo: {
+    position: 'absolute',
+    bottom: 6,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: tema.cores.corMarcaPrimaria,
   },
 });

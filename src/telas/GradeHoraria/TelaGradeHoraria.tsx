@@ -252,7 +252,7 @@ const estilos = StyleSheet.create({
   },
   conteudo: {
     padding: tema.espacamento.md,
-    paddingBottom: tema.espacamento.xl + 20,
+    paddingBottom: 100,
   },
   listaDiasHorizontal: {
     gap: 8,

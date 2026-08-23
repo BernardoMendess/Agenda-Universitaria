@@ -31,6 +31,7 @@ export const tema = {
     md: 16,
     lg: 24,
     xl: 32,
+    xxl: 48,
   },
   raioBorda: {
     pequeno: 6,
@@ -44,6 +45,7 @@ export const tema = {
     normal: 16,
     subtitulo: 18,
     titulo: 22,
+    tituloGrande: 24,
     destaque: 28,
   },
 };

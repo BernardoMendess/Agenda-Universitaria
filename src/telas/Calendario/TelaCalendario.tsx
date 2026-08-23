@@ -369,13 +369,13 @@ const estilos = StyleSheet.create({
   },
   conteudo: {
     padding: tema.espacamento.md,
-    paddingBottom: tema.espacamento.xl + 30,
+    paddingBottom: 100,
   },
   cabecalho: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: tema.espacamento.md,
+    marginTop: tema.espacamento.xxl,
     marginBottom: tema.espacamento.md,
   },
   cabecalhoTextos: {

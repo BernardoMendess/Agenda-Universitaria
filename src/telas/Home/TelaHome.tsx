@@ -168,25 +168,23 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             onPress={aoCriarDisciplina}
             activeOpacity={0.7}
           >
-            <Text style={estilos.textoBotaoAtalhoRapido}>+ Matéria</Text>
+            <Text style={estilos.textoBotaoAtalhoRapido}>+ Nova Matéria</Text>
           </TouchableOpacity>
 
-          {aoIrParaCalendario && (
-            <TouchableOpacity
-              style={estilos.botaoAtalhoRapidoSecundario}
-              onPress={aoIrParaCalendario}
-              activeOpacity={0.7}
-            >
-              <Text style={estilos.textoBotaoAtalhoSecundario}>Calendário</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={estilos.botaoAtalhoRapidoSecundario}
+            onPress={aoIrParaDisciplinas}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoBotaoAtalhoSecundario}>Disciplinas</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={estilos.botaoAtalhoRapidoSecundario}
             onPress={aoIrParaGrade}
             activeOpacity={0.7}
           >
-            <Text style={estilos.textoBotaoAtalhoSecundario}>Grade</Text>
+            <Text style={estilos.textoBotaoAtalhoSecundario}>Grade Horária</Text>
           </TouchableOpacity>
         </View>
 
@@ -226,8 +224,11 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           ))
         )}
 
+        {/* Divisor */}
+        <View style={estilos.divisorSecao} />
+
         {/* Aulas de hoje */}
-        <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
+        <View style={estilos.secaoCabecalho}>
           <View>
             <Text style={estilos.secaoTitulo}>Aulas de Hoje</Text>
             <Text style={estilos.secaoSubtitulo}>
@@ -273,6 +274,9 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           })
         )}
 
+        {/* Divisor */}
+        <View style={estilos.divisorSecao} />
+
         {/* Frequência rápida */}
         {disciplinas.length > 0 && (
           <SecaoFrequenciaRapidaHome
@@ -284,8 +288,11 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
           />
         )}
 
+        {/* Divisor */}
+        <View style={estilos.divisorSecao} />
+
         {/* Tarefas pendentes */}
-        <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
+        <View style={estilos.secaoCabecalho}>
           <View>
             <Text style={estilos.secaoTitulo}>Tarefas Prioritárias</Text>
             <Text style={estilos.secaoSubtitulo}>
@@ -454,10 +461,10 @@ const estilos = StyleSheet.create({
   },
   conteudo: {
     padding: tema.espacamento.md,
-    paddingBottom: tema.espacamento.xl + 20,
+    paddingBottom: 100,
   },
   cabecalho: {
-    marginTop: tema.espacamento.lg,
+    marginTop: tema.espacamento.xxl,
     marginBottom: tema.espacamento.md,
   },
 
@@ -509,37 +516,44 @@ const estilos = StyleSheet.create({
   },
   barraAtalhos: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginBottom: tema.espacamento.md,
   },
   botaoAtalhoRapido: {
-    flex: 1,
+    width: '48.5%',
     backgroundColor: `${tema.cores.corMarcaPrimaria}20`,
     borderWidth: 1,
     borderColor: tema.cores.corMarcaPrimaria,
     borderRadius: tema.raioBorda.padrao,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    paddingHorizontal: tema.espacamento.sm,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
   },
   textoBotaoAtalhoRapido: {
     color: tema.cores.corMarcaPrimaria,
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
   },
   botaoAtalhoRapidoSecundario: {
-    flex: 1,
+    width: '48.5%',
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
     borderColor: '#30363d',
     borderRadius: tema.raioBorda.padrao,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    paddingHorizontal: tema.espacamento.sm,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
   },
   textoBotaoAtalhoSecundario: {
     color: tema.cores.corTextoPrimario,
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
   },
   secaoCabecalho: {
@@ -550,13 +564,18 @@ const estilos = StyleSheet.create({
   },
   secaoTitulo: {
     color: tema.cores.corTextoPrimario,
-    fontSize: tema.tipografia.subtitulo,
+    fontSize: tema.tipografia.tituloGrande,
     fontWeight: 'bold',
   },
   secaoSubtitulo: {
     color: tema.cores.corTextoSecundario,
     fontSize: 11,
     marginTop: 1,
+  },
+  divisorSecao: {
+    height: 1,
+    backgroundColor: '#21262d',
+    marginVertical: tema.espacamento.lg,
   },
   linkVerTodas: {
     color: tema.cores.corMarcaPrimaria,
