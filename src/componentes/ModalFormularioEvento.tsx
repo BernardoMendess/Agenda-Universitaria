@@ -177,18 +177,30 @@ export const ModalFormularioEvento: React.FC<ModalFormularioEventoProps> = ({
             <View style={estilos.linhaHorarios}>
               <View style={estilos.colunaHorario}>
                 <CampoTexto
-                  rotulo="Início (HH:mm)"
+                  rotulo="Início"
                   valor={horarioInicio}
-                  aoMudarTexto={setHorarioInicio}
+                  aoMudarTexto={(t) => {
+                    const numeros = t.replace(/\D/g, '');
+                    const formatado = numeros.length <= 2 ? numeros : `${numeros.slice(0, 2)}:${numeros.slice(2, 4)}`;
+                    setHorarioInicio(formatado);
+                  }}
                   placeholder="08:00"
+                  keyboardType="numeric"
+                  maxLength={5}
                 />
               </View>
               <View style={estilos.colunaHorario}>
                 <CampoTexto
-                  rotulo="Término (HH:mm)"
+                  rotulo="Término"
                   valor={horarioFim}
-                  aoMudarTexto={setHorarioFim}
+                  aoMudarTexto={(t) => {
+                    const numeros = t.replace(/\D/g, '');
+                    const formatado = numeros.length <= 2 ? numeros : `${numeros.slice(0, 2)}:${numeros.slice(2, 4)}`;
+                    setHorarioFim(formatado);
+                  }}
                   placeholder="10:00"
+                  keyboardType="numeric"
+                  maxLength={5}
                 />
               </View>
             </View>

@@ -205,14 +205,22 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
           </View>
 
           {/* Horário */}
-          <Text style={[estilos.rotulo, { marginTop: tema.espacamento.md }]}>Horário (opcional)</Text>
+          <Text style={[estilos.rotulo, { marginTop: tema.espacamento.md }]}>Horário</Text>
           <TextInput
             style={[estilos.input, erros.horario ? estilos.inputErro : null]}
-            placeholder="HH:mm (ex: 08:30)"
+            placeholder="Ex: 08:30"
             placeholderTextColor={tema.cores.corTextoSecundario}
             value={horario}
-            onChangeText={setHorario}
+            onChangeText={(t) => {
+              const numeros = t.replace(/\D/g, '');
+              const formatado = numeros.length <= 2 ? numeros : `${numeros.slice(0, 2)}:${numeros.slice(2, 4)}`;
+              setHorario(formatado);
+              if (erros.horario) {
+                setErros((e) => ({ ...e, horario: '' }));
+              }
+            }}
             keyboardType="numeric"
+            maxLength={5}
           />
           {erros.horario ? <Text style={estilos.textoErro}>{erros.horario}</Text> : null}
 

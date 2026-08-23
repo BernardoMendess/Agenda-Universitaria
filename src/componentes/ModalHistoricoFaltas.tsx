@@ -244,9 +244,15 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
                   <TextInput
                     style={estilos.inputTexto}
                     value={horarioInput}
-                    onChangeText={setHorarioInput}
+                    onChangeText={(t) => {
+                      const numeros = t.replace(/\D/g, '');
+                      const formatado = numeros.length <= 2 ? numeros : `${numeros.slice(0, 2)}:${numeros.slice(2, 4)}`;
+                      setHorarioInput(formatado);
+                    }}
                     placeholder="08:00"
                     placeholderTextColor={tema.cores.corTextoSecundario}
+                    keyboardType="numeric"
+                    maxLength={5}
                   />
                 </View>
               </View>

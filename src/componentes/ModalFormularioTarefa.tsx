@@ -310,16 +310,24 @@ export const ModalFormularioTarefa: React.FC<ModalFormularioTarefaProps> = ({
 
             {/* Horário Limite */}
             <View style={estilos.campo}>
-              <Text style={estilos.rotulo}>Horário Limite (HH:mm - Opcional)</Text>
+              <Text style={estilos.rotulo}>Horário Limite</Text>
               <TextInput
                 style={[
                   estilos.input,
                   erros.horarioLimite ? estilos.inputErro : null,
                 ]}
-                placeholder="HH:mm (ex: 18:00, 23:59)"
+                placeholder="Ex: 18:00"
                 placeholderTextColor={tema.cores.corTextoSecundario}
                 value={horarioLimite}
-                onChangeText={setHorarioLimite}
+                onChangeText={(t) => {
+                  const numeros = t.replace(/\D/g, '');
+                  const formatado = numeros.length <= 2 ? numeros : `${numeros.slice(0, 2)}:${numeros.slice(2, 4)}`;
+                  setHorarioLimite(formatado);
+                  if (erros.horarioLimite) {
+                    setErros((e) => ({ ...e, horarioLimite: '' }));
+                  }
+                }}
+                keyboardType="numeric"
                 maxLength={5}
               />
               {erros.horarioLimite && (
