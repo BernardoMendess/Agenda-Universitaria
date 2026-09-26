@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavegadorPrincipal } from './src/navegacao/NavegadorPrincipal';
 import { tema } from './src/estilos/tema';
 import { persistenciaService } from './src/servicos/PersistenciaService';
@@ -32,18 +33,22 @@ export default function App() {
 
   if (!bancoPronto) {
     return (
-      <View style={[estilos.container, estilos.carregando]}>
-        <StatusBar style="light" />
-        <ActivityIndicator size="large" color={tema.cores.corMarcaPrimaria} />
-      </View>
+      <SafeAreaProvider>
+        <View style={[estilos.container, estilos.carregando]}>
+          <StatusBar style="light" />
+          <ActivityIndicator size="large" color={tema.cores.corMarcaPrimaria} />
+        </View>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <View style={estilos.container}>
-      <StatusBar style="light" />
-      <NavegadorPrincipal />
-    </View>
+    <SafeAreaProvider>
+      <View style={estilos.container}>
+        <StatusBar style="light" />
+        <NavegadorPrincipal />
+      </View>
+    </SafeAreaProvider>
   );
 }
 

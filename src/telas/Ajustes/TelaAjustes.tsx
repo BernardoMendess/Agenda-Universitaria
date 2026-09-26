@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Switch,
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotificacoes } from '../../hooks/useNotificacoes';
 import { useBackup } from '../../hooks/useBackup';
@@ -131,7 +131,7 @@ export const TelaAjustes: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       <Cabecalho
         titulo="Ajustes & Notificações"
         subtitulo="Alertas no celular e configurações locais"

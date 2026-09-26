@@ -7,8 +7,8 @@ import {
   ActivityIndicator,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDisciplinas } from '../../hooks/useDisciplinas';
 import { useFrequencia } from '../../hooks/useFrequencia';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
@@ -78,7 +78,7 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
   };
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       {/* Cabeçalho */}
       <View style={estilos.cabecalho}>
         <View style={estilos.cabecalhoTextos}>
@@ -215,7 +215,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: tema.espacamento.md,
-    paddingTop: tema.espacamento.xxl,
+    paddingTop: tema.espacamento.sm,
     paddingBottom: tema.espacamento.sm,
   },
   cabecalhoTextos: {

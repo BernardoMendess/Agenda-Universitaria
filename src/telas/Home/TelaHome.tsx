@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDashboard } from '../../hooks/useDashboard';
 import { CardMateriaAlerta } from '../../componentes/CardMateriaAlerta';
 import { CardHorarioAula } from '../../componentes/CardHorarioAula';
@@ -75,7 +75,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
   };
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={estilos.conteudo}
         showsVerticalScrollIndicator={false}
@@ -494,7 +494,7 @@ const estilos = StyleSheet.create({
     paddingBottom: 100,
   },
   cabecalho: {
-    marginTop: tema.espacamento.xxl,
+    marginTop: tema.espacamento.sm,
     marginBottom: tema.espacamento.md,
   },
 

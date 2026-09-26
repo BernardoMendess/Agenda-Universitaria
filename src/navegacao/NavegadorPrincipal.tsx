@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { TelaHome } from '../telas/Home/TelaHome';
 import { TelaCalendario } from '../telas/Calendario/TelaCalendario';
@@ -147,7 +148,7 @@ export const NavegadorPrincipal: React.FC = () => {
 
       {/* Barra de Abas Inferior */}
       {mostrarBarraAbas && (
-        <SafeAreaView style={estilos.barraAbas}>
+        <SafeAreaView style={estilos.barraAbas} edges={['bottom']}>
           {ITENS_BARRA.map((item) => {
             const ativa = abaAtiva === item.id;
             const acaoMap: Record<string, () => void> = {

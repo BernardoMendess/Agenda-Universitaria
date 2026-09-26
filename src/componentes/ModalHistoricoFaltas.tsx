@@ -8,10 +8,10 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Disciplina } from '../modelos/Disciplina';
 import { Falta, ResumoFrequencia } from '../modelos/Falta';
 import { CampoData } from './CampoData';
@@ -135,7 +135,7 @@ export const ModalHistoricoFaltas: React.FC<ModalHistoricoFaltasProps> = ({
         style={estilos.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <SafeAreaView style={estilos.containerModal}>
+        <SafeAreaView style={estilos.containerModal} edges={['bottom']}>
           {/* Cabeçalho */}
           <View style={estilos.cabecalho}>
             <View style={estilos.tituloArea}>

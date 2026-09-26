@@ -8,8 +8,8 @@ import {
   ScrollView,
   TextInput,
   Alert,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Tarefa,
   CriarTarefaDTO,
@@ -146,7 +146,7 @@ export const ModalFormularioTarefa: React.FC<ModalFormularioTarefaProps> = ({
       transparent={true}
       onRequestClose={aoFechar}
     >
-      <SafeAreaView style={estilos.modalOverlay}>
+      <SafeAreaView style={estilos.modalOverlay} edges={['top', 'bottom']}>
         <View style={estilos.modalContainer}>
           {/* Cabeçalho */}
           <View style={estilos.modalCabecalho}>

@@ -8,8 +8,8 @@ import {
   ScrollView,
   TextInput,
   Alert,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avaliacao, CriarAvaliacaoDTO, AtualizarAvaliacaoDTO, TipoAvaliacao, TIPO_AVALIACAO_LABELS } from '../modelos/Avaliacao';
 import { CriterioAprovacao } from '../modelos/Disciplina';
 import { CampoData } from './CampoData';
@@ -138,7 +138,7 @@ export const ModalFormularioAvaliacao: React.FC<ModalFormularioAvaliacaoProps> =
       presentationStyle="pageSheet"
       onRequestClose={aoFechar}
     >
-      <SafeAreaView style={estilos.container}>
+      <SafeAreaView style={estilos.container} edges={['top', 'bottom']}>
         {/* Cabeçalho */}
         <View style={estilos.cabecalho}>
           <TouchableOpacity onPress={aoFechar} style={estilos.botaoCancelar}>
@@ -296,7 +296,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: tema.espacamento.md,
-    paddingVertical: tema.espacamento.sm,
+    paddingVertical: tema.espacamento.md,
     borderBottomWidth: 1,
     borderBottomColor: tema.cores.bordaCard,
   },

@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCalendario } from '../../hooks/useCalendario';
 import { GridCalendarioMensal } from '../../componentes/GridCalendarioMensal';
 import { VisaoSemanalCalendario } from '../../componentes/VisaoSemanalCalendario';
@@ -89,7 +89,7 @@ export const TelaCalendario: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={estilos.conteudo}
         showsVerticalScrollIndicator={false}
@@ -380,7 +380,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: tema.espacamento.xxl,
+    marginTop: tema.espacamento.sm,
     marginBottom: tema.espacamento.md,
   },
   cabecalhoTextos: {

@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { CardHorarioAula } from '../../componentes/CardHorarioAula';
 import { useGradeHoraria } from '../../hooks/useGradeHoraria';
@@ -39,7 +39,7 @@ export const TelaGradeHoraria: React.FC<TelaGradeHorariaProps> = ({
   );
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       <Cabecalho
         titulo="Grade Horária"
         subtitulo={`${totalAulasSemana} bloco(s) de aula na semana`}

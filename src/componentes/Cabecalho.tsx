@@ -71,8 +71,8 @@ export const Cabecalho: React.FC<CabecalhoProps> = ({
 const estilos = StyleSheet.create({
   container: {
     paddingHorizontal: tema.espacamento.md,
-    paddingTop: tema.espacamento.xxl,
-    paddingBottom: tema.espacamento.md + 4,
+    paddingTop: tema.espacamento.sm,
+    paddingBottom: tema.espacamento.sm,
     backgroundColor: tema.cores.corFundoPrincipal,
   },
   linhaSuperior: {

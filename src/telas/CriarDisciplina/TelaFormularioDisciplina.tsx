@@ -5,9 +5,9 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { CampoTexto } from '../../componentes/CampoTexto';
 import { Botao } from '../../componentes/Botao';
@@ -182,7 +182,7 @@ export const TelaFormularioDisciplina: React.FC<TelaFormularioDisciplinaProps> =
   };
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       <Cabecalho
         titulo={disciplinaParaEditar ? 'Editar Disciplina' : 'Nova Disciplina'}
         subtitulo="Preencha os dados da matéria para o semestre"

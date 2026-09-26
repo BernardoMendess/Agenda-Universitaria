@@ -222,10 +222,11 @@ export const useDashboard = () => {
       ultimaAcao.tarefaId
     ) {
       await alternarConclusao(ultimaAcao.tarefaId);
+      await carregarTarefasHome(5);
     }
 
     setFeedbackAcaoRapida(null);
-  }, [incrementar, decrementar, alternarConclusao]);
+  }, [incrementar, decrementar, alternarConclusao, carregarTarefasHome]);
 
   const fecharFeedback = useCallback(() => {
     setFeedbackAcaoRapida(null);

@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Disciplina } from '../../modelos/Disciplina';
 import { Avaliacao, CriarAvaliacaoDTO, AtualizarAvaliacaoDTO } from '../../modelos/Avaliacao';
 import { TarefaComDisciplina, CriarTarefaDTO, AtualizarTarefaDTO } from '../../modelos/Tarefa';
@@ -135,7 +135,7 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
   const resumoDesempenho = resumosDesempenho[disciplina.id];
 
   return (
-    <SafeAreaView style={estilos.container}>
+    <SafeAreaView style={estilos.container} edges={['top']}>
       <Cabecalho
         titulo={disciplina.nome}
         subtitulo={disciplina.codigo || ''}

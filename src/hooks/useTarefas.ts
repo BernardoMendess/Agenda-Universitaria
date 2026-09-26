@@ -120,9 +120,11 @@ export const useTarefas = () => {
             : t
         )
       );
-      setTarefasHome((prev) =>
-        prev.filter((t) => (t.id === id ? false : true))
-      );
+      if (alterada.concluida) {
+        setTarefasHome((prev) => prev.filter((t) => t.id !== id));
+      }
+      // Sempre recarrega as tarefas pendentes da home (garante que tarefas desfeitas reapareçam imediatamente)
+      await carregarTarefasHome();
       // Recarrega estatísticas em segundo plano
       await carregarEstatisticas();
       notificacaoService.sincronizarGeral().catch(() => {});
@@ -131,7 +133,7 @@ export const useTarefas = () => {
       setErro(e.message || 'Erro ao alternar conclusão.');
       throw e;
     }
-  }, [carregarEstatisticas]);
+  }, [carregarTarefasHome, carregarEstatisticas]);
 
   /**
    * Exclui uma tarefa.
