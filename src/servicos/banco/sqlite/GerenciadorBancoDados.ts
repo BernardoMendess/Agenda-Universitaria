@@ -2,6 +2,7 @@ import {
   NOME_BANCO_SQLITE,
   SCRIPTS_DDL_TABELAS,
   SCRIPTS_INDICES_SQLITE,
+  SCRIPTS_MIGRACAO,
   TABELAS_SQLITE,
   VERSAO_SCHEMA_SQLITE,
 } from './EsquemaBanco';
@@ -88,6 +89,7 @@ export class GerenciadorBancoDados {
         this.bancoInstancia.execSync('PRAGMA foreign_keys = ON;');
         this.bancoInstancia.execSync('PRAGMA journal_mode = WAL;');
 
+        // Cria tabelas que ainda não existem
         for (const ddl of Object.values(SCRIPTS_DDL_TABELAS)) {
           this.bancoInstancia.execSync(ddl);
         }
@@ -98,6 +100,12 @@ export class GerenciadorBancoDados {
           } catch (e) {
             // Ignora erro se índice já existir
           }
+        }
+
+        // Aplica migrations pendentes usando user_version do SQLite
+        const versaoAtual = this.obterVersaoSchema();
+        if (versaoAtual < VERSAO_SCHEMA_SQLITE) {
+          this.aplicarMigracoes(versaoAtual);
         }
       }
 
@@ -135,6 +143,47 @@ export class GerenciadorBancoDados {
    */
   public estaInicializado(): boolean {
     return this.inicializado;
+  }
+
+  /**
+   * Obtém a versão atual do schema via PRAGMA user_version.
+   */
+  private obterVersaoSchema(): number {
+    try {
+      const row = this.bancoInstancia?.getFirstSync<{ user_version: number }>(
+        'PRAGMA user_version'
+      );
+      return row?.user_version ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Aplica todos os scripts de migração pendentes em ordem crescente de versão.
+   */
+  private aplicarMigracoes(versaoAtual: number): void {
+    if (!this.bancoInstancia) return;
+
+    const migracoesPendentes = SCRIPTS_MIGRACAO.filter(
+      (m) => m.versao > versaoAtual
+    );
+
+    for (const migracao of migracoesPendentes) {
+      try {
+        this.bancoInstancia.execSync(migracao.sql);
+      } catch (e) {
+        // Coluna já pode existir em reinstalações — ignora silenciosamente
+        console.warn(`Migração v${migracao.versao} ignorada:`, e);
+      }
+    }
+
+    // Grava nova versão no banco
+    try {
+      this.bancoInstancia.execSync(`PRAGMA user_version = ${VERSAO_SCHEMA_SQLITE};`);
+    } catch (e) {
+      console.warn('Falha ao atualizar user_version:', e);
+    }
   }
 }
 

@@ -5,8 +5,15 @@ import { DiaSemana } from '../../modelos/HorarioAula';
  * Interface do Driver de Notificações Locais.
  * Desacopla as chamadas nativas de SO da lógica de negócio de agendamento (SOLID).
  */
+export interface ResultadoAgendamento {
+  /** ID nativo do agendamento retornado pelo expo-notifications */
+  idNativo: string;
+  /** true se o alarme foi efetivamente criado no sistema operacional */
+  agendadoNoSO: boolean;
+}
+
 export interface INotificadorLocal {
-  agendar(notificacao: NotificacaoAgendada): Promise<string>;
+  agendar(notificacao: NotificacaoAgendada): Promise<ResultadoAgendamento>;
   cancelar(idAgendamento: string): Promise<boolean>;
   cancelarTodos(): Promise<void>;
   dispararImediato(titulo: string, mensagem: string, dados?: any): Promise<void>;
@@ -15,6 +22,8 @@ export interface INotificadorLocal {
   verificarPermissao(): Promise<boolean>;
   solicitarPermissao(): Promise<boolean>;
   inicializar(): Promise<void>;
+  /** Lista todos os agendamentos reais registrados no SO do celular */
+  listarAgendamentosNativos(): Promise<{ total: number; ids: string[] }>;
 }
 
 const MAPA_DIA_SEMANA_EXPO: Record<DiaSemana, number> = {
@@ -135,11 +144,11 @@ export class NotificadorLocalDriver implements INotificadorLocal {
     }
   }
 
-  async agendar(notificacao: NotificacaoAgendada): Promise<string> {
+  async agendar(notificacao: NotificacaoAgendada): Promise<ResultadoAgendamento> {
     await this.inicializar();
     const Notifications = AdaptadorNativoSeguro.obterNotifications();
     if (!Notifications?.scheduleNotificationAsync) {
-      return notificacao.id;
+      return { idNativo: notificacao.id, agendadoNoSO: false };
     }
 
     try {
@@ -162,9 +171,8 @@ export class NotificadorLocalDriver implements INotificadorLocal {
           weekday = weekday === 1 ? 7 : weekday - 1;
         }
 
-        let idExpo = notificacao.id;
         try {
-          idExpo = await Notifications.scheduleNotificationAsync({
+          const idExpo = await Notifications.scheduleNotificationAsync({
             content: {
               title: notificacao.titulo,
               body: notificacao.mensagem,
@@ -179,12 +187,12 @@ export class NotificadorLocalDriver implements INotificadorLocal {
               channelId: 'lembretes-academicos',
             },
           });
+          this.mapaIdsNativos.set(notificacao.id, idExpo);
+          return { idNativo: idExpo, agendadoNoSO: true };
         } catch (erroAgendar) {
           console.warn('Aviso ao agendar notificação semanal no SO:', erroAgendar);
+          return { idNativo: notificacao.id, agendadoNoSO: false };
         }
-
-        this.mapaIdsNativos.set(notificacao.id, idExpo);
-        return idExpo;
       }
 
       // 2. Avaliações e Tarefas com Data/Hora específica
@@ -193,9 +201,8 @@ export class NotificadorLocalDriver implements INotificadorLocal {
 
         // Só agenda se a data/hora estiver no futuro
         if (dataDisparo.getTime() > Date.now()) {
-          let idExpo = notificacao.id;
           try {
-            idExpo = await Notifications.scheduleNotificationAsync({
+            const idExpo = await Notifications.scheduleNotificationAsync({
               content: {
                 title: notificacao.titulo,
                 body: notificacao.mensagem,
@@ -208,19 +215,22 @@ export class NotificadorLocalDriver implements INotificadorLocal {
                 channelId: 'lembretes-academicos',
               },
             });
+            this.mapaIdsNativos.set(notificacao.id, idExpo);
+            return { idNativo: idExpo, agendadoNoSO: true };
           } catch (erroAgendar) {
             console.warn('Aviso ao agendar notificação por data no SO:', erroAgendar);
+            return { idNativo: notificacao.id, agendadoNoSO: false };
           }
-
-          this.mapaIdsNativos.set(notificacao.id, idExpo);
-          return idExpo;
         }
+
+        // Data já passou: não agenda no SO
+        return { idNativo: notificacao.id, agendadoNoSO: false };
       }
 
-      return notificacao.id;
+      return { idNativo: notificacao.id, agendadoNoSO: false };
     } catch (e) {
       console.warn('Erro ao processar agendamento de notificação:', e);
-      return notificacao.id;
+      return { idNativo: notificacao.id, agendadoNoSO: false };
     }
   }
 
@@ -306,6 +316,26 @@ export class NotificadorLocalDriver implements INotificadorLocal {
    */
   emitirFeedbackTátil(): void {
     // Vibração removida completamente
+  }
+
+  /**
+   * Lista todos os agendamentos reais do SO do celular via expo-notifications.
+   */
+  async listarAgendamentosNativos(): Promise<{ total: number; ids: string[] }> {
+    try {
+      const Notifications = AdaptadorNativoSeguro.obterNotifications();
+      if (!Notifications?.getAllScheduledNotificationsAsync) {
+        return { total: 0, ids: [] };
+      }
+      const agendadas = await Notifications.getAllScheduledNotificationsAsync();
+      return {
+        total: agendadas.length,
+        ids: agendadas.map((n: any) => n.identifier),
+      };
+    } catch (e) {
+      console.warn('Erro ao listar agendamentos nativos:', e);
+      return { total: 0, ids: [] };
+    }
   }
 
   limpar(): void {

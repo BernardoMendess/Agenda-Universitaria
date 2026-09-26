@@ -17,6 +17,8 @@ export interface INotificacaoAgendadaRepositorio {
   removerPorId(id: string): Promise<boolean>;
   removerPorReferenciaId(referenciaId: string): Promise<number>;
   removerPorTipo(tipo: TipoNotificacao): Promise<number>;
+  /** Atualiza o ID nativo do Expo e confirma o agendamento real no SO */
+  atualizarIdNativo(id: string, idNativoExpo: string, agendadoNoSO: boolean): Promise<void>;
   limpar(): void;
 }
 
@@ -115,6 +117,18 @@ export class NotificacaoAgendadaRepositorioEmMemoria
 
   limpar(): void {
     this.notificacoes.clear();
+  }
+
+  async atualizarIdNativo(
+    id: string,
+    idNativoExpo: string,
+    agendadoNoSO: boolean
+  ): Promise<void> {
+    const item = this.notificacoes.get(id);
+    if (item) {
+      item.idNativoExpo = idNativoExpo;
+      item.agendadoNoSO = agendadoNoSO;
+    }
   }
 }
 

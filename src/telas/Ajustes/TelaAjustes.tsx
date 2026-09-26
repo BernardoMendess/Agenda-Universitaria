@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotificacoes } from '../../hooks/useNotificacoes';
@@ -15,6 +16,9 @@ import { useBackup } from '../../hooks/useBackup';
 import { Cabecalho } from '../../componentes/Cabecalho';
 import { ModalBackup } from '../../componentes/ModalBackup';
 import { tema } from '../../estilos/tema';
+import { CHAVE_PIX_DOACAO } from '../../constantes/apoio';
+
+const CHAVE_PIX = CHAVE_PIX_DOACAO;
 
 const OPCOES_ANTECEDENCIA_AULA = [
   { rotulo: '10 min', valor: 10 },
@@ -560,6 +564,40 @@ export const TelaAjustes: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Seção 6: Apoie o Projeto */}
+        <View style={estilos.secaoApoie}>
+          <View style={estilos.secaoIconeTitulo}>
+            <View style={[estilos.iconeSecao, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}>
+              <Ionicons name="cafe-outline" size={18} color="#eab308" />
+            </View>
+            <View style={estilos.secaoTextos}>
+              <Text style={estilos.secaoTitulo}>Apoie o Projeto ☕</Text>
+              <Text style={estilos.secaoDescricao}>
+                O app é 100% gratuito e sempre será. Se ele te ajudou, um cafézinho é bem-vindo!
+              </Text>
+            </View>
+          </View>
+
+          <View style={estilos.cardChavePix}>
+            <Text style={estilos.labelChavePix}>Chave Pix (Aleatória)</Text>
+            <Text style={estilos.textoChavePix} selectable>{CHAVE_PIX}</Text>
+          </View>
+
+          <TouchableOpacity
+            style={estilos.botaoCopiarPix}
+            onPress={async () => {
+              await Clipboard.setStringAsync(CHAVE_PIX);
+              exibirFeedback('Chave Pix copiada! Obrigado pelo apoio 💜');
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="copy-outline" size={16} color="#0d1117" style={estilos.iconeBotaoPix} />
+            <Text style={estilos.textoBotaoCopiarPix}>Copiar Chave Pix</Text>
+          </TouchableOpacity>
+
+          <Text style={estilos.rodapeApoie}>Feito com 💜 por um universitário</Text>
+        </View>
+
         {/* Botão Restaurar Padrão */}
         <TouchableOpacity
           style={estilos.botaoRestaurar}
@@ -880,5 +918,62 @@ const estilos = StyleSheet.create({
     color: '#ffffff',
     fontSize: tema.tipografia.pequeno,
     fontWeight: 'bold',
+  },
+  // ── Seção Apoie o Projeto ─────────────────────────────────────────────────
+  secaoApoie: {
+    backgroundColor: 'rgba(234, 179, 8, 0.06)',
+    borderRadius: tema.raioBorda.card,
+    padding: tema.espacamento.md,
+    borderWidth: 1,
+    borderColor: 'rgba(234, 179, 8, 0.25)',
+    marginBottom: tema.espacamento.md,
+  },
+  cardChavePix: {
+    backgroundColor: tema.cores.corFundoElevado,
+    borderRadius: tema.raioBorda.padrao,
+    paddingHorizontal: tema.espacamento.md,
+    paddingVertical: tema.espacamento.sm + 2,
+    marginTop: tema.espacamento.md,
+    borderWidth: 1,
+    borderColor: 'rgba(234, 179, 8, 0.2)',
+  },
+  labelChavePix: {
+    color: '#eab308',
+    fontSize: tema.tipografia.micro,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  textoChavePix: {
+    color: tema.cores.corTextoPrimario,
+    fontSize: tema.tipografia.pequeno,
+    fontFamily: 'monospace' as const,
+    letterSpacing: 0.3,
+  },
+  botaoCopiarPix: {
+    backgroundColor: '#eab308',
+    borderRadius: tema.raioBorda.padrao,
+    paddingVertical: 12,
+    minHeight: 46,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginTop: tema.espacamento.sm + 4,
+  },
+  iconeBotaoPix: {
+    marginRight: 8,
+  },
+  textoBotaoCopiarPix: {
+    color: '#0d1117',
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: '700' as const,
+  },
+  rodapeApoie: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+    textAlign: 'center' as const,
+    marginTop: tema.espacamento.md,
+    fontStyle: 'italic' as const,
   },
 });

@@ -146,7 +146,9 @@ export const SCRIPTS_DDL_TABELAS: Record<NomeTabelaSQLite, string> = {
       antecedencia_horas INTEGER,
       prioridade TEXT NOT NULL DEFAULT 'MEDIA',
       ativa INTEGER NOT NULL DEFAULT 1,
-      data_criacao TEXT NOT NULL
+      data_criacao TEXT NOT NULL,
+      id_nativo_expo TEXT,
+      agendado_no_so INTEGER NOT NULL DEFAULT 0
     );
   `,
 };
@@ -173,5 +175,20 @@ export const SCRIPTS_INDICES_SQLITE: string[] = [
  * Nome do arquivo de banco de dados SQLite local no aparelho.
  */
 export const NOME_BANCO_SQLITE = 'campusflow.db';
-export const VERSAO_SCHEMA_SQLITE = 1;
+export const VERSAO_SCHEMA_SQLITE = 2;
+
+/**
+ * Scripts de migração para atualizações de schema entre versões.
+ * Cada entrada é um par [versãoAlvo, script SQL].
+ */
+export const SCRIPTS_MIGRACAO: Array<{ versao: number; sql: string }> = [
+  {
+    versao: 2,
+    sql: `ALTER TABLE ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS} ADD COLUMN id_nativo_expo TEXT;`,
+  },
+  {
+    versao: 2,
+    sql: `ALTER TABLE ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS} ADD COLUMN agendado_no_so INTEGER NOT NULL DEFAULT 0;`,
+  },
+];
 

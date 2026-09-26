@@ -12,6 +12,8 @@ import { TelaFormularioDisciplina } from '../telas/CriarDisciplina/TelaFormulari
 import { TelaDetalhesDisciplina } from '../telas/DetalhesDisciplina/TelaDetalhesDisciplina';
 import { Disciplina } from '../modelos/Disciplina';
 import { tema } from '../estilos/tema';
+import { useModalApoio } from '../hooks/useModalApoio';
+import { ModalApoioProjeto } from '../componentes/ModalApoioProjeto';
 
 type AbaAtiva =
   | 'home'
@@ -41,6 +43,8 @@ export const NavegadorPrincipal: React.FC = () => {
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('home');
   const [disciplinaEdicao, setDisciplinaEdicao] = useState<Disciplina | null>(null);
   const [disciplinaDetalhes, setDisciplinaDetalhes] = useState<Disciplina | null>(null);
+
+  const { modalVisivel: modalApoioVisivel, fecharModal: fecharModalApoio } = useModalApoio();
 
   const irParaCriarDisciplina = () => {
     setDisciplinaEdicao(null);
@@ -182,6 +186,12 @@ export const NavegadorPrincipal: React.FC = () => {
           })}
         </SafeAreaView>
       )}
+
+      {/* Pop-up de Apoio ao Projeto (exibido apenas 1x após 10 minutos de uso) */}
+      <ModalApoioProjeto
+        visivel={modalApoioVisivel}
+        aoFechar={fecharModalApoio}
+      />
     </View>
   );
 };

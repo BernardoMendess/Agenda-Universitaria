@@ -136,8 +136,6 @@ export class NotificacaoService {
       const salaTexto = h.localSala || disc.localSala ? ` na sala ${h.localSala || disc.localSala}` : '';
       const diaTexto = DIAS_SEMANA_LABELS[h.diaSemana] || h.diaSemana;
 
-      const horarioDisparo = this.calcularHorarioDisparo(h.horarioInicio, minutos);
-
       agendamentos.push({
         tipo: 'AULA',
         titulo: `Aula de ${disc.nome}`,
@@ -155,7 +153,9 @@ export class NotificacaoService {
 
     const salvas = await this.notifRepo.salvarEmLote(agendamentos);
     for (const notif of salvas) {
-      await this.notificador.agendar(notif);
+      const resultado = await this.notificador.agendar(notif);
+      // Persiste o ID nativo e confirmação de agendamento real
+      await this.notifRepo.atualizarIdNativo(notif.id, resultado.idNativo, resultado.agendadoNoSO);
     }
 
     return salvas;
@@ -198,6 +198,11 @@ export class NotificacaoService {
         horas
       );
 
+      // Não salva no banco se a data de disparo já passou
+      if (new Date(dataHoraDisparo).getTime() <= Date.now()) {
+        continue;
+      }
+
       agendamentos.push({
         tipo: 'AVALIACAO',
         titulo: `${tipoRotulo} de ${disciplinaNome}`,
@@ -214,7 +219,8 @@ export class NotificacaoService {
 
     const salvas = await this.notifRepo.salvarEmLote(agendamentos);
     for (const notif of salvas) {
-      await this.notificador.agendar(notif);
+      const resultado = await this.notificador.agendar(notif);
+      await this.notifRepo.atualizarIdNativo(notif.id, resultado.idNativo, resultado.agendadoNoSO);
     }
 
     return salvas;
@@ -257,6 +263,11 @@ export class NotificacaoService {
         horas
       );
 
+      // Não salva no banco se a data de disparo já passou
+      if (new Date(dataHoraDisparo).getTime() <= Date.now()) {
+        continue;
+      }
+
       agendamentos.push({
         tipo: 'TAREFA',
         titulo: `Prazo de Tarefa${materiaTexto}`,
@@ -273,7 +284,8 @@ export class NotificacaoService {
 
     const salvas = await this.notifRepo.salvarEmLote(agendamentos);
     for (const notif of salvas) {
-      await this.notificador.agendar(notif);
+      const resultado = await this.notificador.agendar(notif);
+      await this.notifRepo.atualizarIdNativo(notif.id, resultado.idNativo, resultado.agendadoNoSO);
     }
 
     return salvas;
@@ -331,7 +343,8 @@ export class NotificacaoService {
   async cancelarLembretesPorReferencia(referenciaId: string): Promise<number> {
     const notifs = await this.notifRepo.listarPorReferenciaId(referenciaId);
     for (const n of notifs) {
-      await this.notificador.cancelar(n.id);
+      // Usa o ID nativo persisido para cancelar corretamente no SO
+      await this.notificador.cancelar(n.idNativoExpo || n.id);
     }
     return await this.notifRepo.removerPorReferenciaId(referenciaId);
   }
@@ -355,8 +368,12 @@ export class NotificacaoService {
     const config = await this.configRepo.obterConfiguracao();
     const mapaDisciplinas = new Map(disciplinas.map((d) => [d.id, d]));
 
+    // Cancela TODOS os alarmes nativos antes de recriar, evitando duplicatas no SO
+    await this.notificador.cancelarTodos();
+
     // 1. Aulas
     if (config.aulasAtivas) {
+      await this.notifRepo.removerPorTipo('AULA');
       await this.agendarLembretesAulas(horarios, disciplinas);
     } else {
       await this.notifRepo.removerPorTipo('AULA');
@@ -409,12 +426,16 @@ export class NotificacaoService {
     const avaliacoes = todas.filter((n) => n.tipo === 'AVALIACAO').length;
     const tarefas = todas.filter((n) => n.tipo === 'TAREFA').length;
 
+    // Consulta o SO para obter a contagem real de alarmes registrados no celular
+    const nativo = await this.notificador.listarAgendamentosNativos();
+
     return {
       totalAgendadas: todas.length,
       totalAulas: aulas,
       totalAvaliacoes: avaliacoes,
       totalTarefas: tarefas,
       alertaFaltasAtivo: config.alertaFaltasAtivo,
+      totalNoSistemaOperacional: nativo.total,
     };
   }
 
@@ -441,6 +462,24 @@ export class NotificacaoService {
       console.warn('Erro ao sincronizar notificações gerais:', e);
       return await this.obterEstatisticas();
     }
+  }
+
+  /**
+   * Remove do banco local registros de notificações com data/hora de disparo já expirada.
+   * Garante que o banco não infle a contagem com eventos do passado.
+   */
+  async limparNotificacoesExpiradas(): Promise<number> {
+    const todas = await this.notifRepo.listarTodas();
+    let removidas = 0;
+    for (const n of todas) {
+      // Notificações de aula (AULA) são recorrentes e não expiram
+      if (n.tipo === 'AULA') continue;
+      if (n.dataHoraDisparo && new Date(n.dataHoraDisparo).getTime() <= Date.now()) {
+        await this.notifRepo.removerPorId(n.id);
+        removidas++;
+      }
+    }
+    return removidas;
   }
 
   /**

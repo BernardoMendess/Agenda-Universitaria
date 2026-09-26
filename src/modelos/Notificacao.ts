@@ -30,6 +30,10 @@ export interface NotificacaoAgendada {
   prioridade: PrioridadeNotificacao;
   ativa: boolean;
   dataCriacao: string;
+  /** ID nativo retornado pelo expo-notifications após agendamento no SO */
+  idNativoExpo?: string;
+  /** Indica se o alarme foi efetivamente registrado no sistema operacional */
+  agendadoNoSO?: boolean;
 }
 
 /**
@@ -98,9 +102,12 @@ export const CONFIGURACAO_NOTIFICACAO_PADRAO: ConfiguracaoNotificacao = {
  * Estatísticas resumidas dos agendamentos locais.
  */
 export interface EstatisticasNotificacoes {
+  /** Total de registros no banco local (SQLite) */
   totalAgendadas: number;
   totalAulas: number;
   totalAvaliacoes: number;
   totalTarefas: number;
   alertaFaltasAtivo: boolean;
+  /** Total de alarmes realmente agendados no sistema operacional do celular */
+  totalNoSistemaOperacional: number;
 }

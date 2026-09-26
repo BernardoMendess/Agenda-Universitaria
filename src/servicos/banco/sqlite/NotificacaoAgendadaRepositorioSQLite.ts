@@ -26,6 +26,8 @@ interface NotificacaoRow {
   prioridade: string;
   ativa: number;
   data_criacao: string;
+  id_nativo_expo: string | null;
+  agendado_no_so: number;
 }
 
 export class NotificacaoAgendadaRepositorioSQLite
@@ -51,6 +53,8 @@ export class NotificacaoAgendadaRepositorioSQLite
       prioridade: (row.prioridade as PrioridadeNotificacao) || 'MEDIA',
       ativa: row.ativa === 1,
       dataCriacao: row.data_criacao,
+      idNativoExpo: row.id_nativo_expo || undefined,
+      agendadoNoSO: row.agendado_no_so === 1,
     };
   }
 
@@ -73,6 +77,7 @@ export class NotificacaoAgendadaRepositorioSQLite
       prioridade: dados.prioridade || 'MEDIA',
       ativa: true,
       dataCriacao: new Date().toISOString(),
+      agendadoNoSO: false,
     };
 
     const db = gerenciadorBancoDados.obterBanco();
@@ -82,8 +87,8 @@ export class NotificacaoAgendadaRepositorioSQLite
           id, tipo, titulo, mensagem, referencia_id, disciplina_id,
           disciplina_nome, disciplina_cor, data_hora_disparo, dia_semana,
           horario_inicio, antecedencia_minutos, antecedencia_horas,
-          prioridade, ativa, data_criacao
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          prioridade, ativa, data_criacao, id_nativo_expo, agendado_no_so
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           nova.id,
           nova.tipo,
@@ -101,6 +106,8 @@ export class NotificacaoAgendadaRepositorioSQLite
           nova.prioridade,
           nova.ativa ? 1 : 0,
           nova.dataCriacao,
+          null,
+          0,
         ]
       );
     } else {
@@ -231,5 +238,30 @@ export class NotificacaoAgendadaRepositorioSQLite
       db.runSync(`DELETE FROM ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS}`);
     }
     this.fallbackEmMemoria.clear();
+  }
+
+  /**
+   * Atualiza o ID nativo do Expo e flag de agendamento no SO após confirmação do agendamento nativo.
+   */
+  async atualizarIdNativo(
+    id: string,
+    idNativoExpo: string,
+    agendadoNoSO: boolean
+  ): Promise<void> {
+    const db = gerenciadorBancoDados.obterBanco();
+    if (db) {
+      db.runSync(
+        `UPDATE ${TABELAS_SQLITE.NOTIFICACOES_AGENDADAS}
+         SET id_nativo_expo = ?, agendado_no_so = ?
+         WHERE id = ?`,
+        [idNativoExpo, agendadoNoSO ? 1 : 0, id]
+      );
+    } else {
+      const item = this.fallbackEmMemoria.get(id);
+      if (item) {
+        item.idNativoExpo = idNativoExpo;
+        item.agendadoNoSO = agendadoNoSO;
+      }
+    }
   }
 }

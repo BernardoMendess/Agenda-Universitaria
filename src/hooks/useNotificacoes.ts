@@ -30,6 +30,7 @@ export const useNotificacoes = () => {
     totalAvaliacoes: 0,
     totalTarefas: 0,
     alertaFaltasAtivo: true,
+    totalNoSistemaOperacional: 0,
   });
   const [notificacoes, setNotificacoes] = useState<NotificacaoAgendada[]>([]);
   const [permissaoConcedida, setPermissaoConcedida] = useState<boolean>(true);
@@ -44,6 +45,13 @@ export const useNotificacoes = () => {
     try {
       setCarregando(true);
       setErro(null);
+
+      // Sincroniza todos os lembretes com os dados atuais do banco,
+      // garantindo que a tabela de notificações reflita disciplinas/horários/avaliações/tarefas reais
+      await notificacaoService.sincronizarGeral();
+
+      // Limpa registros expirados após a sincronização
+      await notificacaoService.limparNotificacoesExpiradas();
 
       const [config, stats, lista, permissao] = await Promise.all([
         notificacaoService.obterConfiguracao(),

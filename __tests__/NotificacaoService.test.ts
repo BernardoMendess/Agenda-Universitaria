@@ -19,7 +19,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
     notifRepo = new NotificacaoAgendadaRepositorioEmMemoria();
 
     notificadorMock = {
-      agendar: jest.fn().mockImplementation(async (n) => n.id),
+      agendar: jest.fn().mockImplementation(async (n) => ({ idNativo: n.id, agendadoNoSO: true })),
       cancelar: jest.fn().mockResolvedValue(true),
       cancelarTodos: jest.fn().mockResolvedValue(undefined),
       dispararImediato: jest.fn().mockResolvedValue(undefined),
@@ -28,6 +28,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
       verificarPermissao: jest.fn().mockResolvedValue(true),
       solicitarPermissao: jest.fn().mockResolvedValue(true),
       inicializar: jest.fn().mockResolvedValue(undefined),
+      listarAgendamentosNativos: jest.fn().mockResolvedValue({ total: 0, ids: [] }),
     };
 
     service = new NotificacaoService(configRepo, notifRepo, notificadorMock);
@@ -127,7 +128,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
       disciplinaId: 'disc_1',
       titulo: 'Prova 1',
       tipo: 'PROVA',
-      data: '2026-09-10',
+      data: '2027-09-10',
       horario: '10:00',
       peso: 2,
       notaMaxima: 10,
@@ -187,7 +188,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
       disciplinaId: 'disc_1',
       titulo: 'Lista de Exercícios 1',
       concluida: false,
-      dataLimite: '2026-09-05',
+      dataLimite: '2027-09-05',
       horarioLimite: '23:59',
       prioridade: 'ALTA',
       dataCriacao: '2026-01-01',
@@ -354,7 +355,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
           disciplinaId: 'disc_1',
           titulo: 'Prova 1',
           tipo: 'PROVA',
-          data: '2026-09-15',
+          data: '2027-09-15',
           peso: 1,
           notaMaxima: 10,
           nota: null,
@@ -369,7 +370,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
           disciplinaId: 'disc_1',
           titulo: 'Trabalho Prático',
           concluida: false,
-          dataLimite: '2026-09-12',
+          dataLimite: '2027-09-12',
           prioridade: 'MEDIA',
           dataCriacao: '2026-01-01',
           dataAtualizacao: '2026-01-01',

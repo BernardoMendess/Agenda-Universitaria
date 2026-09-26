@@ -70,7 +70,7 @@ describe('Persistência Estritamente Local (RNF02 — SQLite Local)', () => {
 
     it('deve definir metadados do arquivo de banco de dados SQLite', () => {
       expect(NOME_BANCO_SQLITE).toBe('campusflow.db');
-      expect(VERSAO_SCHEMA_SQLITE).toBe(1);
+      expect(VERSAO_SCHEMA_SQLITE).toBe(2);
     });
   });
 
@@ -85,7 +85,7 @@ describe('Persistência Estritamente Local (RNF02 — SQLite Local)', () => {
       const relatorio = gerenciadorBancoDados.obterRelatorioStatus();
 
       expect(relatorio.nomeBanco).toBe('campusflow.db');
-      expect(relatorio.versaoSchema).toBe(1);
+      expect(relatorio.versaoSchema).toBe(2);
       expect(relatorio.totalTabelas).toBe(8);
       expect(relatorio.chavesEstrangeirasAtivas).toBe(true);
       expect(relatorio.modoJournal).toBe('WAL');
