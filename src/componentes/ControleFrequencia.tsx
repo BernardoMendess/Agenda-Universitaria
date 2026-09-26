@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ResumoFrequencia, StatusFrequencia } from '../modelos/Falta';
 import { tema } from '../estilos/tema';
 
@@ -136,7 +137,9 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
           onPress={aoAbrirHistorico}
           activeOpacity={0.7}
           accessibilityLabel="Abrir histórico de faltas"
+          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
         >
+          <Ionicons name="time-outline" size={14} color={tema.cores.corTextoSecundario} />
           <Text style={estilos.textoBotaoHistorico}>Histórico</Text>
         </TouchableOpacity>
 
@@ -150,6 +153,7 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
             disabled={totalFaltas === 0}
             activeOpacity={0.7}
             accessibilityLabel="Diminuir uma falta"
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
             <Text
               style={[
@@ -166,6 +170,7 @@ export const ControleFrequencia: React.FC<ControleFrequenciaProps> = ({
             onPress={aoIncrementar}
             activeOpacity={0.7}
             accessibilityLabel="Adicionar uma falta"
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
             <Text style={[estilos.textoBotaoControle, estilos.textoMais]}>+1</Text>
           </TouchableOpacity>
@@ -182,7 +187,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.sm,
     marginTop: tema.espacamento.sm,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   linhaStatus: {
     flexDirection: 'row',
@@ -258,10 +263,14 @@ const estilos = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   botaoHistorico: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: tema.espacamento.sm,
+    paddingHorizontal: tema.espacamento.smd,
     borderRadius: tema.raioBorda.pequeno,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    minHeight: 38,
   },
   textoBotaoHistorico: {
     color: tema.cores.corTextoSecundario,
@@ -274,12 +283,13 @@ const estilos = StyleSheet.create({
   },
   botaoIncremento: {
     backgroundColor: tema.cores.corFundoElevado,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 14,
+    paddingVertical: tema.espacamento.sm,
     borderRadius: tema.raioBorda.pequeno,
     borderWidth: 1,
-    borderColor: '#30363d',
-    minWidth: 38,
+    borderColor: tema.cores.bordaPadrao,
+    minWidth: 44,
+    minHeight: 38,
     alignItems: 'center',
     justifyContent: 'center',
   },

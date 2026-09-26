@@ -25,6 +25,9 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
       dispararImediato: jest.fn().mockResolvedValue(undefined),
       emitirAlertaCritico: jest.fn().mockResolvedValue(undefined),
       emitirFeedbackTátil: jest.fn(),
+      verificarPermissao: jest.fn().mockResolvedValue(true),
+      solicitarPermissao: jest.fn().mockResolvedValue(true),
+      inicializar: jest.fn().mockResolvedValue(undefined),
     };
 
     service = new NotificacaoService(configRepo, notifRepo, notificadorMock);
@@ -42,7 +45,7 @@ describe('NotificacaoService (RF10 — Notificações Locais e Alarmes)', () => 
       expect(config.antecedenciaTarefasHoras).toEqual([24, 2]);
       expect(config.alertaFaltasAtivo).toBe(true);
       expect(config.somHabilitado).toBe(true);
-      expect(config.vibracaoHabilitada).toBe(true);
+      expect(config.vibracaoHabilitada).toBe(false);
     });
 
     it('deve atualizar preferências de notificações', async () => {

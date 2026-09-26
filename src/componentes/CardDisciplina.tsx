@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Disciplina } from '../modelos/Disciplina';
 import { ResumoFrequencia } from '../modelos/Falta';
 import { ControleFrequencia } from './ControleFrequencia';
@@ -102,7 +103,9 @@ export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
             style={estilos.botaoAcao}
             onPress={() => aoEditar(disciplina)}
             accessibilityLabel="Editar disciplina"
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
+            <Ionicons name="create-outline" size={15} color={tema.cores.corMarcaPrimaria} />
             <Text style={estilos.textoBotaoEditar}>Editar</Text>
           </TouchableOpacity>
 
@@ -110,7 +113,9 @@ export const CardDisciplina: React.FC<CardDisciplinaProps> = ({
             style={estilos.botaoAcao}
             onPress={() => aoExcluir(disciplina)}
             accessibilityLabel="Excluir disciplina"
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
+            <Ionicons name="trash-outline" size={15} color={tema.cores.corStatusCritico} />
             <Text style={estilos.textoBotaoExcluir}>Excluir</Text>
           </TouchableOpacity>
         </View>
@@ -127,7 +132,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   barraLateral: {
     width: 6,
@@ -184,15 +189,22 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    gap: tema.espacamento.md,
+    gap: tema.espacamento.sm,
     marginTop: tema.espacamento.sm,
-    paddingTop: tema.espacamento.xs,
+    paddingTop: tema.espacamento.sm,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
   },
   botaoAcao: {
-    paddingVertical: 4,
-    paddingHorizontal: tema.espacamento.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: tema.espacamento.sm,
+    paddingHorizontal: tema.espacamento.smd,
+    borderRadius: tema.raioBorda.padrao,
+    backgroundColor: tema.cores.sobreposicaoSutil,
+    minHeight: 38,
   },
   textoBotaoEditar: {
     color: tema.cores.corMarcaPrimaria,

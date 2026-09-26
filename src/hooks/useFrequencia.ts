@@ -45,22 +45,11 @@ export const useFrequencia = () => {
     try {
       const disc = await disciplinaRepositorio.buscarPorId(disciplinaId);
       if (disc) {
-        const resultado = await notificacaoService.verificarEDispararAlertaFaltas(
+        // Dispara a notificação diretamente na barra de avisos do celular (sem travar a tela do app)
+        await notificacaoService.verificarEDispararAlertaFaltas(
           disc,
           resumo
         );
-        if (
-          resultado.disparouAlerta &&
-          typeof disc.limiteMaximoFaltas === 'number'
-        ) {
-          setAlertaCritico({
-            disciplinaId: disc.id,
-            disciplinaNome: disc.nome,
-            limiteMaximoFaltas: disc.limiteMaximoFaltas,
-            totalFaltas: resumo.totalFaltas,
-            reprovadoPorFalta: resumo.reprovadoPorFalta,
-          });
-        }
       }
     } catch {
       // Falha silenciosa no alerta para não bloquear a operação principal

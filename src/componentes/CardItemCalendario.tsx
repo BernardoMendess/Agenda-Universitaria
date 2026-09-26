@@ -218,7 +218,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   containerConcluido: {
     opacity: 0.65,
@@ -330,7 +330,7 @@ const estilos = StyleSheet.create({
   },
   descricao: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     marginTop: 4,
     lineHeight: 15,
   },
@@ -338,7 +338,7 @@ const estilos = StyleSheet.create({
     marginTop: 8,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -350,7 +350,7 @@ const estilos = StyleSheet.create({
   },
   textoRodape: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
   },
   badgeNota: {
     backgroundColor: 'rgba(46, 160, 67, 0.15)',
@@ -370,7 +370,7 @@ const estilos = StyleSheet.create({
   },
   linkExcluir: {
     color: tema.cores.corStatusCritico,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '600',
   },
 });

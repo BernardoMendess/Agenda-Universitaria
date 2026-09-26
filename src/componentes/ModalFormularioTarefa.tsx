@@ -381,7 +381,7 @@ const estilos = StyleSheet.create({
     borderTopRightRadius: 20,
     maxHeight: '90%',
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   modalCabecalho: {
     flexDirection: 'row',
@@ -389,7 +389,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     padding: tema.espacamento.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   modalTitulo: {
     color: tema.cores.corTextoPrimario,
@@ -397,7 +397,11 @@ const estilos = StyleSheet.create({
     fontWeight: 'bold',
   },
   botaoFechar: {
-    padding: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textoBotaoFechar: {
     color: tema.cores.corTextoSecundario,
@@ -512,7 +516,7 @@ const estilos = StyleSheet.create({
   },
   textoBotaoAtalho: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '500',
   },
   modalRodape: {
@@ -520,14 +524,16 @@ const estilos = StyleSheet.create({
     gap: 12,
     padding: tema.espacamento.md,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
   },
   botaoCancelar: {
     flex: 1,
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: tema.raioBorda.padrao,
     paddingVertical: 12,
+    minHeight: 46,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   textoBotaoCancelar: {
     color: tema.cores.corTextoSecundario,
@@ -539,7 +545,9 @@ const estilos = StyleSheet.create({
     backgroundColor: tema.cores.corMarcaPrimaria,
     borderRadius: tema.raioBorda.padrao,
     paddingVertical: 12,
+    minHeight: 46,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   textoBotaoSalvar: {
     color: '#ffffff',

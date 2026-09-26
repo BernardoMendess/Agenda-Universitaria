@@ -324,7 +324,7 @@ const estilos = StyleSheet.create({
     borderTopRightRadius: 20,
     maxHeight: '90%',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaPadrao,
   },
   cabecalho: {
     flexDirection: 'row',
@@ -332,7 +332,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     padding: tema.espacamento.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   tituloModal: {
     color: tema.cores.corTextoPrimario,

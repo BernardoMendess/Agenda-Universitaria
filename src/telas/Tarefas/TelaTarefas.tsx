@@ -14,6 +14,7 @@ import { CardTarefa } from '../../componentes/CardTarefa';
 import { ModalFormularioTarefa } from '../../componentes/ModalFormularioTarefa';
 import { ModalConfirmacao } from '../../componentes/ModalConfirmacao';
 import { TarefaComDisciplina, CriarTarefaDTO, AtualizarTarefaDTO } from '../../modelos/Tarefa';
+import { Ionicons } from '@expo/vector-icons';
 import { tema } from '../../estilos/tema';
 
 type FiltroStatus = 'TODAS' | 'PENDENTES' | 'CONCLUIDAS' | 'HOJE' | 'ATRASADAS';
@@ -97,14 +98,19 @@ export const TelaTarefas: React.FC = () => {
       >
         {/* Cabeçalho */}
         <View style={estilos.cabecalho}>
-          <View>
+          <View style={estilos.cabecalhoTextos}>
             <Text style={estilos.titulo}>Tarefas & To-Do</Text>
             <Text style={estilos.subtitulo}>
               Organize suas entregas, leituras e pendências
             </Text>
           </View>
-          <TouchableOpacity style={estilos.botaoNovo} onPress={abrirCriacao}>
-            <Text style={estilos.textoBotaoNovo}>+ Nova</Text>
+          <TouchableOpacity
+            style={estilos.botaoNovo}
+            onPress={abrirCriacao}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
+            <Ionicons name="add" size={18} color="#ffffff" />
+            <Text style={estilos.textoBotaoNovo}>Nova</Text>
           </TouchableOpacity>
         </View>
 
@@ -401,11 +407,21 @@ const estilos = StyleSheet.create({
     fontSize: tema.tipografia.pequeno,
     marginTop: 2,
   },
+  cabecalhoTextos: {
+    flex: 1,
+    marginRight: 12,
+  },
   botaoNovo: {
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
     backgroundColor: tema.cores.corMarcaPrimaria,
     paddingHorizontal: tema.espacamento.md,
     paddingVertical: tema.espacamento.sm,
     borderRadius: tema.raioBorda.padrao,
+    minHeight: 40,
   },
   textoBotaoNovo: {
     color: '#ffffff',
@@ -418,7 +434,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.md,
     marginBottom: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   linhaResumo: {
     flexDirection: 'row',
@@ -435,7 +451,7 @@ const estilos = StyleSheet.create({
   },
   rotuloEstatistica: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     marginTop: 2,
   },
   separador: {
@@ -450,11 +466,14 @@ const estilos = StyleSheet.create({
   },
   chipFiltro: {
     backgroundColor: tema.cores.corFundoCard,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: tema.raioBorda.redondo,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chipFiltroAtivo: {
     backgroundColor: `${tema.cores.corMarcaPrimaria}25`,
@@ -473,15 +492,17 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: tema.cores.corFundoCard,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     borderRadius: tema.raioBorda.redondo,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
+    minHeight: 40,
+    justifyContent: 'center',
   },
   chipDisciplinaFiltroAtivo: {
     backgroundColor: tema.cores.corFundoElevado,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   pontoCor: {
     width: 7,
@@ -491,7 +512,7 @@ const estilos = StyleSheet.create({
   },
   textoChipDisciplinaFiltro: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '500',
   },
   textoChipDisciplinaFiltroAtivo: {
@@ -507,7 +528,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.xl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     marginTop: tema.espacamento.sm,
   },
   textoVazio: {

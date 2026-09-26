@@ -35,7 +35,10 @@ export class ConfiguracaoNotificacaoRepositorioSQLite
 
     try {
       if (row.antecedencia_avaliacoes_horas) {
-        avaliacoesHoras = JSON.parse(row.antecedencia_avaliacoes_horas);
+        const parsed = JSON.parse(row.antecedencia_avaliacoes_horas);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          avaliacoesHoras = parsed.map(Number);
+        }
       }
     } catch {
       avaliacoesHoras = [24, 2];
@@ -43,7 +46,10 @@ export class ConfiguracaoNotificacaoRepositorioSQLite
 
     try {
       if (row.antecedencia_tarefas_horas) {
-        tarefasHoras = JSON.parse(row.antecedencia_tarefas_horas);
+        const parsed = JSON.parse(row.antecedencia_tarefas_horas);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          tarefasHoras = parsed.map(Number);
+        }
       }
     } catch {
       tarefasHoras = [24, 2];
@@ -63,6 +69,29 @@ export class ConfiguracaoNotificacaoRepositorioSQLite
     };
   }
 
+  private persistirNoBanco(db: any, config: ConfiguracaoNotificacao): void {
+    db.runSync(
+      `INSERT OR REPLACE INTO ${TABELAS_SQLITE.CONFIGURACOES_NOTIFICACAO} (
+        id, aulas_ativas, antecedencia_aula_minutos, avaliacoes_ativas,
+        antecedencia_avaliacoes_horas, tarefas_ativas, antecedencia_tarefas_horas,
+        alerta_faltas_ativo, som_habilitado, vibracao_habilitada, data_atualizacao
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        ID_CONFIG_PADRAO,
+        config.aulasAtivas ? 1 : 0,
+        config.antecedenciaAulaMinutos,
+        config.avaliacoesAtivas ? 1 : 0,
+        JSON.stringify(config.antecedenciaAvaliacoesHoras || [24, 2]),
+        config.tarefasAtivas ? 1 : 0,
+        JSON.stringify(config.antecedenciaTarefasHoras || [24, 2]),
+        config.alertaFaltasAtivo ? 1 : 0,
+        config.somHabilitado ? 1 : 0,
+        config.vibracaoHabilitada ? 1 : 0,
+        config.dataAtualizacao,
+      ]
+    );
+  }
+
   async obterConfiguracao(): Promise<ConfiguracaoNotificacao> {
     const db = gerenciadorBancoDados.obterBanco();
     if (db) {
@@ -73,9 +102,13 @@ export class ConfiguracaoNotificacaoRepositorioSQLite
       if (row) {
         return this.rowParaConfig(row);
       }
-      // Se ainda não existir no SQLite, grava o padrão
-      await this.salvarConfiguracao(CONFIGURACAO_NOTIFICACAO_PADRAO);
-      return { ...CONFIGURACAO_NOTIFICACAO_PADRAO };
+      // Se ainda não existir no SQLite, grava o padrão direto sem chamar salvarConfiguracao recursivamente
+      const configPadrao: ConfiguracaoNotificacao = {
+        ...CONFIGURACAO_NOTIFICACAO_PADRAO,
+        dataAtualizacao: new Date().toISOString(),
+      };
+      this.persistirNoBanco(db, configPadrao);
+      return configPadrao;
     }
     return { ...this.configEmMemoria };
   }
@@ -83,47 +116,43 @@ export class ConfiguracaoNotificacaoRepositorioSQLite
   async salvarConfiguracao(
     dados: Partial<ConfiguracaoNotificacao>
   ): Promise<ConfiguracaoNotificacao> {
-    const atual = await this.obterConfiguracao();
-    const atualizada: ConfiguracaoNotificacao = {
-      ...atual,
+    const db = gerenciadorBancoDados.obterBanco();
+    if (db) {
+      const row = db.getFirstSync<ConfigRow>(
+        `SELECT * FROM ${TABELAS_SQLITE.CONFIGURACOES_NOTIFICACAO} WHERE id = ?`,
+        [ID_CONFIG_PADRAO]
+      );
+      const atual = row ? this.rowParaConfig(row) : { ...CONFIGURACAO_NOTIFICACAO_PADRAO };
+      const atualizada: ConfiguracaoNotificacao = {
+        ...atual,
+        ...dados,
+        dataAtualizacao: dados.dataAtualizacao || new Date().toISOString(),
+      };
+
+      this.persistirNoBanco(db, atualizada);
+      return { ...atualizada };
+    }
+
+    this.configEmMemoria = {
+      ...this.configEmMemoria,
       ...dados,
       dataAtualizacao: dados.dataAtualizacao || new Date().toISOString(),
     };
-
-    const db = gerenciadorBancoDados.obterBanco();
-    if (db) {
-      db.runSync(
-        `INSERT OR REPLACE INTO ${TABELAS_SQLITE.CONFIGURACOES_NOTIFICACAO} (
-          id, aulas_ativas, antecedencia_aula_minutos, avaliacoes_ativas,
-          antecedencia_avaliacoes_horas, tarefas_ativas, antecedencia_tarefas_horas,
-          alerta_faltas_ativo, som_habilitado, vibracao_habilitada, data_atualizacao
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          ID_CONFIG_PADRAO,
-          atualizada.aulasAtivas ? 1 : 0,
-          atualizada.antecedenciaAulaMinutos,
-          atualizada.avaliacoesAtivas ? 1 : 0,
-          JSON.stringify(atualizada.antecedenciaAvaliacoesHoras || [24, 2]),
-          atualizada.tarefasAtivas ? 1 : 0,
-          JSON.stringify(atualizada.antecedenciaTarefasHoras || [24, 2]),
-          atualizada.alertaFaltasAtivo ? 1 : 0,
-          atualizada.somHabilitado ? 1 : 0,
-          atualizada.vibracaoHabilitada ? 1 : 0,
-          atualizada.dataAtualizacao,
-        ]
-      );
-    } else {
-      this.configEmMemoria = { ...atualizada };
-    }
-
-    return { ...atualizada };
+    return { ...this.configEmMemoria };
   }
 
   async restaurarPadrao(): Promise<ConfiguracaoNotificacao> {
-    return this.salvarConfiguracao({
+    const padrao: ConfiguracaoNotificacao = {
       ...CONFIGURACAO_NOTIFICACAO_PADRAO,
       dataAtualizacao: new Date().toISOString(),
-    });
+    };
+    const db = gerenciadorBancoDados.obterBanco();
+    if (db) {
+      this.persistirNoBanco(db, padrao);
+    } else {
+      this.configEmMemoria = { ...padrao };
+    }
+    return { ...padrao };
   }
 
   limpar(): void {

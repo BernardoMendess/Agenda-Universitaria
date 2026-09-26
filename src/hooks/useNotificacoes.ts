@@ -9,6 +9,17 @@ import { notificacaoService } from '../servicos/NotificacaoService';
 import { Disciplina } from '../modelos/Disciplina';
 import { ResumoFrequencia } from '../modelos/Falta';
 
+const normalizarConfig = (cfg: ConfiguracaoNotificacao): ConfiguracaoNotificacao => ({
+  ...cfg,
+  antecedenciaAulaMinutos: Number(cfg.antecedenciaAulaMinutos) || 15,
+  antecedenciaAvaliacoesHoras: Array.isArray(cfg.antecedenciaAvaliacoesHoras)
+    ? cfg.antecedenciaAvaliacoesHoras.map(Number)
+    : [24, 2],
+  antecedenciaTarefasHoras: Array.isArray(cfg.antecedenciaTarefasHoras)
+    ? cfg.antecedenciaTarefasHoras.map(Number)
+    : [24, 2],
+});
+
 export const useNotificacoes = () => {
   const [configuracao, setConfiguracao] = useState<ConfiguracaoNotificacao>(
     CONFIGURACAO_NOTIFICACAO_PADRAO
@@ -21,27 +32,30 @@ export const useNotificacoes = () => {
     alertaFaltasAtivo: true,
   });
   const [notificacoes, setNotificacoes] = useState<NotificacaoAgendada[]>([]);
+  const [permissaoConcedida, setPermissaoConcedida] = useState<boolean>(true);
   const [carregando, setCarregando] = useState<boolean>(true);
   const [salvando, setSalvando] = useState<boolean>(false);
   const [erro, setErro] = useState<string | null>(null);
 
   /**
-   * Carrega as configurações, estatísticas e agendamentos locais ativos.
+   * Carrega as configurações, estatísticas, permissões e agendamentos locais ativos.
    */
   const carregarDados = useCallback(async () => {
     try {
       setCarregando(true);
       setErro(null);
 
-      const [config, stats, lista] = await Promise.all([
+      const [config, stats, lista, permissao] = await Promise.all([
         notificacaoService.obterConfiguracao(),
         notificacaoService.obterEstatisticas(),
         notificacaoService.listarNotificacoesAtivas(),
+        notificacaoService.verificarPermissao(),
       ]);
 
-      setConfiguracao(config);
+      setConfiguracao(normalizarConfig(config));
       setEstatisticas(stats);
       setNotificacoes(lista);
+      setPermissaoConcedida(permissao);
     } catch (e: any) {
       setErro(e.message || 'Erro ao carregar configurações de notificações.');
     } finally {
@@ -54,25 +68,33 @@ export const useNotificacoes = () => {
   }, [carregarDados]);
 
   /**
-   * Atualiza preferências do usuário e recarrega estatísticas.
+   * Atualiza preferências do usuário com atualização otimista imediata na UI.
    */
   const atualizarConfiguracao = useCallback(
     async (dados: Partial<ConfiguracaoNotificacao>) => {
+      // 1. Atualização Otimista Imediata na Interface
+      setConfiguracao((prev) => normalizarConfig({ ...prev, ...dados }));
+
       try {
         setSalvando(true);
         setErro(null);
 
         const atualizada = await notificacaoService.atualizarConfiguracao(dados);
-        setConfiguracao(atualizada);
+        const configNormalizada = normalizarConfig(atualizada);
+        setConfiguracao(configNormalizada);
 
-        const [novasStats, novaLista] = await Promise.all([
-          notificacaoService.obterEstatisticas(),
-          notificacaoService.listarNotificacoesAtivas(),
-        ]);
+        try {
+          const [novasStats, novaLista] = await Promise.all([
+            notificacaoService.obterEstatisticas(),
+            notificacaoService.listarNotificacoesAtivas(),
+          ]);
+          setEstatisticas(novasStats);
+          setNotificacoes(novaLista);
+        } catch {
+          // Estatísticas secundárias não bloqueiam retorno
+        }
 
-        setEstatisticas(novasStats);
-        setNotificacoes(novaLista);
-        return atualizada;
+        return configNormalizada;
       } catch (e: any) {
         setErro(e.message || 'Erro ao salvar preferências de notificação.');
         throw e;
@@ -92,7 +114,7 @@ export const useNotificacoes = () => {
       setErro(null);
 
       const padrao = await notificacaoService.restaurarConfiguracaoPadrao();
-      setConfiguracao(padrao);
+      setConfiguracao(normalizarConfig(padrao));
 
       const stats = await notificacaoService.obterEstatisticas();
       setEstatisticas(stats);
@@ -117,6 +139,29 @@ export const useNotificacoes = () => {
   }, []);
 
   /**
+   * Solicita concessão de permissão de notificações do sistema operacional.
+   */
+  const solicitarPermissao = useCallback(async () => {
+    try {
+      const concedida = await notificacaoService.solicitarPermissao();
+      setPermissaoConcedida(concedida);
+      return concedida;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const verificarPermissao = useCallback(async () => {
+    try {
+      const concedida = await notificacaoService.verificarPermissao();
+      setPermissaoConcedida(concedida);
+      return concedida;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /**
    * Verifica se o registro de faltas atingiu/excedeu o limite e emite o alerta crítico imediato.
    */
   const verificarAlertaFaltas = useCallback(
@@ -133,10 +178,14 @@ export const useNotificacoes = () => {
     configuracao,
     estatisticas,
     notificacoes,
+    permissaoConcedida,
     carregando,
     salvando,
     erro,
+    solicitarPermissao,
+    verificarPermissao,
     carregarDados,
+    carregarConfiguracoes: carregarDados, // Alias para compatibilidade e correção de quebra
     atualizarConfiguracao,
     restaurarPadrao,
     testarAlerta,

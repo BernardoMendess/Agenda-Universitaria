@@ -352,7 +352,7 @@ const estilos = StyleSheet.create({
     minHeight: '60%',
     paddingBottom: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   cabecalho: {
     flexDirection: 'row',
@@ -362,7 +362,7 @@ const estilos = StyleSheet.create({
     paddingTop: tema.espacamento.md,
     paddingBottom: tema.espacamento.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   tituloArea: {
     flexDirection: 'row',
@@ -535,7 +535,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   infoItemFalta: {
     flex: 1,

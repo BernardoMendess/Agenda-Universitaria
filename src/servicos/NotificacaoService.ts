@@ -22,6 +22,22 @@ import {
   INotificadorLocal,
   notificadorLocalDriver,
 } from './notificacoes/NotificadorLocalDriver';
+import {
+  IDisciplinaRepositorio,
+  disciplinaRepositorio,
+} from './banco/DisciplinaRepositorio';
+import {
+  IHorarioAulaRepositorio,
+  horarioAulaRepositorio,
+} from './banco/HorarioAulaRepositorio';
+import {
+  IAvaliacaoRepositorio,
+  avaliacaoRepositorio,
+} from './banco/AvaliacaoRepositorio';
+import {
+  ITarefaRepositorio,
+  tarefaRepositorio,
+} from './banco/TarefaRepositorio';
 
 /**
  * Serviço responsável por toda a lógica de negócio das notificações locais e alarmes (RF10).
@@ -31,15 +47,37 @@ export class NotificacaoService {
   private configRepo: IConfiguracaoNotificacaoRepositorio;
   private notifRepo: INotificacaoAgendadaRepositorio;
   private notificador: INotificadorLocal;
+  private repoDisciplina: IDisciplinaRepositorio;
+  private repoHorario: IHorarioAulaRepositorio;
+  private repoAvaliacao: IAvaliacaoRepositorio;
+  private repoTarefa: ITarefaRepositorio;
 
   constructor(
     configRepo: IConfiguracaoNotificacaoRepositorio = configuracaoNotificacaoRepositorio,
     notifRepo: INotificacaoAgendadaRepositorio = notificacaoAgendadaRepositorio,
-    notificador: INotificadorLocal = notificadorLocalDriver
+    notificador: INotificadorLocal = notificadorLocalDriver,
+    repoDisciplina: IDisciplinaRepositorio = disciplinaRepositorio,
+    repoHorario: IHorarioAulaRepositorio = horarioAulaRepositorio,
+    repoAvaliacao: IAvaliacaoRepositorio = avaliacaoRepositorio,
+    repoTarefa: ITarefaRepositorio = tarefaRepositorio
   ) {
     this.configRepo = configRepo;
     this.notifRepo = notifRepo;
     this.notificador = notificador;
+    this.repoDisciplina = repoDisciplina;
+    this.repoHorario = repoHorario;
+    this.repoAvaliacao = repoAvaliacao;
+    this.repoTarefa = repoTarefa;
+  }
+
+  // --- Permissões de Notificação no Sistema Operacional ---
+
+  async verificarPermissao(): Promise<boolean> {
+    return await this.notificador.verificarPermissao();
+  }
+
+  async solicitarPermissao(): Promise<boolean> {
+    return await this.notificador.solicitarPermissao();
   }
 
   // --- Gestão de Configurações ---
@@ -51,12 +89,20 @@ export class NotificacaoService {
   async atualizarConfiguracao(
     dados: Partial<ConfiguracaoNotificacao>
   ): Promise<ConfiguracaoNotificacao> {
-    const configAtualizada = await this.configRepo.salvarConfiguracao(dados);
+    // Força vibração desligada conforme especificação
+    const dadosTratados = { ...dados, vibracaoHabilitada: false };
+    const configAtualizada = await this.configRepo.salvarConfiguracao(dadosTratados);
+    // Sincroniza em segundo plano para não travar a resposta da interface
+    this.sincronizarGeral().catch((err) => {
+      console.warn('Aviso ao sincronizar notificações em segundo plano:', err);
+    });
     return configAtualizada;
   }
 
   async restaurarConfiguracaoPadrao(): Promise<ConfiguracaoNotificacao> {
-    return await this.configRepo.restaurarPadrao();
+    const padrao = await this.configRepo.restaurarPadrao();
+    await this.sincronizarGeral();
+    return padrao;
   }
 
   // --- Lembretes de Aulas (Grade Horária) ---
@@ -255,14 +301,13 @@ export class NotificacaoService {
 
     // Limite atingido (faltasRestantes === 0) ou ultrapassado (reprovadoPorFalta === true)
     if (resumo.reprovadoPorFalta || resumo.faltasRestantes === 0) {
-      const titulo = `LIMITE DE FALTAS ATINGIDO: ${disciplina.nome}`;
+      const titulo = `⚠️ LIMITE DE FALTAS: ${disciplina.nome}`;
       const mensagem = resumo.reprovadoPorFalta
-        ? `Atenção! Você ultrapassou o limite de faltas em ${disciplina.nome} (${resumo.totalFaltas}/${resumo.limiteMaximoFaltas} faltas registradas).`
-        : `Atenção! Você atingiu o limite máximo de ${resumo.limiteMaximoFaltas} faltas em ${disciplina.nome}. Próxima falta causará reprovação!`;
+        ? `Você ultrapassou o limite de faltas em ${disciplina.nome} (${resumo.totalFaltas}/${resumo.limiteMaximoFaltas} faltas). Risco de reprovação!`
+        : `Você atingiu o limite de ${resumo.limiteMaximoFaltas} faltas em ${disciplina.nome}. Próxima falta causará reprovação!`;
 
-      if (config.vibracaoHabilitada || config.somHabilitado) {
-        await this.notificador.emitirAlertaCritico(titulo, mensagem);
-      }
+      // Notificação direta na barra de avisos do celular (sem vibração)
+      await this.notificador.emitirAlertaCritico(titulo, mensagem);
 
       await this.notifRepo.salvar({
         tipo: 'LIMITE_FALTAS',
@@ -374,13 +419,42 @@ export class NotificacaoService {
   }
 
   /**
-   * Realiza um teste de alerta imediato com vibração/som para validação do usuário.
+   * Sincronização geral automática: lê disciplinas, horários, avaliações e tarefas
+   * diretamente dos repositórios locais e recalcula todos os agendamentos.
    */
-  async testarAlertaSonoroETatil(): Promise<void> {
-    await this.notificador.emitirAlertaCritico(
-      'Teste de Alerta CampusFlow',
-      'As notificações sonoras e táteis estão funcionando corretamente!'
+  async sincronizarGeral(): Promise<EstatisticasNotificacoes> {
+    try {
+      const [disciplinas, horarios, avaliacoes, tarefas] = await Promise.all([
+        this.repoDisciplina.listarTodas(),
+        this.repoHorario.listarTodos(),
+        this.repoAvaliacao.listarTodas(),
+        this.repoTarefa.listarTodas(),
+      ]);
+
+      return await this.sincronizarTodasNotificacoes(
+        disciplinas,
+        horarios,
+        avaliacoes,
+        tarefas
+      );
+    } catch (e) {
+      console.warn('Erro ao sincronizar notificações gerais:', e);
+      return await this.obterEstatisticas();
+    }
+  }
+
+  /**
+   * Realiza um teste de notificação na barra de status do celular (sem vibração).
+   */
+  async testarNotificacaoNaBarra(): Promise<void> {
+    await this.notificador.dispararImediato(
+      'Agenda do Estudante 🎓',
+      'As notificações no seu celular estão funcionando corretamente!'
     );
+  }
+
+  async testarAlertaSonoroETatil(): Promise<void> {
+    await this.testarNotificacaoNaBarra();
   }
 
   // --- Funções Auxiliares de Cálculo de Horários ---

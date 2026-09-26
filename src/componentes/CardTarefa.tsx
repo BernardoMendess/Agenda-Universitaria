@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { TarefaComDisciplina, PRIORIDADE_LABELS, PRIORIDADE_CORES } from '../modelos/Tarefa';
 import { tema } from '../estilos/tema';
 
@@ -201,7 +202,10 @@ export const CardTarefa: React.FC<CardTarefaProps> = ({
                 <TouchableOpacity
                   style={estilos.botaoAcao}
                   onPress={() => aoEditar(tarefa)}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                  accessibilityLabel="Editar tarefa"
                 >
+                  <Ionicons name="create-outline" size={15} color={tema.cores.corMarcaPrimaria} />
                   <Text style={estilos.textoBotaoEditar}>Editar</Text>
                 </TouchableOpacity>
               )}
@@ -209,7 +213,10 @@ export const CardTarefa: React.FC<CardTarefaProps> = ({
                 <TouchableOpacity
                   style={estilos.botaoAcao}
                   onPress={() => aoExcluir(tarefa)}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                  accessibilityLabel="Excluir tarefa"
                 >
+                  <Ionicons name="trash-outline" size={15} color={tema.cores.corStatusCritico} />
                   <Text style={estilos.textoBotaoExcluir}>Excluir</Text>
                 </TouchableOpacity>
               )}
@@ -229,7 +236,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   cardConcluido: {
     opacity: 0.65,
@@ -305,7 +312,7 @@ const estilos = StyleSheet.create({
     maxWidth: 150,
   },
   textoBadgeDisciplina: {
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '600',
   },
   badgeAvulsa: {
@@ -314,10 +321,10 @@ const estilos = StyleSheet.create({
     borderRadius: tema.raioBorda.redondo,
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   textoBadgeAvulsa: {
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     color: tema.cores.corTextoSecundario,
     fontWeight: '500',
   },
@@ -328,7 +335,7 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
   },
   textoBadgePrioridade: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   badgePrazo: {
@@ -338,12 +345,12 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
   },
   textoBadgePrazo: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   dataTexto: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     marginTop: 6,
   },
   rodape: {
@@ -352,18 +359,24 @@ const estilos = StyleSheet.create({
     marginTop: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
   },
   espacador: {
     flex: 1,
   },
   acoes: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
   botaoAcao: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: tema.raioBorda.pequeno,
+    backgroundColor: tema.cores.sobreposicaoSutil,
+    minHeight: 36,
   },
   textoBotaoEditar: {
     color: tema.cores.corMarcaPrimaria,

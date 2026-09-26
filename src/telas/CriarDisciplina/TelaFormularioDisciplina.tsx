@@ -414,11 +414,14 @@ const estilos = StyleSheet.create({
   },
   botaoAdicionarHorario: {
     backgroundColor: tema.cores.corFundoElevado,
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: tema.raioBorda.pequeno,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textoBotaoAdicionarHorario: {
     color: tema.cores.corMarcaPrimaria,
@@ -431,7 +434,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.md,
     marginBottom: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     borderStyle: 'dashed',
   },
   textoSemHorario: {
@@ -448,7 +451,7 @@ const estilos = StyleSheet.create({
     padding: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   badgeDia: {
     backgroundColor: tema.cores.corMarcaPrimaria,
@@ -480,12 +483,15 @@ const estilos = StyleSheet.create({
     gap: 6,
   },
   botaoAcaoHorario: {
-    paddingVertical: 5,
-    paddingHorizontal: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textoAcaoHorario: {
     color: tema.cores.corMarcaPrimaria,

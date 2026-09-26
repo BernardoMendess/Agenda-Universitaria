@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Avaliacao, CriarAvaliacaoDTO, AtualizarAvaliacaoDTO, ResumoDesempenhoDisciplina } from '../modelos/Avaliacao';
 import { Disciplina } from '../modelos/Disciplina';
 import { avaliacaoService } from '../servicos/AvaliacaoService';
+import { notificacaoService } from '../servicos/NotificacaoService';
 
 export const useAvaliacoes = () => {
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
@@ -69,6 +70,7 @@ export const useAvaliacoes = () => {
       const resumo = await avaliacaoService.calcularDesempenho(dados.disciplinaId);
       setResumosDesempenho((prev) => ({ ...prev, [dados.disciplinaId]: resumo }));
 
+      notificacaoService.sincronizarGeral().catch(() => {});
       return novaAvaliacao;
     } catch (e: any) {
       setErro(e.message || 'Erro ao criar avaliação.');
@@ -90,6 +92,7 @@ export const useAvaliacoes = () => {
       const resumo = await avaliacaoService.calcularDesempenho(atualizada.disciplinaId);
       setResumosDesempenho((prev) => ({ ...prev, [atualizada.disciplinaId]: resumo }));
 
+      notificacaoService.sincronizarGeral().catch(() => {});
       return atualizada;
     } catch (e: any) {
       setErro(e.message || 'Erro ao atualizar avaliação.');
@@ -111,6 +114,7 @@ export const useAvaliacoes = () => {
         ...prev,
         [resultado.avaliacao.disciplinaId]: resultado.resumo,
       }));
+      notificacaoService.sincronizarGeral().catch(() => {});
       return resultado;
     } catch (e: any) {
       setErro(e.message || 'Erro ao lançar nota.');
@@ -140,6 +144,7 @@ export const useAvaliacoes = () => {
           const resumo = await avaliacaoService.calcularDesempenho(disciplinaId);
           setResumosDesempenho((prev) => ({ ...prev, [disciplinaId]: resumo }));
         }
+        notificacaoService.sincronizarGeral().catch(() => {});
       }
       return sucesso;
     } catch (e: any) {

@@ -115,7 +115,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.md,
     marginBottom: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   rotuloSecao: {
     color: tema.cores.corMarcaPrimaria,
@@ -156,7 +156,7 @@ const estilos = StyleSheet.create({
   separadorVertical: {
     width: 1,
     height: 40,
-    backgroundColor: '#30363d',
+    backgroundColor: tema.cores.bordaPadrao,
     marginHorizontal: tema.espacamento.sm,
   },
   statusContainer: {
@@ -192,7 +192,7 @@ const estilos = StyleSheet.create({
   contadorDestaque: {
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   contadorNumero: {
     color: tema.cores.corTextoPrimario,

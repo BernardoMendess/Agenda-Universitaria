@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { tema } from '../estilos/tema';
 
 interface CabecalhoProps {
@@ -7,7 +8,8 @@ interface CabecalhoProps {
   subtitulo?: string;
   aoVoltar?: () => void;
   acaoDireita?: {
-    texto: string;
+    texto?: string;
+    icone?: keyof typeof Ionicons.glyphMap;
     aoPressionar: () => void;
   };
 }
@@ -27,23 +29,38 @@ export const Cabecalho: React.FC<CabecalhoProps> = ({
             onPress={aoVoltar}
             accessibilityRole="button"
             accessibilityLabel="Voltar"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={estilos.textoVoltar}>←</Text>
+            <Ionicons name="chevron-back" size={22} color={tema.cores.corTextoPrimario} />
           </TouchableOpacity>
         ) : null}
         
         <View style={estilos.conteudoTexto}>
-          <Text style={estilos.titulo}>{titulo}</Text>
-          {subtitulo ? <Text style={estilos.subtitulo}>{subtitulo}</Text> : null}
+          <Text style={estilos.titulo} numberOfLines={1}>{titulo}</Text>
+          {subtitulo ? <Text style={estilos.subtitulo} numberOfLines={1}>{subtitulo}</Text> : null}
         </View>
 
         {acaoDireita ? (
           <TouchableOpacity
-            style={estilos.botaoAcaoDireita}
+            style={[
+              estilos.botaoAcaoDireita,
+              !acaoDireita.texto && acaoDireita.icone && estilos.botaoAcaoDireitaIcone,
+            ]}
             onPress={acaoDireita.aoPressionar}
             accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={estilos.textoAcaoDireita}>{acaoDireita.texto}</Text>
+            {acaoDireita.icone ? (
+              <Ionicons
+                name={acaoDireita.icone}
+                size={18}
+                color={tema.cores.corTextoPrimario}
+                style={acaoDireita.texto ? estilos.iconeAcaoDireita : undefined}
+              />
+            ) : null}
+            {acaoDireita.texto ? (
+              <Text style={estilos.textoAcaoDireita}>{acaoDireita.texto}</Text>
+            ) : null}
           </TouchableOpacity>
         ) : null}
       </View>
@@ -64,13 +81,13 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
   },
   botaoVoltar: {
-    paddingRight: tema.espacamento.md,
-    paddingVertical: tema.espacamento.sm,
-  },
-  textoVoltar: {
-    color: tema.cores.corTextoPrimario,
-    fontSize: 24,
-    fontWeight: 'bold',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: tema.cores.sobreposicaoSutil,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: tema.espacamento.smd,
   },
   conteudoTexto: {
     flex: 1,
@@ -84,13 +101,24 @@ const estilos = StyleSheet.create({
   subtitulo: {
     color: tema.cores.corTextoSecundario,
     fontSize: tema.tipografia.pequeno,
-    marginTop: tema.espacamento.xs,
+    marginTop: 2,
   },
   botaoAcaoDireita: {
     backgroundColor: tema.cores.corMarcaPrimaria,
-    paddingVertical: tema.espacamento.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: tema.espacamento.sm + 2,
     paddingHorizontal: tema.espacamento.md,
     borderRadius: tema.raioBorda.padrao,
+    minHeight: 40,
+  },
+  botaoAcaoDireitaIcone: {
+    paddingHorizontal: tema.espacamento.sm + 2,
+    borderRadius: tema.raioBorda.redondo,
+  },
+  iconeAcaoDireita: {
+    marginRight: tema.espacamento.xs,
   },
   textoAcaoDireita: {
     color: tema.cores.corTextoPrimario,
@@ -98,3 +126,4 @@ const estilos = StyleSheet.create({
     fontSize: tema.tipografia.pequeno,
   },
 });
+

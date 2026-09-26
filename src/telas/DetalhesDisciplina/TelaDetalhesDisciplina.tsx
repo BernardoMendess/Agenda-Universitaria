@@ -26,7 +26,7 @@ import { useFrequencia } from '../../hooks/useFrequencia';
 import { useGradeHoraria } from '../../hooks/useGradeHoraria';
 import { useTarefas } from '../../hooks/useTarefas';
 import { notificacaoService } from '../../servicos/NotificacaoService';
-import { DIAS_SEMANA_LABELS } from '../../modelos/HorarioAula';
+import { DIAS_SEMANA_LABELS, DiaSemana } from '../../modelos/HorarioAula';
 import { tema } from '../../estilos/tema';
 
 interface TelaDetalhesDisciplinaProps {
@@ -303,7 +303,9 @@ export const TelaDetalhesDisciplina: React.FC<TelaDetalhesDisciplinaProps> = ({
               horarios.map((h, index) => (
                 <View key={index} style={estilos.cardHorario}>
                   <View style={[estilos.badgeDia, { backgroundColor: disciplina.corIdentificacao }]}>
-                    <Text style={estilos.badgeDiaTexto}>{DIAS_SEMANA_LABELS[h.diaSemana].substring(0, 3).toUpperCase()}</Text>
+                    <Text style={estilos.badgeDiaTexto}>
+                      {(DIAS_SEMANA_LABELS[h.diaSemana as DiaSemana] || String(h.diaSemana)).substring(0, 3).toUpperCase()}
+                    </Text>
                   </View>
                   <View style={estilos.infoHorario}>
                     <Text style={estilos.horarioPeriodo}>{h.horarioInicio} às {h.horarioFim}</Text>
@@ -398,13 +400,15 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: tema.cores.corFundoCard,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   aba: {
     flex: 1,
-    paddingVertical: tema.espacamento.sm + 2,
+    paddingVertical: 14,
+    minHeight: 48,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
   abaAtiva: {
@@ -429,6 +433,7 @@ const estilos = StyleSheet.create({
     marginBottom: tema.espacamento.md,
   },
   filtros: {
+    flexShrink: 1,
     flexDirection: 'row',
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: tema.raioBorda.padrao,
@@ -452,6 +457,7 @@ const estilos = StyleSheet.create({
     color: tema.cores.corTextoPrimario,
   },
   botaoNovaAvaliacao: {
+    flexShrink: 0,
     backgroundColor: tema.cores.corMarcaPrimaria,
     paddingHorizontal: tema.espacamento.sm + 2,
     paddingVertical: tema.espacamento.xs + 2,
@@ -496,7 +502,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.sm + 2,
     marginBottom: tema.espacamento.sm,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     gap: tema.espacamento.sm,
   },
   badgeDia: {

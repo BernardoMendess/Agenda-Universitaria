@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNotificacoes } from '../../hooks/useNotificacoes';
 import { useBackup } from '../../hooks/useBackup';
 import { Cabecalho } from '../../componentes/Cabecalho';
@@ -35,9 +36,11 @@ export const TelaAjustes: React.FC = () => {
   const {
     configuracao,
     estatisticas,
+    permissaoConcedida,
     atualizarConfiguracao,
     restaurarPadrao,
     testarAlerta,
+    solicitarPermissao,
     carregarConfiguracoes,
   } = useNotificacoes();
 
@@ -45,36 +48,68 @@ export const TelaAjustes: React.FC = () => {
 
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [modalBackupVisivel, setModalBackupVisivel] = useState<boolean>(false);
+  const [testandoNotificacao, setTestandoNotificacao] = useState<boolean>(false);
 
   const exibirFeedback = (msg: string) => {
     setMensagemSucesso(msg);
     setTimeout(() => {
       setMensagemSucesso(null);
-    }, 2500);
+    }, 2800);
   };
 
   const alternarAntecedenciaHoras = async (
     campo: 'antecedenciaAvaliacoesHoras' | 'antecedenciaTarefasHoras',
     horas: number
   ) => {
-    const listaAtual = configuracao[campo];
-    let novaLista: number[];
+    try {
+      const listaOriginal = Array.isArray(configuracao[campo])
+        ? configuracao[campo]
+        : [24, 2];
+      const listaAtual = listaOriginal.map(Number);
+      let novaLista: number[];
 
-    if (listaAtual.includes(horas)) {
-      if (listaAtual.length === 1) {
-        Alert.alert(
-          'Atenção',
-          'Mantenha ao menos uma opção de antecedência selecionada.'
-        );
-        return;
+      if (listaAtual.includes(horas)) {
+        if (listaAtual.length === 1) {
+          Alert.alert(
+            'Atenção',
+            'Mantenha ao menos uma opção de antecedência selecionada.'
+          );
+          return;
+        }
+        novaLista = listaAtual.filter((h) => h !== horas);
+      } else {
+        novaLista = [...listaAtual, horas].sort((a, b) => b - a);
       }
-      novaLista = listaAtual.filter((h) => h !== horas);
-    } else {
-      novaLista = [...listaAtual, horas].sort((a, b) => b - a);
-    }
 
-    await atualizarConfiguracao({ [campo]: novaLista });
-    exibirFeedback('Preferência de antecedência salva!');
+      await atualizarConfiguracao({ [campo]: novaLista });
+      exibirFeedback('Preferência de antecedência salva e reagendada!');
+    } catch (e) {
+      console.warn('Erro ao alternar antecedência de horas:', e);
+    }
+  };
+
+  const handleTestarNotificacao = async () => {
+    setTestandoNotificacao(true);
+    try {
+      if (!permissaoConcedida) {
+        const permitiu = await solicitarPermissao();
+        if (!permitiu) {
+          Alert.alert(
+            'Permissão Necessária',
+            'Para exibir notificações na barra do celular, autorize as notificações nas configurações do sistema.'
+          );
+          setTestandoNotificacao(false);
+          return;
+        }
+      }
+
+      await testarAlerta();
+      exibirFeedback('Notificação enviada para a barra do celular!');
+    } catch {
+      Alert.alert('Erro', 'Não foi possível disparar a notificação de teste.');
+    } finally {
+      setTestandoNotificacao(false);
+    }
   };
 
   const handleRestaurarPadrao = () => {
@@ -99,7 +134,7 @@ export const TelaAjustes: React.FC = () => {
     <SafeAreaView style={estilos.container}>
       <Cabecalho
         titulo="Ajustes & Notificações"
-        subtitulo="Personalize seus lembretes"
+        subtitulo="Alertas no celular e configurações locais"
       />
 
       <ScrollView
@@ -108,15 +143,45 @@ export const TelaAjustes: React.FC = () => {
       >
         {mensagemSucesso && (
           <View style={estilos.bannerSucesso}>
-            <Text style={estilos.textoBannerSucesso}>✓ {mensagemSucesso}</Text>
+            <Ionicons name="checkmark-circle" size={18} color={tema.cores.corStatusSeguro} />
+            <Text style={estilos.textoBannerSucesso}>{mensagemSucesso}</Text>
+          </View>
+        )}
+
+        {/* Banner de Permissão do Sistema Operacional caso desativada */}
+        {!permissaoConcedida && (
+          <View style={estilos.cardAvisoPermissao}>
+            <View style={estilos.linhaTopoAvisoPermissao}>
+              <Ionicons name="notifications-off" size={22} color={tema.cores.corStatusAlerta} />
+              <View style={estilos.textosAvisoPermissao}>
+                <Text style={estilos.tituloAvisoPermissao}>
+                  Notificações do celular desativadas
+                </Text>
+                <Text style={estilos.descricaoAvisoPermissao}>
+                  Permita o acesso para receber avisos de aulas, provas e tarefas na barra de notificações do seu celular.
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={estilos.botaoAtivarPermissao}
+              onPress={solicitarPermissao}
+              activeOpacity={0.8}
+            >
+              <Text style={estilos.textoBotaoAtivarPermissao}>
+                Autorizar Notificações
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
         {/* Card Resumo de Alarmes Locais Ativos */}
         <View style={estilos.cardResumo}>
-          <Text style={estilos.tituloCardResumo}>Alarmes Locais Programados</Text>
+          <Text style={estilos.tituloCardResumo}>Alarmes Programados no Celular</Text>
           <View style={estilos.linhaEstatisticas}>
             <View style={estilos.itemEstatistica}>
+              <View style={[estilos.iconeResumoContainer, { backgroundColor: 'rgba(99, 102, 241, 0.12)' }]}>
+                <Ionicons name="book-outline" size={16} color={tema.cores.corMarcaPrimaria} />
+              </View>
               <Text style={estilos.numeroEstatistica}>
                 {estatisticas.totalAulas}
               </Text>
@@ -126,6 +191,9 @@ export const TelaAjustes: React.FC = () => {
             <View style={estilos.divisorVertical} />
 
             <View style={estilos.itemEstatistica}>
+              <View style={[estilos.iconeResumoContainer, { backgroundColor: 'rgba(210, 153, 34, 0.12)' }]}>
+                <Ionicons name="calendar-outline" size={16} color={tema.cores.corStatusAlerta} />
+              </View>
               <Text style={estilos.numeroEstatistica}>
                 {estatisticas.totalAvaliacoes}
               </Text>
@@ -135,6 +203,9 @@ export const TelaAjustes: React.FC = () => {
             <View style={estilos.divisorVertical} />
 
             <View style={estilos.itemEstatistica}>
+              <View style={[estilos.iconeResumoContainer, { backgroundColor: 'rgba(46, 160, 67, 0.12)' }]}>
+                <Ionicons name="checkbox-outline" size={16} color={tema.cores.corStatusSeguro} />
+              </View>
               <Text style={estilos.numeroEstatistica}>
                 {estatisticas.totalTarefas}
               </Text>
@@ -144,6 +215,9 @@ export const TelaAjustes: React.FC = () => {
             <View style={estilos.divisorVertical} />
 
             <View style={estilos.itemEstatistica}>
+              <View style={[estilos.iconeResumoContainer, { backgroundColor: 'rgba(99, 102, 241, 0.2)' }]}>
+                <Ionicons name="notifications" size={16} color={tema.cores.corMarcaPrimaria} />
+              </View>
               <Text
                 style={[
                   estilos.numeroEstatistica,
@@ -160,11 +234,16 @@ export const TelaAjustes: React.FC = () => {
         {/* Seção 1: Lembretes de Aulas */}
         <View style={estilos.secao}>
           <View style={estilos.secaoCabecalho}>
-            <View style={estilos.secaoTextos}>
-              <Text style={estilos.secaoTitulo}>Lembretes de Aulas</Text>
-              <Text style={estilos.secaoDescricao}>
-                Avisos locais antes do início de cada matéria na grade semanal.
-              </Text>
+            <View style={estilos.secaoIconeTitulo}>
+              <View style={[estilos.iconeSecao, { backgroundColor: 'rgba(99, 102, 241, 0.12)' }]}>
+                <Ionicons name="time-outline" size={18} color={tema.cores.corMarcaPrimaria} />
+              </View>
+              <View style={estilos.secaoTextos}>
+                <Text style={estilos.secaoTitulo}>Lembretes de Aulas</Text>
+                <Text style={estilos.secaoDescricao}>
+                  Avisos na barra de notificações antes de cada aula semanal começar.
+                </Text>
+              </View>
             </View>
             <Switch
               value={configuracao.aulasAtivas}
@@ -182,22 +261,27 @@ export const TelaAjustes: React.FC = () => {
 
           {configuracao.aulasAtivas && (
             <View style={estilos.subsecao}>
-              <Text style={estilos.subsecaoTitulo}>Antecedência do aviso:</Text>
+              <Text style={estilos.subsecaoTitulo}>Antecedência do aviso na barra:</Text>
               <View style={estilos.gradePills}>
                 {OPCOES_ANTECEDENCIA_AULA.map((opcao) => {
                   const ativo =
-                    configuracao.antecedenciaAulaMinutos === opcao.valor;
+                    Number(configuracao.antecedenciaAulaMinutos) === opcao.valor;
                   return (
                     <TouchableOpacity
                       key={opcao.valor}
                       style={[estilos.pill, ativo ? estilos.pillAtivo : null]}
                       onPress={async () => {
-                        await atualizarConfiguracao({
-                          antecedenciaAulaMinutos: opcao.valor,
-                        });
-                        exibirFeedback(`Avisos de aula ajustados para ${opcao.rotulo} antes.`);
+                        try {
+                          await atualizarConfiguracao({
+                            antecedenciaAulaMinutos: opcao.valor,
+                          });
+                          exibirFeedback(`Avisos de aula ajustados para ${opcao.rotulo} antes.`);
+                        } catch (e) {
+                          console.warn('Erro ao atualizar antecedência de aulas:', e);
+                        }
                       }}
                       activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                     >
                       <Text
                         style={[
@@ -218,11 +302,16 @@ export const TelaAjustes: React.FC = () => {
         {/* Seção 2: Lembretes de Avaliações */}
         <View style={estilos.secao}>
           <View style={estilos.secaoCabecalho}>
-            <View style={estilos.secaoTextos}>
-              <Text style={estilos.secaoTitulo}>Lembretes de Provas & Trabalhos</Text>
-              <Text style={estilos.secaoDescricao}>
-                Alertas automáticos para avaliações e testes agendados.
-              </Text>
+            <View style={estilos.secaoIconeTitulo}>
+              <View style={[estilos.iconeSecao, { backgroundColor: 'rgba(210, 153, 34, 0.12)' }]}>
+                <Ionicons name="document-text-outline" size={18} color={tema.cores.corStatusAlerta} />
+              </View>
+              <View style={estilos.secaoTextos}>
+                <Text style={estilos.secaoTitulo}>Lembretes de Provas & Trabalhos</Text>
+                <Text style={estilos.secaoDescricao}>
+                  Notificações automáticas na barra de status antes das avaliações agendadas.
+                </Text>
+              </View>
             </View>
             <Switch
               value={configuracao.avaliacoesAtivas}
@@ -241,14 +330,14 @@ export const TelaAjustes: React.FC = () => {
           {configuracao.avaliacoesAtivas && (
             <View style={estilos.subsecao}>
               <Text style={estilos.subsecaoTitulo}>
-                Disparar alertas com antecedência de (selecione múltiplos):
+                Disparar alertas com antecedência de (múltipla escolha):
               </Text>
               <View style={estilos.gradePills}>
                 {OPCOES_ANTECEDENCIA_HORAS.map((opcao) => {
-                  const ativo =
-                    configuracao.antecedenciaAvaliacoesHoras.includes(
-                      opcao.valor
-                    );
+                  const listaAvaliacoes = Array.isArray(configuracao.antecedenciaAvaliacoesHoras)
+                    ? configuracao.antecedenciaAvaliacoesHoras
+                    : [24, 2];
+                  const ativo = listaAvaliacoes.map(Number).includes(opcao.valor);
                   return (
                     <TouchableOpacity
                       key={opcao.valor}
@@ -260,6 +349,7 @@ export const TelaAjustes: React.FC = () => {
                         )
                       }
                       activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                     >
                       <Text
                         style={[
@@ -280,11 +370,16 @@ export const TelaAjustes: React.FC = () => {
         {/* Seção 3: Lembretes de Tarefas */}
         <View style={estilos.secao}>
           <View style={estilos.secaoCabecalho}>
-            <View style={estilos.secaoTextos}>
-              <Text style={estilos.secaoTitulo}>Lembretes de Tarefas (To-Do)</Text>
-              <Text style={estilos.secaoDescricao}>
-                Avisos locais para tarefas pendentes antes do prazo final.
-              </Text>
+            <View style={estilos.secaoIconeTitulo}>
+              <View style={[estilos.iconeSecao, { backgroundColor: 'rgba(46, 160, 67, 0.12)' }]}>
+                <Ionicons name="checkmark-done-outline" size={18} color={tema.cores.corStatusSeguro} />
+              </View>
+              <View style={estilos.secaoTextos}>
+                <Text style={estilos.secaoTitulo}>Lembretes de Tarefas (To-Do)</Text>
+                <Text style={estilos.secaoDescricao}>
+                  Avisos na barra do celular para entregas antes do encerramento do prazo.
+                </Text>
+              </View>
             </View>
             <Switch
               value={configuracao.tarefasAtivas}
@@ -307,8 +402,10 @@ export const TelaAjustes: React.FC = () => {
               </Text>
               <View style={estilos.gradePills}>
                 {OPCOES_ANTECEDENCIA_HORAS.map((opcao) => {
-                  const ativo =
-                    configuracao.antecedenciaTarefasHoras.includes(opcao.valor);
+                  const listaTarefas = Array.isArray(configuracao.antecedenciaTarefasHoras)
+                    ? configuracao.antecedenciaTarefasHoras
+                    : [24, 2];
+                  const ativo = listaTarefas.map(Number).includes(opcao.valor);
                   return (
                     <TouchableOpacity
                       key={opcao.valor}
@@ -320,6 +417,7 @@ export const TelaAjustes: React.FC = () => {
                         )
                       }
                       activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                     >
                       <Text
                         style={[
@@ -339,23 +437,33 @@ export const TelaAjustes: React.FC = () => {
 
         {/* Seção 4: Alertas de Faltas & Efeitos */}
         <View style={estilos.secao}>
-          <Text style={estilos.secaoTitulo}>Alertas Críticos & Efeitos</Text>
+          <View style={estilos.secaoIconeTitulo}>
+            <View style={[estilos.iconeSecao, { backgroundColor: 'rgba(248, 81, 73, 0.12)' }]}>
+              <Ionicons name="warning-outline" size={18} color={tema.cores.corStatusCritico} />
+            </View>
+            <View style={estilos.secaoTextos}>
+              <Text style={estilos.secaoTitulo}>Alertas de Limite de Faltas</Text>
+              <Text style={estilos.secaoDescricao}>
+                Notificação direta na barra do celular ao zerar o saldo de faltas ou ultrapassar o limite.
+              </Text>
+            </View>
+          </View>
 
           {/* Switch Alerta Faltas */}
           <View style={estilos.linhaOpcao}>
             <View style={estilos.secaoTextos}>
               <Text style={estilos.rotuloOpcao}>
-                Alerta Imediato de Limite de Faltas
+                Notificação de Limite de Faltas no Celular
               </Text>
               <Text style={estilos.secaoDescricao}>
-                Modal de emergência e vibração ao atingir o saldo zero de faltas.
+                Envia notificação prioritária na barra sem travar o aplicativo com modal.
               </Text>
             </View>
             <Switch
               value={configuracao.alertaFaltasAtivo}
               onValueChange={async (valor) => {
                 await atualizarConfiguracao({ alertaFaltasAtivo: valor });
-                exibirFeedback(`Alerta crítico de faltas ${valor ? 'ativado' : 'desativado'}.`);
+                exibirFeedback(`Alerta de limite de faltas ${valor ? 'ativado' : 'desativado'}.`);
               }}
               trackColor={{
                 false: tema.cores.corFundoElevado,
@@ -365,18 +473,19 @@ export const TelaAjustes: React.FC = () => {
             />
           </View>
 
-          {/* Switch Vibração */}
+          {/* Switch Som */}
           <View style={estilos.linhaOpcao}>
             <View style={estilos.secaoTextos}>
-              <Text style={estilos.rotuloOpcao}>Feedback Tátil (Vibração)</Text>
+              <Text style={estilos.rotuloOpcao}>Som da Notificação</Text>
               <Text style={estilos.secaoDescricao}>
-                Vibrações do aparelho para confirmação e avisos críticos.
+                Tocar som padrão do aparelho ao disparar lembretes (sem vibração).
               </Text>
             </View>
             <Switch
-              value={configuracao.vibracaoHabilitada}
+              value={configuracao.somHabilitado}
               onValueChange={async (valor) => {
-                await atualizarConfiguracao({ vibracaoHabilitada: valor });
+                await atualizarConfiguracao({ somHabilitado: valor });
+                exibirFeedback(`Som de notificação ${valor ? 'ativado' : 'desativado'}.`);
               }}
               trackColor={{
                 false: tema.cores.corFundoElevado,
@@ -386,31 +495,32 @@ export const TelaAjustes: React.FC = () => {
             />
           </View>
 
-          {/* Botão de Teste Sonoro / Tátil */}
+          {/* Botão de Teste Direto na Barra do Celular */}
           <TouchableOpacity
             style={estilos.botaoTeste}
-            onPress={async () => {
-              await testarAlerta();
-              Alert.alert(
-                'Teste de Alerta',
-                'O padrão sonoro e tátil de alerta da Agenda do Estudante foi executado no dispositivo.'
-              );
-            }}
+            onPress={handleTestarNotificacao}
+            disabled={testandoNotificacao}
             activeOpacity={0.7}
           >
+            <Ionicons name="notifications-outline" size={18} color={tema.cores.corMarcaPrimaria} style={estilos.iconeBotaoTeste} />
             <Text style={estilos.textoBotaoTeste}>
-              Testar Alerta Sonoro & Vibração
+              {testandoNotificacao ? 'Disparando...' : 'Disparar Notificação de Teste no Celular'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Backup de dados */}
+        {/* Seção 5: Backup de dados */}
         <View style={estilos.secao}>
-          <View style={estilos.secaoTextos}>
-            <Text style={estilos.secaoTitulo}>Portabilidade & Backup de Dados</Text>
-            <Text style={estilos.secaoDescricao}>
-              Exporte ou restaure todos os seus dados acadêmicos.
-            </Text>
+          <View style={estilos.secaoIconeTitulo}>
+            <View style={[estilos.iconeSecao, { backgroundColor: 'rgba(99, 102, 241, 0.12)' }]}>
+              <Ionicons name="server-outline" size={18} color={tema.cores.corMarcaPrimaria} />
+            </View>
+            <View style={estilos.secaoTextos}>
+              <Text style={estilos.secaoTitulo}>Portabilidade & Backup de Dados</Text>
+              <Text style={estilos.secaoDescricao}>
+                Exporte ou restaure todos os seus dados acadêmicos com total segurança.
+              </Text>
+            </View>
           </View>
 
           <View style={estilos.cardResumoBackup}>
@@ -443,6 +553,7 @@ export const TelaAjustes: React.FC = () => {
             onPress={() => setModalBackupVisivel(true)}
             activeOpacity={0.7}
           >
+            <Ionicons name="save-outline" size={18} color="#ffffff" style={estilos.iconeBotaoBackup} />
             <Text style={estilos.textoBotaoGerenciarBackup}>
               Gerenciar Backup
             </Text>
@@ -455,6 +566,7 @@ export const TelaAjustes: React.FC = () => {
           onPress={handleRestaurarPadrao}
           activeOpacity={0.7}
         >
+          <Ionicons name="refresh-outline" size={16} color={tema.cores.corStatusCritico} style={estilos.iconeBotaoRestaurar} />
           <Text style={estilos.textoBotaoRestaurar}>
             Restaurar Configurações Padrão
           </Text>
@@ -468,7 +580,7 @@ export const TelaAjustes: React.FC = () => {
         aoRestaurarSucesso={async () => {
           await carregarConfiguracoes();
           await recarregarBackupResumo();
-          exibirFeedback('Backup restaurado com sucesso!');
+          exibirFeedback('Backup restaurado e notificações recalculadas!');
         }}
       />
     </SafeAreaView>
@@ -481,29 +593,74 @@ const estilos = StyleSheet.create({
     backgroundColor: tema.cores.corFundoPrincipal,
   },
   conteudo: {
-    padding: tema.espacamento.md,
-    paddingBottom: tema.espacamento.xl + 30,
+    paddingHorizontal: tema.espacamento.md,
+    paddingTop: tema.espacamento.sm,
+    paddingBottom: tema.espacamento.xl + 40,
   },
   bannerSucesso: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(46, 160, 67, 0.15)',
     borderRadius: tema.raioBorda.padrao,
-    padding: tema.espacamento.sm,
+    paddingHorizontal: tema.espacamento.md,
+    paddingVertical: tema.espacamento.sm + 2,
     borderWidth: 1,
-    borderColor: tema.cores.corStatusSeguro,
+    borderColor: 'rgba(46, 160, 67, 0.35)',
     marginBottom: tema.espacamento.md,
-    alignItems: 'center',
+    gap: 8,
   },
   textoBannerSucesso: {
     color: tema.cores.corStatusSeguro,
     fontSize: tema.tipografia.pequeno,
     fontWeight: '600',
+    flex: 1,
+  },
+  cardAvisoPermissao: {
+    backgroundColor: 'rgba(210, 153, 34, 0.12)',
+    borderRadius: tema.raioBorda.card,
+    padding: tema.espacamento.md,
+    borderWidth: 1,
+    borderColor: 'rgba(210, 153, 34, 0.35)',
+    marginBottom: tema.espacamento.md,
+  },
+  linhaTopoAvisoPermissao: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  textosAvisoPermissao: {
+    flex: 1,
+  },
+  tituloAvisoPermissao: {
+    color: tema.cores.corStatusAlerta,
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: 'bold',
+  },
+  descricaoAvisoPermissao: {
+    color: tema.cores.corTextoSecundario,
+    fontSize: tema.tipografia.micro,
+    marginTop: 4,
+    lineHeight: 16,
+  },
+  botaoAtivarPermissao: {
+    backgroundColor: tema.cores.corStatusAlerta,
+    borderRadius: tema.raioBorda.padrao,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: tema.espacamento.sm + 4,
+  },
+  textoBotaoAtivarPermissao: {
+    color: '#0d1117',
+    fontSize: tema.tipografia.pequeno,
+    fontWeight: '700',
   },
   cardResumo: {
     backgroundColor: tema.cores.corFundoCard,
     borderRadius: tema.raioBorda.card,
     padding: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     marginBottom: tema.espacamento.md,
   },
   tituloCardResumo: {
@@ -511,7 +668,7 @@ const estilos = StyleSheet.create({
     fontSize: tema.tipografia.micro,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: tema.espacamento.sm,
+    marginBottom: tema.espacamento.sm + 2,
     textAlign: 'center',
     fontWeight: '600',
   },
@@ -524,34 +681,56 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  iconeResumoContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
   numeroEstatistica: {
     color: tema.cores.corTextoPrimario,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   rotuloEstatistica: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 2,
     fontWeight: '500',
   },
   divisorVertical: {
     width: 1,
-    height: 24,
-    backgroundColor: '#30363d',
+    height: 36,
+    backgroundColor: tema.cores.bordaPadrao,
   },
   secao: {
     backgroundColor: tema.cores.corFundoCard,
     borderRadius: tema.raioBorda.card,
     padding: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     marginBottom: tema.espacamento.md,
   },
   secaoCabecalho: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  secaoIconeTitulo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+    gap: 12,
+  },
+  iconeSecao: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
   secaoTextos: {
     flex: 1,
@@ -570,7 +749,7 @@ const estilos = StyleSheet.create({
   },
   subsecao: {
     marginTop: tema.espacamento.md,
-    paddingTop: tema.espacamento.sm,
+    paddingTop: tema.espacamento.sm + 2,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
@@ -578,7 +757,7 @@ const estilos = StyleSheet.create({
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.micro + 1,
     fontWeight: '600',
-    marginBottom: tema.espacamento.xs + 2,
+    marginBottom: tema.espacamento.sm,
   },
   gradePills: {
     flexDirection: 'row',
@@ -588,10 +767,13 @@ const estilos = StyleSheet.create({
   pill: {
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
     borderRadius: tema.raioBorda.redondo,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pillAtivo: {
     backgroundColor: `${tema.cores.corMarcaPrimaria}25`,
@@ -611,7 +793,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: tema.espacamento.md,
-    paddingTop: tema.espacamento.sm,
+    paddingTop: tema.espacamento.sm + 2,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
@@ -623,76 +805,37 @@ const estilos = StyleSheet.create({
   botaoTeste: {
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: tema.raioBorda.padrao,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    minHeight: 46,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
     marginTop: tema.espacamento.md,
+  },
+  iconeBotaoTeste: {
+    marginRight: 8,
   },
   textoBotaoTeste: {
     color: tema.cores.corMarcaPrimaria,
     fontSize: tema.tipografia.pequeno,
     fontWeight: '700',
   },
-  cardPrivacidade: {
-    backgroundColor: 'rgba(99, 102, 241, 0.08)',
-    borderRadius: tema.raioBorda.card,
-    padding: tema.espacamento.md,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.25)',
-    marginBottom: tema.espacamento.md,
-  },
-  linhaTopoPrivacidade: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: tema.espacamento.xs + 2,
-  },
-  tituloPrivacidade: {
-    color: tema.cores.corTextoPrimario,
-    fontSize: tema.tipografia.pequeno,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  textoPrivacidade: {
-    color: tema.cores.corTextoSecundario,
-    fontSize: tema.tipografia.micro,
-    lineHeight: 17,
-  },
-  textoNegrito: {
-    color: tema.cores.corTextoPrimario,
-    fontWeight: 'bold',
-  },
-  caixaStatusSQLite: {
-    marginTop: tema.espacamento.sm,
-    paddingTop: tema.espacamento.sm,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(99, 102, 241, 0.2)',
-    gap: 4,
-  },
-  itemInfoSQLite: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rotuloInfoSQLite: {
-    color: tema.cores.corTextoSecundario,
-    fontSize: 11,
-  },
-  valorInfoSQLite: {
-    color: tema.cores.corTextoPrimario,
-    fontSize: 11,
-    fontWeight: '600',
-  },
   botaoRestaurar: {
+    flexDirection: 'row',
     paddingVertical: 12,
+    minHeight: 46,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: tema.raioBorda.padrao,
     backgroundColor: 'rgba(248, 81, 73, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(248, 81, 73, 0.3)',
+    marginTop: tema.espacamento.xs,
+  },
+  iconeBotaoRestaurar: {
+    marginRight: 6,
   },
   textoBotaoRestaurar: {
     color: tema.cores.corStatusCritico,
@@ -702,10 +845,10 @@ const estilos = StyleSheet.create({
   cardResumoBackup: {
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: tema.raioBorda.padrao,
-    padding: tema.espacamento.sm,
-    marginTop: tema.espacamento.sm,
+    padding: tema.espacamento.sm + 2,
+    marginTop: tema.espacamento.sm + 4,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   linhaResumoBackup: {
     flexDirection: 'row',
@@ -724,9 +867,14 @@ const estilos = StyleSheet.create({
     backgroundColor: tema.cores.corMarcaPrimaria,
     borderRadius: tema.raioBorda.padrao,
     paddingVertical: 12,
+    minHeight: 46,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: tema.espacamento.md,
+  },
+  iconeBotaoBackup: {
+    marginRight: 8,
   },
   textoBotaoGerenciarBackup: {
     color: '#ffffff',

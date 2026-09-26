@@ -122,6 +122,9 @@ describe('BackupService (RF11 — Exportação/Importação Manual de Dados & Po
       dispararImediato: jest.fn().mockResolvedValue(undefined),
       emitirAlertaCritico: jest.fn().mockResolvedValue(undefined),
       emitirFeedbackTátil: jest.fn(),
+      verificarPermissao: jest.fn().mockResolvedValue(true),
+      solicitarPermissao: jest.fn().mockResolvedValue(true),
+      inicializar: jest.fn().mockResolvedValue(undefined),
     };
 
     notifService = new NotificacaoService(configRepo, notifRepo, notificadorMock);

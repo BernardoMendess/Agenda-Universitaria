@@ -164,7 +164,7 @@ const estilos = StyleSheet.create({
     borderRadius: tema.raioBorda.card,
     marginBottom: tema.espacamento.sm,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     overflow: 'hidden',
   },
   cardEmAndamento: {
@@ -231,7 +231,7 @@ const estilos = StyleSheet.create({
   },
   textoBadgeAgora: {
     color: tema.cores.corStatusSeguro,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   badgeProxima: {
@@ -244,7 +244,7 @@ const estilos = StyleSheet.create({
   },
   textoBadgeProxima: {
     color: tema.cores.corStatusAlerta,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   badgeEncerrada: {
@@ -255,7 +255,7 @@ const estilos = StyleSheet.create({
   },
   textoBadgeEncerrada: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '500',
   },
   codigo: {
@@ -302,27 +302,34 @@ const estilos = StyleSheet.create({
   botaoFaltaMenos: {
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderColor: tema.cores.bordaPadrao,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: tema.raioBorda.pequeno,
+    minHeight: 36,
+    minWidth: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textoBotaoFaltaMenos: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   botaoFaltaRapida: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: tema.raioBorda.pequeno,
     backgroundColor: `${tema.cores.corStatusCritico}20`,
     borderWidth: 1,
     borderColor: 'rgba(248, 81, 73, 0.4)',
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textoBotaoFaltaRapida: {
     color: tema.cores.corStatusCritico,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
 });

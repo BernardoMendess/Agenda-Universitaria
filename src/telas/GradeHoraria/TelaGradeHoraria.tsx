@@ -229,8 +229,10 @@ const estilos = StyleSheet.create({
   },
   botaoAlternador: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    minHeight: 42,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: tema.raioBorda.pequeno,
   },
   botaoAlternadorAtivo: {
@@ -264,9 +266,11 @@ const estilos = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: tema.raioBorda.padrao,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     minWidth: 64,
+    minHeight: 54,
     position: 'relative',
   },
   cardDiaHorizontalAtivo: {
@@ -292,7 +296,7 @@ const estilos = StyleSheet.create({
   },
   contadorAulasBadge: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 2,
   },
   contadorAulasBadgeAtivo: {
@@ -322,7 +326,7 @@ const estilos = StyleSheet.create({
     marginBottom: tema.espacamento.sm,
     paddingBottom: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   tituloDiaSemana: {
     color: tema.cores.corTextoPrimario,
@@ -346,7 +350,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.xl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     marginTop: tema.espacamento.sm,
   },
   iconeVazio: {

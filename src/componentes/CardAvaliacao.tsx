@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Avaliacao, TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../modelos/Avaliacao';
 import { tema } from '../estilos/tema';
 
@@ -108,15 +109,19 @@ export const CardAvaliacao: React.FC<CardAvaliacaoProps> = ({
               style={estilos.botaoLancarNota}
               onPress={() => aoLancarNota(avaliacao)}
               activeOpacity={0.8}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
-              <Text style={estilos.botaoLancarNotaTexto}>+ Lançar Nota</Text>
+              <Ionicons name="add" size={14} color={tema.cores.corTextoPrimario} />
+              <Text style={estilos.botaoLancarNotaTexto}>Lançar Nota</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={estilos.botaoEditarNota}
               onPress={() => aoLancarNota(avaliacao)}
               activeOpacity={0.8}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
+              <Ionicons name="pencil-outline" size={13} color={tema.cores.corStatusSeguro} />
               <Text style={estilos.botaoEditarNotaTexto}>Editar Nota</Text>
             </TouchableOpacity>
           )}
@@ -125,13 +130,19 @@ export const CardAvaliacao: React.FC<CardAvaliacaoProps> = ({
             <TouchableOpacity
               style={estilos.botaoAcao}
               onPress={() => aoEditar(avaliacao)}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              accessibilityLabel="Editar avaliação"
             >
+              <Ionicons name="create-outline" size={14} color={tema.cores.corMarcaPrimaria} />
               <Text style={estilos.botaoAcaoEditar}>Editar</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={estilos.botaoAcao}
               onPress={() => aoExcluir(avaliacao)}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              accessibilityLabel="Excluir avaliação"
             >
+              <Ionicons name="trash-outline" size={14} color={tema.cores.corStatusCritico} />
               <Text style={estilos.botaoAcaoExcluir}>Excluir</Text>
             </TouchableOpacity>
           </View>
@@ -149,7 +160,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   barraLateral: {
     width: 4,
@@ -195,7 +206,7 @@ const estilos = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   badgePesoTexto: {
     color: tema.cores.corTextoSecundario,
@@ -219,7 +230,7 @@ const estilos = StyleSheet.create({
   notaPendente: {
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   notaValor: {
     color: tema.cores.corStatusSeguro,
@@ -268,13 +279,17 @@ const estilos = StyleSheet.create({
     marginTop: tema.espacamento.sm,
     paddingTop: tema.espacamento.xs,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
   },
   botaoLancarNota: {
     backgroundColor: tema.cores.corMarcaPrimaria,
-    paddingHorizontal: tema.espacamento.sm + 2,
-    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: tema.raioBorda.pequeno,
+    minHeight: 36,
   },
   botaoLancarNotaTexto: {
     color: tema.cores.corTextoPrimario,
@@ -285,9 +300,13 @@ const estilos = StyleSheet.create({
     backgroundColor: 'rgba(46, 160, 67, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(46, 160, 67, 0.4)',
-    paddingHorizontal: tema.espacamento.sm + 2,
-    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: tema.raioBorda.pequeno,
+    minHeight: 36,
   },
   botaoEditarNotaTexto: {
     color: tema.cores.corStatusSeguro,
@@ -296,11 +315,17 @@ const estilos = StyleSheet.create({
   },
   acoesSecundarias: {
     flexDirection: 'row',
-    gap: tema.espacamento.sm,
+    gap: 8,
   },
   botaoAcao: {
-    paddingVertical: 4,
-    paddingHorizontal: tema.espacamento.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: tema.raioBorda.pequeno,
+    backgroundColor: tema.cores.sobreposicaoSutil,
+    minHeight: 36,
   },
   botaoAcaoEditar: {
     color: tema.cores.corMarcaPrimaria,

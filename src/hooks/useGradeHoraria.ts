@@ -9,6 +9,7 @@ import {
   CriarHorarioAulaDTO,
   DiaSemana,
 } from '../modelos/HorarioAula';
+import { notificacaoService } from '../servicos/NotificacaoService';
 
 export const useGradeHoraria = () => {
   const [gradeSemanal, setGradeSemanal] = useState<GradeSemanal>({
@@ -61,6 +62,7 @@ export const useGradeHoraria = () => {
         setErro(null);
         await gradeHorariaService.definirHorariosDisciplina(disciplinaId, horarios);
         await carregarGrade();
+        notificacaoService.sincronizarGeral().catch(() => {});
       } catch (err: any) {
         setErro(err.message);
         throw err;

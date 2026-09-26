@@ -10,6 +10,7 @@ interface CampoTextoProps extends TextInputProps {
   valor?: string;
   aoMudarTexto?: (texto: string) => void;
   type?: string;
+  quantidadeLinhas?: number;
 }
 
 export const CampoTexto: React.FC<CampoTextoProps> = ({
@@ -23,6 +24,7 @@ export const CampoTexto: React.FC<CampoTextoProps> = ({
   aoMudarTexto,
   onChangeText,
   type,
+  quantidadeLinhas,
   ...outrasProps
 }) => {
   return (
@@ -44,6 +46,7 @@ export const CampoTexto: React.FC<CampoTextoProps> = ({
         selectionColor={tema.cores.corMarcaPrimaria}
         value={valor !== undefined ? valor : value}
         onChangeText={aoMudarTexto || onChangeText}
+        numberOfLines={quantidadeLinhas || outrasProps.numberOfLines}
         {...(type ? ({ type } as any) : {})}
         {...outrasProps}
       />

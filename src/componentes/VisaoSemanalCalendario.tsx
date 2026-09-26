@@ -108,7 +108,7 @@ const estilos = StyleSheet.create({
     borderRadius: tema.raioBorda.card,
     padding: tema.espacamento.md,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   blocoDiaHoje: {
     borderColor: tema.cores.corMarcaPrimaria,
@@ -121,7 +121,7 @@ const estilos = StyleSheet.create({
     marginBottom: tema.espacamento.sm,
     paddingBottom: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   infoData: {
     flexDirection: 'row',

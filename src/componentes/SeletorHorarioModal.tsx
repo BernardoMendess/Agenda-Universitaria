@@ -201,7 +201,7 @@ const estilos = StyleSheet.create({
     borderRadius: tema.raioBorda.card,
     padding: tema.espacamento.lg,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   titulo: {
     color: tema.cores.corTextoPrimario,
@@ -227,12 +227,15 @@ const estilos = StyleSheet.create({
     marginBottom: 4,
   },
   chipDia: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: tema.cores.corFundoElevado,
     borderRadius: tema.raioBorda.pequeno,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipDiaAtivo: {
     backgroundColor: tema.cores.corMarcaPrimaria,

@@ -157,9 +157,6 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
               <View style={estilos.cabecalhoModal}>
                 <View>
                   <Text style={estilos.tituloModal}>Backup & Portabilidade</Text>
-                  <Text style={estilos.subtituloModal}>
-                    Gerenciamento manual 100% offline (RF11)
-                  </Text>
                 </View>
                 <TouchableOpacity
                   style={estilos.botaoFechar}
@@ -301,7 +298,6 @@ export const ModalBackup: React.FC<ModalBackupProps> = ({
                           multiline
                           editable={false}
                           selectTextOnFocus
-                          showsVerticalScrollIndicator
                         />
 
                         <TouchableOpacity
@@ -490,7 +486,7 @@ const estilos = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
     padding: tema.espacamento.md,
     maxHeight: '90%',
     width: '100%',
@@ -502,7 +498,7 @@ const estilos = StyleSheet.create({
     marginBottom: tema.espacamento.sm,
     paddingBottom: tema.espacamento.xs,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   tituloModal: {
     color: tema.cores.corTextoPrimario,
@@ -515,9 +511,9 @@ const estilos = StyleSheet.create({
     marginTop: 2,
   },
   botaoFechar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: tema.cores.corFundoElevado,
     alignItems: 'center',
     justifyContent: 'center',
@@ -537,7 +533,9 @@ const estilos = StyleSheet.create({
   itemAba: {
     flex: 1,
     paddingVertical: 10,
+    minHeight: 42,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: tema.raioBorda.padrao - 2,
   },
   itemAbaAtiva: {

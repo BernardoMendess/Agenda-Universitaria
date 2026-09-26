@@ -21,6 +21,7 @@ import {
   ItemCalendario,
 } from '../../modelos/Calendario';
 import { calendarioService } from '../../servicos/CalendarioService';
+import { Ionicons } from '@expo/vector-icons';
 import { tema } from '../../estilos/tema';
 
 const FILTROS_CATEGORIA: CategoriaFiltroCalendario[] = [
@@ -108,8 +109,10 @@ export const TelaCalendario: React.FC = () => {
             style={estilos.botaoNovoEvento}
             onPress={() => setModalNovoEventoVisivel(true)}
             activeOpacity={0.7}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
-            <Text style={estilos.textoBotaoNovoEvento}>+ Evento</Text>
+            <Ionicons name="add" size={18} color="#ffffff" />
+            <Text style={estilos.textoBotaoNovoEvento}>Evento</Text>
           </TouchableOpacity>
         </View>
 
@@ -119,8 +122,9 @@ export const TelaCalendario: React.FC = () => {
             style={estilos.botaoNavegacaoSeta}
             onPress={navegarAnterior}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Período anterior"
           >
-            <Text style={estilos.textoSeta}>‹</Text>
+            <Ionicons name="chevron-back" size={20} color={tema.cores.corTextoPrimario} />
           </TouchableOpacity>
 
           <TouchableOpacity style={estilos.centroNavegacao} onPress={irParaHoje}>
@@ -134,8 +138,9 @@ export const TelaCalendario: React.FC = () => {
             style={estilos.botaoNavegacaoSeta}
             onPress={navegarProximo}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Próximo período"
           >
-            <Text style={estilos.textoSeta}>›</Text>
+            <Ionicons name="chevron-forward" size={20} color={tema.cores.corTextoPrimario} />
           </TouchableOpacity>
         </View>
 
@@ -390,14 +395,20 @@ const estilos = StyleSheet.create({
   },
   subtitulo: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     marginTop: 2,
   },
   botaoNovoEvento: {
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
     backgroundColor: tema.cores.corMarcaPrimaria,
     paddingHorizontal: tema.espacamento.md,
     paddingVertical: 8,
     borderRadius: tema.raioBorda.padrao,
+    minHeight: 40,
   },
   textoBotaoNovoEvento: {
     color: '#ffffff',
@@ -414,17 +425,14 @@ const estilos = StyleSheet.create({
     paddingVertical: 6,
     marginBottom: tema.espacamento.sm,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   botaoNavegacaoSeta: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  textoSeta: {
-    color: tema.cores.corTextoPrimario,
-    fontSize: 24,
-    fontWeight: 'bold',
-    lineHeight: 26,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   centroNavegacao: {
     flexDirection: 'row',
@@ -438,13 +446,13 @@ const estilos = StyleSheet.create({
   },
   badgeHoje: {
     backgroundColor: tema.cores.corFundoElevado,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 4,
   },
   textoBadgeHoje: {
     color: tema.cores.corMarcaPrimaria,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   alternadorVisao: {
@@ -457,8 +465,10 @@ const estilos = StyleSheet.create({
   },
   botaoAlternador: {
     flex: 1,
-    paddingVertical: 7,
+    paddingVertical: 10,
+    minHeight: 42,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: tema.raioBorda.pequeno,
   },
   botaoAlternadorAtivo: {
@@ -480,11 +490,14 @@ const estilos = StyleSheet.create({
   },
   chipFiltro: {
     backgroundColor: tema.cores.corFundoCard,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: tema.raioBorda.redondo,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chipFiltroAtivo: {
     backgroundColor: `${tema.cores.corMarcaPrimaria}25`,
@@ -492,7 +505,7 @@ const estilos = StyleSheet.create({
   },
   textoChipFiltro: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '500',
   },
   textoChipFiltroAtivo: {
@@ -503,15 +516,17 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: tema.cores.corFundoCard,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     borderRadius: tema.raioBorda.redondo,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
+    minHeight: 40,
+    justifyContent: 'center',
   },
   chipDisciplinaAtivo: {
     backgroundColor: tema.cores.corFundoElevado,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
   },
   pontoCor: {
     width: 6,
@@ -521,7 +536,7 @@ const estilos = StyleSheet.create({
   },
   textoChipDisciplina: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '500',
   },
   textoChipDisciplinaAtivo: {
@@ -548,7 +563,7 @@ const estilos = StyleSheet.create({
   },
   subtituloDiaSelecionado: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     marginTop: 1,
   },
   secaoSemanal: {
@@ -560,25 +575,28 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   textoVazio: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 12,
+    fontSize: tema.tipografia.pequeno,
     marginBottom: tema.espacamento.sm,
     textAlign: 'center',
   },
   botaoAdicionarVazio: {
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderColor: tema.cores.bordaPadrao,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: tema.raioBorda.pequeno,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   textoBotaoAdicionarVazio: {
     color: tema.cores.corTextoPrimario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '600',
   },
 });

@@ -81,7 +81,7 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
     <SafeAreaView style={estilos.container}>
       {/* Cabeçalho */}
       <View style={estilos.cabecalho}>
-        <View>
+        <View style={estilos.cabecalhoTextos}>
           <Text style={estilos.titulo}>Disciplinas</Text>
           <Text style={estilos.subtitulo}>
             {disciplinas.length}{' '}
@@ -218,6 +218,10 @@ const estilos = StyleSheet.create({
     paddingTop: tema.espacamento.xxl,
     paddingBottom: tema.espacamento.sm,
   },
+  cabecalhoTextos: {
+    flex: 1,
+    marginRight: 12,
+  },
   titulo: {
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.destaque,
@@ -230,6 +234,7 @@ const estilos = StyleSheet.create({
     marginTop: 2,
   },
   botaoNovo: {
+    flexShrink: 0,
     backgroundColor: tema.cores.corMarcaPrimaria,
     paddingHorizontal: tema.espacamento.md,
     paddingVertical: tema.espacamento.sm,

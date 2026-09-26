@@ -8,6 +8,7 @@ import {
   EstatisticasTarefas,
 } from '../modelos/Tarefa';
 import { tarefaService } from '../servicos/TarefaService';
+import { notificacaoService } from '../servicos/NotificacaoService';
 
 export const useTarefas = () => {
   const [tarefas, setTarefas] = useState<TarefaComDisciplina[]>([]);
@@ -74,6 +75,7 @@ export const useTarefas = () => {
       const nova = await tarefaService.criarTarefa(dados);
       await carregarTarefas();
       await carregarTarefasHome();
+      notificacaoService.sincronizarGeral().catch(() => {});
       return nova;
     } catch (e: any) {
       setErro(e.message || 'Erro ao criar tarefa.');
@@ -90,6 +92,7 @@ export const useTarefas = () => {
       const atualizada = await tarefaService.atualizarTarefa(id, dados);
       await carregarTarefas();
       await carregarTarefasHome();
+      notificacaoService.sincronizarGeral().catch(() => {});
       return atualizada;
     } catch (e: any) {
       setErro(e.message || 'Erro ao atualizar tarefa.');
@@ -122,6 +125,7 @@ export const useTarefas = () => {
       );
       // Recarrega estatísticas em segundo plano
       await carregarEstatisticas();
+      notificacaoService.sincronizarGeral().catch(() => {});
       return alterada;
     } catch (e: any) {
       setErro(e.message || 'Erro ao alternar conclusão.');
@@ -140,6 +144,7 @@ export const useTarefas = () => {
         setTarefas((prev) => prev.filter((t) => t.id !== id));
         setTarefasHome((prev) => prev.filter((t) => t.id !== id));
         await carregarEstatisticas();
+        notificacaoService.sincronizarGeral().catch(() => {});
       }
       return sucesso;
     } catch (e: any) {

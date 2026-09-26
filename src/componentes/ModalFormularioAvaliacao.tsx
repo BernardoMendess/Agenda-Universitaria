@@ -298,7 +298,7 @@ const estilos = StyleSheet.create({
     paddingHorizontal: tema.espacamento.md,
     paddingVertical: tema.espacamento.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
   },
   titulo: {
     color: tema.cores.corTextoPrimario,
@@ -306,8 +306,10 @@ const estilos = StyleSheet.create({
     fontWeight: '700',
   },
   botaoCancelar: {
-    paddingVertical: 6,
-    paddingHorizontal: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minHeight: 38,
+    justifyContent: 'center',
   },
   botaoCancelarTexto: {
     color: tema.cores.corTextoSecundario,
@@ -316,8 +318,11 @@ const estilos = StyleSheet.create({
   botaoSalvar: {
     backgroundColor: tema.cores.corMarcaPrimaria,
     paddingHorizontal: tema.espacamento.md,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: tema.raioBorda.pequeno,
+    minHeight: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   botaoDesabilitado: {
     opacity: 0.5,

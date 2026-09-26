@@ -90,7 +90,7 @@ export const CONFIGURACAO_NOTIFICACAO_PADRAO: ConfiguracaoNotificacao = {
   antecedenciaTarefasHoras: [24, 2], // 24 horas e 2 horas antes
   alertaFaltasAtivo: true,
   somHabilitado: true,
-  vibracaoHabilitada: true,
+  vibracaoHabilitada: false,
   dataAtualizacao: new Date().toISOString(),
 };
 

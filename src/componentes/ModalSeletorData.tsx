@@ -459,7 +459,7 @@ const estilos = StyleSheet.create({
   linhaDiasSemana: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#21262d',
+    borderBottomColor: tema.cores.bordaCard,
     paddingBottom: 6,
     marginBottom: 4,
   },
@@ -469,7 +469,7 @@ const estilos = StyleSheet.create({
   },
   textoDiaSemana: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
@@ -517,7 +517,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
     paddingTop: tema.espacamento.sm,
   },
   botaoLimpar: {

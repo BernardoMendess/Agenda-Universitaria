@@ -18,7 +18,7 @@ import { ModalHistoricoFaltas } from '../../componentes/ModalHistoricoFaltas';
 import { ModalAlertaFaltasCritico } from '../../componentes/ModalAlertaFaltasCritico';
 import { Disciplina } from '../../modelos/Disciplina';
 import { TIPO_AVALIACAO_LABELS, TIPO_AVALIACAO_CORES } from '../../modelos/Avaliacao';
-
+import { Ionicons } from '@expo/vector-icons';
 import { tema } from '../../estilos/tema';
 
 interface TelaHomeProps {
@@ -159,23 +159,29 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             style={estilos.botaoAtalhoRapido}
             onPress={() => setModalNovaTarefaVisivel(true)}
             activeOpacity={0.7}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
-            <Text style={estilos.textoBotaoAtalhoRapido}>+ Nova Tarefa</Text>
+            <Ionicons name="add-circle-outline" size={17} color={tema.cores.corMarcaPrimaria} />
+            <Text style={estilos.textoBotaoAtalhoRapido}>Nova Tarefa</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={estilos.botaoAtalhoRapido}
             onPress={aoCriarDisciplina}
             activeOpacity={0.7}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
-            <Text style={estilos.textoBotaoAtalhoRapido}>+ Nova Matéria</Text>
+            <Ionicons name="book-outline" size={17} color={tema.cores.corMarcaPrimaria} />
+            <Text style={estilos.textoBotaoAtalhoRapido}>Nova Matéria</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={estilos.botaoAtalhoRapidoSecundario}
             onPress={aoIrParaDisciplinas}
             activeOpacity={0.7}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
+            <Ionicons name="school-outline" size={17} color={tema.cores.corTextoPrimario} />
             <Text style={estilos.textoBotaoAtalhoSecundario}>Disciplinas</Text>
           </TouchableOpacity>
 
@@ -183,14 +189,16 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             style={estilos.botaoAtalhoRapidoSecundario}
             onPress={aoIrParaGrade}
             activeOpacity={0.7}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
+            <Ionicons name="calendar-outline" size={17} color={tema.cores.corTextoPrimario} />
             <Text style={estilos.textoBotaoAtalhoSecundario}>Grade Horária</Text>
           </TouchableOpacity>
         </View>
 
         {/* Matérias em alerta */}
         <View style={estilos.secaoCabecalho}>
-          <View>
+          <View style={estilos.secaoTextos}>
             <Text style={estilos.secaoTitulo}>Diagnóstico Acadêmico</Text>
             <Text style={estilos.secaoSubtitulo}>
               {materiasEmAlerta.length > 0
@@ -198,8 +206,13 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
                 : 'Frequência e notas sob controle'}
             </Text>
           </View>
-          <TouchableOpacity onPress={aoIrParaDisciplinas}>
-            <Text style={estilos.linkVerTodas}>Ver matérias →</Text>
+          <TouchableOpacity
+            style={estilos.linkContainer}
+            onPress={aoIrParaDisciplinas}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={estilos.linkVerTodas}>Ver matérias</Text>
+            <Ionicons name="arrow-forward" size={13} color={tema.cores.corMarcaPrimaria} />
           </TouchableOpacity>
         </View>
 
@@ -229,7 +242,7 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
 
         {/* Aulas de hoje */}
         <View style={estilos.secaoCabecalho}>
-          <View>
+          <View style={estilos.secaoTextos}>
             <Text style={estilos.secaoTitulo}>Aulas de Hoje</Text>
             <Text style={estilos.secaoSubtitulo}>
               {aulasProcessadas.length > 0
@@ -237,8 +250,13 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
                 : 'Dia livre de aulas'}
             </Text>
           </View>
-          <TouchableOpacity onPress={aoIrParaGrade}>
-            <Text style={estilos.linkVerTodas}>Ver grade →</Text>
+          <TouchableOpacity
+            style={estilos.linkContainer}
+            onPress={aoIrParaGrade}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={estilos.linkVerTodas}>Ver grade</Text>
+            <Ionicons name="arrow-forward" size={13} color={tema.cores.corMarcaPrimaria} />
           </TouchableOpacity>
         </View>
 
@@ -293,14 +311,19 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
 
         {/* Tarefas pendentes */}
         <View style={estilos.secaoCabecalho}>
-          <View>
+          <View style={estilos.secaoTextos}>
             <Text style={estilos.secaoTitulo}>Tarefas Prioritárias</Text>
             <Text style={estilos.secaoSubtitulo}>
               {estatisticas.pendentes} pendente(s)
             </Text>
           </View>
-          <TouchableOpacity onPress={aoIrParaTarefas}>
-            <Text style={estilos.linkVerTodas}>Ver To-Do →</Text>
+          <TouchableOpacity
+            style={estilos.linkContainer}
+            onPress={aoIrParaTarefas}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={estilos.linkVerTodas}>Ver To-Do</Text>
+            <Ionicons name="arrow-forward" size={13} color={tema.cores.corMarcaPrimaria} />
           </TouchableOpacity>
         </View>
 
@@ -312,8 +335,10 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
             <TouchableOpacity
               style={estilos.botaoAdicionarVazio}
               onPress={() => setModalNovaTarefaVisivel(true)}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
-              <Text style={estilos.textoBotaoAdicionarVazio}>+ Criar Tarefa</Text>
+              <Ionicons name="add" size={16} color={tema.cores.corTextoPrimario} />
+              <Text style={estilos.textoBotaoAdicionarVazio}>Criar Tarefa</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -331,15 +356,20 @@ export const TelaHome: React.FC<TelaHomeProps> = ({
         {proximasAvaliacoes.length > 0 && (
           <>
             <View style={[estilos.secaoCabecalho, { marginTop: tema.espacamento.lg }]}>
-              <View>
+              <View style={estilos.secaoTextos}>
                 <Text style={estilos.secaoTitulo}>Próximas Avaliações</Text>
                 <Text style={estilos.secaoSubtitulo}>
                   Provas e entregas agendadas
                 </Text>
               </View>
               {aoIrParaCalendario && (
-                <TouchableOpacity onPress={aoIrParaCalendario}>
-                  <Text style={estilos.linkVerTodas}>Ver calendário →</Text>
+                <TouchableOpacity
+                  style={estilos.linkContainer}
+                  onPress={aoIrParaCalendario}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={estilos.linkVerTodas}>Ver calendário</Text>
+                  <Ionicons name="arrow-forward" size={13} color={tema.cores.corMarcaPrimaria} />
                 </TouchableOpacity>
               )}
             </View>
@@ -486,7 +516,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.md,
     marginBottom: tema.espacamento.sm,
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
   },
   linhaResumo: {
     flexDirection: 'row',
@@ -504,7 +534,7 @@ const estilos = StyleSheet.create({
   },
   rotuloEstatistica: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 2,
     textAlign: 'center',
     fontWeight: '500',
@@ -521,13 +551,15 @@ const estilos = StyleSheet.create({
     marginBottom: tema.espacamento.md,
   },
   botaoAtalhoRapido: {
-    width: '48.5%',
+    flex: 1,
+    minWidth: '45%',
     backgroundColor: `${tema.cores.corMarcaPrimaria}20`,
     borderWidth: 1,
     borderColor: tema.cores.corMarcaPrimaria,
     borderRadius: tema.raioBorda.padrao,
     paddingVertical: 12,
     paddingHorizontal: tema.espacamento.sm,
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -539,13 +571,15 @@ const estilos = StyleSheet.create({
     fontWeight: '700',
   },
   botaoAtalhoRapidoSecundario: {
-    width: '48.5%',
+    flex: 1,
+    minWidth: '45%',
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: tema.cores.bordaPadrao,
     borderRadius: tema.raioBorda.padrao,
     paddingVertical: 12,
     paddingHorizontal: tema.espacamento.sm,
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -562,6 +596,10 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     marginBottom: tema.espacamento.sm,
   },
+  secaoTextos: {
+    flex: 1,
+    marginRight: 8,
+  },
   secaoTitulo: {
     color: tema.cores.corTextoPrimario,
     fontSize: tema.tipografia.tituloGrande,
@@ -569,13 +607,20 @@ const estilos = StyleSheet.create({
   },
   secaoSubtitulo: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     marginTop: 1,
   },
   divisorSecao: {
     height: 1,
-    backgroundColor: '#21262d',
+    backgroundColor: tema.cores.bordaCard,
     marginVertical: tema.espacamento.lg,
+  },
+  linkContainer: {
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
   },
   linkVerTodas: {
     color: tema.cores.corMarcaPrimaria,
@@ -600,7 +645,7 @@ const estilos = StyleSheet.create({
   },
   textoBadgeRegular: {
     color: tema.cores.corStatusSeguro,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '700',
   },
   textoRegular: {
@@ -614,7 +659,7 @@ const estilos = StyleSheet.create({
     padding: tema.espacamento.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     marginBottom: tema.espacamento.sm,
   },
   textoVazio: {
@@ -626,14 +671,19 @@ const estilos = StyleSheet.create({
   botaoAdicionarVazio: {
     backgroundColor: tema.cores.corFundoElevado,
     borderWidth: 1,
-    borderColor: '#30363d',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: tema.raioBorda.pequeno,
+    borderColor: tema.cores.bordaPadrao,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: tema.raioBorda.padrao,
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   textoBotaoAdicionarVazio: {
     color: tema.cores.corTextoPrimario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '600',
   },
   cardProximaAvaliacao: {
@@ -643,7 +693,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#21262d',
+    borderColor: tema.cores.bordaCard,
     alignItems: 'center',
   },
   barraLateralAvaliacao: {
@@ -675,7 +725,7 @@ const estilos = StyleSheet.create({
   },
   prazoLabel: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 1,
   },
 });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { TelaHome } from '../telas/Home/TelaHome';
 import { TelaCalendario } from '../telas/Calendario/TelaCalendario';
 import { TelaDisciplinas } from '../telas/Disciplinas/TelaDisciplinas';
@@ -21,11 +22,18 @@ type AbaAtiva =
   | 'formulario'
   | 'detalhes';
 
-const ITENS_BARRA: { id: AbaAtiva; rotulo: string }[] = [
-  { id: 'home', rotulo: 'Início' },
-  { id: 'calendario', rotulo: 'Calendário' },
-  { id: 'tarefas', rotulo: 'Tarefas' },
-  { id: 'ajustes', rotulo: 'Ajustes' },
+interface ItemNavegacao {
+  id: AbaAtiva;
+  rotulo: string;
+  iconeAtivo: keyof typeof Ionicons.glyphMap;
+  iconeInativo: keyof typeof Ionicons.glyphMap;
+}
+
+const ITENS_BARRA: ItemNavegacao[] = [
+  { id: 'home', rotulo: 'Início', iconeAtivo: 'home', iconeInativo: 'home-outline' },
+  { id: 'calendario', rotulo: 'Calendário', iconeAtivo: 'calendar', iconeInativo: 'calendar-outline' },
+  { id: 'tarefas', rotulo: 'Tarefas', iconeAtivo: 'checkbox', iconeInativo: 'checkbox-outline' },
+  { id: 'ajustes', rotulo: 'Ajustes', iconeAtivo: 'settings', iconeInativo: 'settings-outline' },
 ];
 
 export const NavegadorPrincipal: React.FC = () => {
@@ -154,11 +162,20 @@ export const NavegadorPrincipal: React.FC = () => {
                 style={estilos.itemAba}
                 onPress={acaoMap[item.id]}
                 activeOpacity={0.7}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: ativa }}
+                accessibilityLabel={item.rotulo}
               >
+                <View style={[estilos.iconeContainer, ativa && estilos.iconeContainerAtivo]}>
+                  <Ionicons
+                    name={ativa ? item.iconeAtivo : item.iconeInativo}
+                    size={22}
+                    color={ativa ? tema.cores.corMarcaPrimaria : tema.cores.corTextoSecundario}
+                  />
+                </View>
                 <Text style={[estilos.textoAba, ativa && estilos.textoAbaAtiva]}>
                   {item.rotulo}
                 </Text>
-                {ativa && <View style={estilos.indicadorAtivo} />}
               </TouchableOpacity>
             );
           })}
@@ -180,7 +197,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: tema.cores.corFundoCard,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
+    borderTopColor: tema.cores.bordaCard,
     paddingTop: tema.espacamento.xs,
     paddingBottom: tema.espacamento.xs,
   },
@@ -188,25 +205,28 @@ const estilos = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    minHeight: 48,
-    position: 'relative',
+    paddingVertical: tema.espacamento.sm,
+    minHeight: 52,
+  },
+  iconeContainer: {
+    paddingVertical: 2,
+    paddingHorizontal: 12,
+    borderRadius: tema.raioBorda.redondo,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  iconeContainerAtivo: {
+    backgroundColor: 'rgba(99, 102, 241, 0.12)',
   },
   textoAba: {
     color: tema.cores.corTextoSecundario,
-    fontSize: 11,
+    fontSize: tema.tipografia.micro,
     fontWeight: '500',
   },
   textoAbaAtiva: {
     color: tema.cores.corMarcaPrimaria,
     fontWeight: '700',
   },
-  indicadorAtivo: {
-    position: 'absolute',
-    bottom: 6,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: tema.cores.corMarcaPrimaria,
-  },
 });
+
