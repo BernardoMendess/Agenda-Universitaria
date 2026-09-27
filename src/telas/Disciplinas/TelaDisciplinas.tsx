@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useDisciplinas } from '../../hooks/useDisciplinas';
 import { useFrequencia } from '../../hooks/useFrequencia';
 import { CardDisciplina } from '../../componentes/CardDisciplina';
@@ -22,12 +23,14 @@ interface TelaDisciplinasProps {
   aoCriarDisciplina: () => void;
   aoEditarDisciplina: (disciplina: Disciplina) => void;
   aoSelecionarDisciplina: (disciplina: Disciplina) => void;
+  aoVoltar?: () => void;
 }
 
 export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
   aoCriarDisciplina,
   aoEditarDisciplina,
   aoSelecionarDisciplina,
+  aoVoltar,
 }) => {
   const { disciplinas, carregando, erro, excluirDisciplina } = useDisciplinas();
   const {
@@ -81,6 +84,18 @@ export const TelaDisciplinas: React.FC<TelaDisciplinasProps> = ({
     <SafeAreaView style={estilos.container} edges={['top']}>
       {/* Cabeçalho */}
       <View style={estilos.cabecalho}>
+        {aoVoltar ? (
+          <TouchableOpacity
+            style={estilos.botaoVoltar}
+            onPress={aoVoltar}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="chevron-back" size={22} color={tema.cores.corTextoPrimario} />
+          </TouchableOpacity>
+        ) : null}
+
         <View style={estilos.cabecalhoTextos}>
           <Text style={estilos.titulo}>Disciplinas</Text>
           <Text style={estilos.subtitulo}>
@@ -217,6 +232,15 @@ const estilos = StyleSheet.create({
     paddingHorizontal: tema.espacamento.md,
     paddingTop: tema.espacamento.sm,
     paddingBottom: tema.espacamento.sm,
+  },
+  botaoVoltar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: tema.cores.sobreposicaoSutil,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: tema.espacamento.smd,
   },
   cabecalhoTextos: {
     flex: 1,

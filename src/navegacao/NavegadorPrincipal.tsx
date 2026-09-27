@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { TelaHome } from '../telas/Home/TelaHome';
@@ -25,6 +25,12 @@ type AbaAtiva =
   | 'formulario'
   | 'detalhes';
 
+interface Rota {
+  aba: AbaAtiva;
+  disciplinaEdicao?: Disciplina | null;
+  disciplinaDetalhes?: Disciplina | null;
+}
+
 interface ItemNavegacao {
   id: AbaAtiva;
   rotulo: string;
@@ -40,62 +46,125 @@ const ITENS_BARRA: ItemNavegacao[] = [
 ];
 
 export const NavegadorPrincipal: React.FC = () => {
-  const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>('home');
-  const [disciplinaEdicao, setDisciplinaEdicao] = useState<Disciplina | null>(null);
-  const [disciplinaDetalhes, setDisciplinaDetalhes] = useState<Disciplina | null>(null);
-
+  const [historico, setHistorico] = useState<Rota[]>([{ aba: 'home' }]);
   const { modalVisivel: modalApoioVisivel, fecharModal: fecharModalApoio } = useModalApoio();
 
-  const irParaCriarDisciplina = () => {
-    setDisciplinaEdicao(null);
-    setAbaAtiva('formulario');
-  };
+  const rotaAtual = historico[historico.length - 1] || { aba: 'home' };
+  const abaAtiva = rotaAtual.aba;
+  const disciplinaEdicao = rotaAtual.disciplinaEdicao || null;
+  const disciplinaDetalhes = rotaAtual.disciplinaDetalhes || null;
 
-  const irParaEditarDisciplina = (disciplina: Disciplina) => {
-    setDisciplinaEdicao(disciplina);
-    setAbaAtiva('formulario');
-  };
+  const navegar = useCallback((novaRota: Rota) => {
+    setHistorico((prev) => {
+      const atual = prev[prev.length - 1];
+      if (
+        atual &&
+        atual.aba === novaRota.aba &&
+        atual.disciplinaEdicao?.id === novaRota.disciplinaEdicao?.id &&
+        atual.disciplinaDetalhes?.id === novaRota.disciplinaDetalhes?.id
+      ) {
+        return prev;
+      }
+      return [...prev, novaRota];
+    });
+  }, []);
 
-  const irParaDisciplinas = () => {
-    setDisciplinaEdicao(null);
-    setDisciplinaDetalhes(null);
-    setAbaAtiva('disciplinas');
-  };
+  const voltar = useCallback(() => {
+    setHistorico((prev) => {
+      if (prev.length > 1) {
+        return prev.slice(0, prev.length - 1);
+      }
+      if (prev.length === 1 && prev[0].aba !== 'home') {
+        return [{ aba: 'home' }];
+      }
+      return prev;
+    });
+  }, []);
 
-  const irParaGrade = () => {
-    setDisciplinaEdicao(null);
-    setDisciplinaDetalhes(null);
-    setAbaAtiva('grade');
-  };
+  const irParaHome = useCallback(() => {
+    setHistorico([{ aba: 'home' }]);
+  }, []);
 
-  const irParaTarefas = () => {
-    setDisciplinaEdicao(null);
-    setDisciplinaDetalhes(null);
-    setAbaAtiva('tarefas');
-  };
+  const irParaCalendario = useCallback(() => {
+    setHistorico((prev) => {
+      const semMesmaAba = prev.filter((r) => r.aba !== 'calendario');
+      return [...semMesmaAba, { aba: 'calendario' }];
+    });
+  }, []);
 
-  const irParaCalendario = () => {
-    setDisciplinaEdicao(null);
-    setDisciplinaDetalhes(null);
-    setAbaAtiva('calendario');
-  };
+  const irParaTarefas = useCallback(() => {
+    setHistorico((prev) => {
+      const semMesmaAba = prev.filter((r) => r.aba !== 'tarefas');
+      return [...semMesmaAba, { aba: 'tarefas' }];
+    });
+  }, []);
 
-  const irParaHome = () => {
-    setDisciplinaEdicao(null);
-    setDisciplinaDetalhes(null);
-    setAbaAtiva('home');
-  };
+  const irParaAjustes = useCallback(() => {
+    setHistorico((prev) => {
+      const semMesmaAba = prev.filter((r) => r.aba !== 'ajustes');
+      return [...semMesmaAba, { aba: 'ajustes' }];
+    });
+  }, []);
 
-  const irParaAjustes = () => {
-    setDisciplinaEdicao(null);
-    setDisciplinaDetalhes(null);
-    setAbaAtiva('ajustes');
-  };
+  const irParaDisciplinas = useCallback(() => {
+    navegar({ aba: 'disciplinas' });
+  }, [navegar]);
 
-  const irParaDetalhesDisciplina = (disciplina: Disciplina) => {
-    setDisciplinaDetalhes(disciplina);
-    setAbaAtiva('detalhes');
-  };
+  const irParaGrade = useCallback(() => {
+    navegar({ aba: 'grade' });
+  }, [navegar]);
+
+  const irParaCriarDisciplina = useCallback(() => {
+    navegar({ aba: 'formulario', disciplinaEdicao: null });
+  }, [navegar]);
+
+  const irParaEditarDisciplina = useCallback(
+    (disciplina: Disciplina) => {
+      navegar({ aba: 'formulario', disciplinaEdicao: disciplina });
+    },
+    [navegar]
+  );
+
+  const irParaDetalhesDisciplina = useCallback(
+    (disciplina: Disciplina) => {
+      navegar({ aba: 'detalhes', disciplinaDetalhes: disciplina });
+    },
+    [navegar]
+  );
+
+  const aoSalvarDisciplinaSucesso = useCallback(() => {
+    setHistorico((prev) => {
+      const semFormulario = prev.filter((r) => r.aba !== 'formulario');
+      const ultima = semFormulario[semFormulario.length - 1];
+      if (ultima?.aba === 'disciplinas') {
+        return semFormulario;
+      }
+      return [...semFormulario, { aba: 'disciplinas' }];
+    });
+  }, []);
+
+  useEffect(() => {
+    const aoPressionarVoltarNativo = () => {
+      if (historico.length > 1) {
+        voltar();
+        return true;
+      }
+      if (historico.length === 1 && historico[0].aba !== 'home') {
+        irParaHome();
+        return true;
+      }
+      return false;
+    };
+
+    const inscricao = BackHandler.addEventListener(
+      'hardwareBackPress',
+      aoPressionarVoltarNativo
+    );
+
+    return () => {
+      inscricao.remove();
+    };
+  }, [historico, voltar, irParaHome]);
 
   const mostrarBarraAbas = abaAtiva !== 'formulario' && abaAtiva !== 'detalhes';
 
@@ -122,6 +191,7 @@ export const NavegadorPrincipal: React.FC = () => {
         {abaAtiva === 'grade' && (
           <TelaGradeHoraria
             aoCriarDisciplina={irParaCriarDisciplina}
+            aoVoltar={voltar}
           />
         )}
         {abaAtiva === 'disciplinas' && (
@@ -129,6 +199,7 @@ export const NavegadorPrincipal: React.FC = () => {
             aoCriarDisciplina={irParaCriarDisciplina}
             aoEditarDisciplina={irParaEditarDisciplina}
             aoSelecionarDisciplina={irParaDetalhesDisciplina}
+            aoVoltar={voltar}
           />
         )}
         {abaAtiva === 'ajustes' && (
@@ -137,14 +208,14 @@ export const NavegadorPrincipal: React.FC = () => {
         {abaAtiva === 'formulario' && (
           <TelaFormularioDisciplina
             disciplinaParaEditar={disciplinaEdicao}
-            aoVoltar={irParaDisciplinas}
-            aoSalvarSucesso={irParaDisciplinas}
+            aoVoltar={voltar}
+            aoSalvarSucesso={aoSalvarDisciplinaSucesso}
           />
         )}
         {abaAtiva === 'detalhes' && disciplinaDetalhes && (
           <TelaDetalhesDisciplina
             disciplina={disciplinaDetalhes}
-            aoVoltar={irParaDisciplinas}
+            aoVoltar={voltar}
             aoEditar={irParaEditarDisciplina}
           />
         )}

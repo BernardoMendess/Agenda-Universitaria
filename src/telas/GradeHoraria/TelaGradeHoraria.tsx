@@ -22,10 +22,12 @@ import { tema } from '../../estilos/tema';
 
 interface TelaGradeHorariaProps {
   aoCriarDisciplina: () => void;
+  aoVoltar?: () => void;
 }
 
 export const TelaGradeHoraria: React.FC<TelaGradeHorariaProps> = ({
   aoCriarDisciplina,
+  aoVoltar,
 }) => {
   const diaHoje = gradeHorariaService.converterDateParaDiaSemana();
   const [diaSelecionado, setDiaSelecionado] = useState<DiaSemana>(diaHoje);
@@ -43,6 +45,7 @@ export const TelaGradeHoraria: React.FC<TelaGradeHorariaProps> = ({
       <Cabecalho
         titulo="Grade Horária"
         subtitulo={`${totalAulasSemana} bloco(s) de aula na semana`}
+        aoVoltar={aoVoltar}
       />
 
       {/* Alternador de Visão: Dia ou Semana Completa */}
