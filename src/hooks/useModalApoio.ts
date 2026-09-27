@@ -10,7 +10,7 @@ interface UseModalApoioRetorno {
 
 /**
  * Hook responsável por contabilizar o tempo ativo de uso do aplicativo e
- * disparar o pop-up de apoio exatamente uma vez após 10 minutos (600s) de uso.
+ * disparar o pop-up de apoio exatamente uma vez após 5 minutos (300s) de uso.
  *
  * Características:
  * - Contabiliza apenas quando o app está em primeiro plano (AppState === 'active').
@@ -38,7 +38,7 @@ export const useModalApoio = (): UseModalApoioRetorno => {
     const tempoInicial = apoioProjetoService.obterTempoUsoSegundos();
     segundosRef.current = tempoInicial;
 
-    // Se já tiver atingido 10 minutos em sessões anteriores
+    // Se já tiver atingido 5 minutos em sessões anteriores
     if (tempoInicial >= TEMPO_SEGUNDOS_DISPARO_POPUP) {
       setModalVisivel(true);
       apoioProjetoService.marcarComoExibido();

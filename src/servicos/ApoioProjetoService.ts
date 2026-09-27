@@ -108,7 +108,7 @@ export class ApoioProjetoService implements IApoioProjetoService {
   /**
    * Avalia se as condições para exibir o modal estão satisfeitas:
    * 1. Ainda não foi exibido.
-   * 2. O usuário atingiu ou ultrapassou 10 minutos (600 segundos) de uso ativo.
+   * 2. O usuário atingiu ou ultrapassou 5 minutos (300 segundos) de uso ativo.
    */
   public deveDispararModal(): boolean {
     if (this.verificarSeJaExibiu()) {
